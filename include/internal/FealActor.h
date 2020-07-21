@@ -18,6 +18,27 @@ namespace feal
 
 class Event;
 
+class EventStartActor : public Event
+{
+public:
+EventStartActor() = default;
+EventStartActor( const EventStartActor & ) = default;
+EventStartActor& operator= ( const EventStartActor & ) = default;
+~EventStartActor() = default;
+feal::EventId_t getId(void);
+};
+
+class EventPauseActor : public Event
+{
+public:
+EventPauseActor() = default;
+EventPauseActor( const EventPauseActor & ) = default;
+EventPauseActor& operator= ( const EventPauseActor & ) = default;
+~EventPauseActor() = default;
+feal::EventId_t getId(void);
+};
+
+
 class Actor
 {
 public:
@@ -31,7 +52,7 @@ void init(void);
 void start(void);
 void pause(void);
 void shutdown(void);
-void receiveEvent(Event& evt);
+void receiveEvent(std::shared_ptr<Event>& pevt);
 bool isActive(void);
 void wait_for_shutdown(void);
 
@@ -41,7 +62,7 @@ virtual void initActor(void);
 virtual void startActor(void);
 virtual void pauseActor(void);
 virtual void shutdownActor(void);
-void publishEvent(Event& evt);
+void publishEvent(Event* pevt);
 
 template<typename Y, typename T>
 void subscribeEvent(Y* p)
@@ -49,15 +70,16 @@ void subscribeEvent(Y* p)
     void handleEvent(T&);
     EventId_t id = Event::getIdOfType<T>();
     mapEventHandlers.insert(std::make_pair(id,
-            [p](Event& fe){  p->handleEvent(dynamic_cast<T&>(fe));  }
+            [p](std::shared_ptr<Event>& fe)
+                {  p->handleEvent(dynamic_cast<T*>(fe.get()));  }
             )
         );
     EventBus::getInstance().subscribeEvent(id, this);
 }
 
 template<typename T>
- void unsubscribeEvent(void)
- {
+void unsubscribeEvent(void)
+{
     EventId_t id = Event::getIdOfType<T>();
     for (auto it = mapEventHandlers.begin(); it != mapEventHandlers.end(); )
     {
@@ -65,14 +87,14 @@ template<typename T>
         else ++it;
     }
     EventBus::getInstance().unsubscribeEvent(id, this);
- }
+}
 
 private:
 
 bool threadValid = true;
 bool threadRunning = false;
-std::queue<Event> evtQueue;
-std::map<EventId_t, std::function<void(Event&)>> mapEventHandlers;
+std::queue<std::shared_ptr<Event>> evtQueue;
+std::map<EventId_t, std::function<void(std::shared_ptr<Event>&)>> mapEventHandlers;
 std::thread actorthread;
 std::mutex mtxEventQueue;
 std::mutex mtxEventLoop;
@@ -80,8 +102,10 @@ std::mutex mtxWaitShutdown;
 std::condition_variable cvEventLoop;
 std::condition_variable cvWaitShutdown;
 
-
-static void eventLoop(Actor* p);
+static void eventLoopLauncher(Actor* p);
+void eventLoop(void);
+void handleEvent(EventStartActor* evt);
+void handleEvent(EventPauseActor* evt);
 
 };
 
@@ -93,7 +117,7 @@ void initAll(actor_vec_t& vec);
 void startAll(actor_vec_t& vec);
 void pauseAll(actor_vec_t &vec);
 void shutdownAll(actor_vec_t& vec);
-void receiveEventAll(actor_vec_t& vec, Event& evt);
+void receiveEventAll(actor_vec_t& vec, std::shared_ptr<Event>& pevt);
 
 } // namespace feal
 

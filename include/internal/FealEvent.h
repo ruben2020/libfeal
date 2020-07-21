@@ -21,7 +21,7 @@ Event& operator= ( const feal::Event & ) = default;
 virtual ~Event() = default;
 
 virtual EventId_t getId(void);
-void replyEvent(feal::Event& evt);
+void replyEvent(Event* pevt);
 
 protected:
 
@@ -30,12 +30,12 @@ void setSender(feal::Actor* act);
 template<typename T>
  static EventId_t getIdOfType()
  {
-     static EventId_t msgID = 0;
-     if ( msgID == 0 )
+     static EventId_t s_evtId = 0;
+     if ( s_evtId == 0 )
      {
-        msgID = generateUniqueID();
+        s_evtId = generateUniqueID();
      }
-     return msgID;
+     return s_evtId;
  }
 
 

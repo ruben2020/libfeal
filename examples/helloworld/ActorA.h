@@ -11,8 +11,8 @@ public:
 EvtNotifyVege() = default;
 EvtNotifyVege( const EvtNotifyVege & ) = default;
 EvtNotifyVege& operator= ( const EvtNotifyVege & ) = default;
-virtual ~EvtNotifyVege() = default;
-virtual feal::EventId_t getId(void);
+~EvtNotifyVege() = default;
+feal::EventId_t getId(void);
 
 int get_carrots(void);
 int get_tomatoes(void);
@@ -34,10 +34,10 @@ ActorA() = default;
 ~ActorA() = default;
 
 
-virtual void initActor(void);
-virtual void startActor(void);
-virtual void pauseActor(void);
-virtual void shutdownActor(void);
+void initActor(void);
+void startActor(void);
+void pauseActor(void);
+void shutdownActor(void);
 
 private:
 

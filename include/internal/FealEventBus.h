@@ -28,7 +28,7 @@ EventBus& operator= ( const EventBus & ) = delete;
 static EventBus& getInstance(void);
 void subscribeEvent(EventId_t& evtid, Actor *ptr);
 void unsubscribeEvent(EventId_t& evtid, Actor *ptr);
-void publishEvent(Event& evt);
+void publishEvent(std::shared_ptr<Event>& pevt);
 void resetBus(void);
 
 private:

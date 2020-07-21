@@ -8,16 +8,18 @@ feal::EventId_t feal::Event::getId(void)
 feal::EventId_t feal::Event::generateUniqueID(void)
 {
     static EventId_t uid = 0;
-    return (++uid);
+    ++uid;
+    return uid;
 }
 
-void feal::Event::replyEvent(feal::Event& evt)
+void feal::Event::replyEvent(Event* pevt)
 {
-    if (sender != nullptr)
+    if ((sender != nullptr)&&(pevt))
     {
         if (*sender)
         {
-            (**sender).receiveEvent(evt);
+            std::shared_ptr<Event> spevt(pevt);
+            (**sender).receiveEvent(spevt);
         }
     }
 }

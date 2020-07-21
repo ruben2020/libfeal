@@ -14,12 +14,12 @@ ActorB() = default;
 ~ActorB() = default;
 
 
-virtual void initActor(void);
-virtual void startActor(void);
-virtual void pauseActor(void);
-virtual void shutdownActor(void);
+void initActor(void);
+void startActor(void);
+void pauseActor(void);
+void shutdownActor(void);
 
-void handleEvent(EvtNotifyVege& evt);
+void handleEvent(EvtNotifyVege* pevt);
 
 private:
 

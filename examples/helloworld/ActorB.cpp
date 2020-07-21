@@ -24,8 +24,8 @@ void ActorB::shutdownActor(void)
 
 }
 
-void ActorB::handleEvent(EvtNotifyVege& evt)
+void ActorB::handleEvent(EvtNotifyVege* pevt)
 {
-    printf("carrots = %d, tomatoes = %d\n", evt.get_carrots(), evt.get_tomatoes());
+    printf("carrots = %d, tomatoes = %d\n", pevt->get_carrots(), pevt->get_tomatoes());
 }
 

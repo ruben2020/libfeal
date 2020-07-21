@@ -34,10 +34,10 @@ void ActorA::initActor(void)
 void ActorA::startActor(void)
 {
     printf("ActorA startActor\n");
-    EvtNotifyVege evtNotifyVege;
-    evtNotifyVege.set_carrots(3);
-    evtNotifyVege.set_tomatoes(5);
-    publishEvent(evtNotifyVege);
+    EvtNotifyVege* pevt = new EvtNotifyVege();
+    pevt->set_carrots(3);
+    pevt->set_tomatoes(5);
+    publishEvent((feal::Event*) pevt);
 }
 
 void ActorA::pauseActor(void)

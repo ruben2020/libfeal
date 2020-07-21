@@ -59,15 +59,15 @@ void feal::EventBus::unsubscribeEvent(feal::EventId_t& evtid, feal::Actor* ptr)
     }
 }
 
-void feal::EventBus::publishEvent(feal::Event& evt)
+void feal::EventBus::publishEvent(std::shared_ptr<Event>& pevt)
 {
     const std::lock_guard<std::mutex> lock(mtxEventBus);
-    auto it = mapEventSubscribers.find(evt.getId());
+    auto it = mapEventSubscribers.find(pevt.get()->getId());
     if (it != mapEventSubscribers.end())
     {
         for (auto itv = it->second.begin(); itv !=  it->second.end(); ++itv)
         {
-            (**itv).receiveEvent(evt);
+            (**itv).receiveEvent(pevt);
         }
         
     }

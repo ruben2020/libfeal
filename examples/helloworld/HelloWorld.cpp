@@ -13,7 +13,7 @@ void HelloWorld::initActor(void)
 
 void HelloWorld::startActor(void)
 {
-    printf("HelloWorld initActor\n");
+    printf("HelloWorld startActor\n");
     feal::startAll(actors);
 }
 
@@ -26,8 +26,6 @@ void HelloWorld::shutdownActor(void)
 {
     feal::shutdownAll(actors);
 }
-
-
 
 int main(void)
 {
