@@ -67,7 +67,6 @@ void publishEvent(Event* pevt);
 template<typename Y, typename T>
 void subscribeEvent(Y* p)
 {
-    void handleEvent(T&);
     EventId_t id = Event::getIdOfType<T>();
     mapEventHandlers.insert(std::make_pair(id,
             [p](std::shared_ptr<Event>& fe)
