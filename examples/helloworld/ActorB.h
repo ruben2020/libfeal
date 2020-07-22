@@ -19,7 +19,7 @@ void startActor(void);
 void pauseActor(void);
 void shutdownActor(void);
 
-void handleEvent(EvtNotifyVege* pevt);
+void handleEvent(std::shared_ptr<EvtNotifyVege> pevt);
 
 private:
 

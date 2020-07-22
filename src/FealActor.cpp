@@ -11,21 +11,21 @@ void feal::Actor::init(void)
 {
     if (threadValid == false) return; // not possible after shutdown
     mapEventHandlers.insert(std::make_pair(EventStartActor::getIdOfType<EventStartActor>(),
-            [this](std::shared_ptr<Event>& fe)
-                {  this->handleEvent(dynamic_cast<EventStartActor*>(fe.get()));  }
+            [this](std::shared_ptr<Event> fe)
+                {   this->handleEvent(std::dynamic_pointer_cast<EventStartActor>(fe));  }
             )
     );
     mapEventHandlers.insert(std::make_pair(EventPauseActor::getIdOfType<EventPauseActor>(),
-            [this](std::shared_ptr<Event>& fe)
-                {  this->handleEvent(dynamic_cast<EventPauseActor*>(fe.get()));  }
+            [this](std::shared_ptr<Event> fe)
+                {   this->handleEvent(std::dynamic_pointer_cast<EventPauseActor>(fe));  }
             )
     );
     initActor();
 }   
 
-void feal::Actor::handleEvent(feal::EventStartActor* evt)
+void feal::Actor::handleEvent(std::shared_ptr<feal::EventStartActor> pevt)
 {
-    startActor();
+    if (pevt) startActor();
 }
 
 void feal::Actor::start(void)
@@ -46,11 +46,14 @@ void feal::Actor::start(void)
     receiveEvent(p);
 }
 
-void feal::Actor::handleEvent(feal::EventPauseActor* evt)
+void feal::Actor::handleEvent(std::shared_ptr<feal::EventPauseActor> pevt)
 {
-    pauseActor();
-    // event loop is pausing
-    threadRunning = false;
+    if (pevt)
+    {
+        pauseActor();
+        // event loop is pausing
+        threadRunning = false;
+    }
 }
 
 void feal::Actor::pause(void)
@@ -124,9 +127,9 @@ void feal::Actor::eventLoop(void)
     
 }
 
-void feal::Actor::receiveEvent(std::shared_ptr<feal::Event>& pevt)
+void feal::Actor::receiveEvent(std::shared_ptr<feal::Event> pevt)
 {
-    if (threadValid) // not possible after shutdown
+    if ((threadValid) && (pevt)) // not possible after shutdown
     {
         mtxEventQueue.lock();
         evtQueue.push(pevt);
@@ -142,6 +145,15 @@ void feal::Actor::publishEvent(Event* pevt)
         pevt->setSender(this);
         std::shared_ptr<Event> spevt(pevt);
         EventBus::getInstance().publishEvent(spevt);
+    }
+}
+
+void feal::Actor::publishEvent(std::shared_ptr<feal::Event> pevt)
+{
+   if (pevt)
+    {
+        pevt.get()->setSender(this);
+        EventBus::getInstance().publishEvent(pevt);
     }
 }
 
@@ -177,8 +189,9 @@ void feal::shutdownAll(feal::actor_vec_t& vec)
     }
 }
 
-void feal::receiveEventAll(feal::actor_vec_t& vec, std::shared_ptr<feal::Event>& pevt)
+void feal::receiveEventAll(feal::actor_vec_t& vec, std::shared_ptr<feal::Event> pevt)
 {
+    if (!pevt) return;
     for (auto it = vec.begin(); it != vec.end(); ++it)
     {
         (**it).receiveEvent(pevt);

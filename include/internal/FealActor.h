@@ -44,15 +44,13 @@ class Actor
 public:
 
 Actor() = default;
-Actor(const Actor&) = default;
-Actor& operator= ( const Actor & ) = default;
 virtual ~Actor() = default;
 
 void init(void);
 void start(void);
 void pause(void);
 void shutdown(void);
-void receiveEvent(std::shared_ptr<Event>& pevt);
+void receiveEvent(std::shared_ptr<Event> pevt);
 bool isActive(void);
 void wait_for_shutdown(void);
 
@@ -63,14 +61,15 @@ virtual void startActor(void);
 virtual void pauseActor(void);
 virtual void shutdownActor(void);
 void publishEvent(Event* pevt);
+void publishEvent(std::shared_ptr<Event> pevt);
 
 template<typename Y, typename T>
 void subscribeEvent(Y* p)
 {
     EventId_t id = Event::getIdOfType<T>();
     mapEventHandlers.insert(std::make_pair(id,
-            [p](std::shared_ptr<Event>& fe)
-                {  p->handleEvent(dynamic_cast<T*>(fe.get()));  }
+            [p](std::shared_ptr<Event> fe)
+                {  p->handleEvent(std::dynamic_pointer_cast<T>(fe));  }
             )
         );
     EventBus::getInstance().subscribeEvent(id, this);
@@ -93,7 +92,7 @@ private:
 bool threadValid = true;
 bool threadRunning = false;
 std::queue<std::shared_ptr<Event>> evtQueue;
-std::map<EventId_t, std::function<void(std::shared_ptr<Event>&)>> mapEventHandlers;
+std::map<EventId_t, std::function<void(std::shared_ptr<Event>)>> mapEventHandlers;
 std::thread actorthread;
 std::mutex mtxEventQueue;
 std::mutex mtxEventLoop;
@@ -103,8 +102,8 @@ std::condition_variable cvWaitShutdown;
 
 static void eventLoopLauncher(Actor* p);
 void eventLoop(void);
-void handleEvent(EventStartActor* evt);
-void handleEvent(EventPauseActor* evt);
+void handleEvent(std::shared_ptr<EventStartActor> pevt);
+void handleEvent(std::shared_ptr<EventPauseActor> pevt);
 
 };
 
@@ -116,7 +115,7 @@ void initAll(actor_vec_t& vec);
 void startAll(actor_vec_t& vec);
 void pauseAll(actor_vec_t &vec);
 void shutdownAll(actor_vec_t& vec);
-void receiveEventAll(actor_vec_t& vec, std::shared_ptr<Event>& pevt);
+void receiveEventAll(actor_vec_t& vec, std::shared_ptr<Event> pevt);
 
 } // namespace feal
 
