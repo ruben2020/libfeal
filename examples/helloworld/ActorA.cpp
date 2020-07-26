@@ -58,8 +58,8 @@ feal::EventId_t EventTimerA1::getId(void)
 void ActorA::initActor(void)
 {
     printf("ActorA initActor\n");
-    subscribeEvent<ActorA, EventCabbage>(this);
-    registerTimer<ActorA, EventTimerA1>(this);
+    subscribeEvent<EventCabbage>(this);
+    registerTimer<EventTimerA1>(this);
 }
 
 void ActorA::startActor(void)

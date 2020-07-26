@@ -66,7 +66,7 @@ virtual void shutdownActor(void);
 void publishEvent(Event* pevt);
 void publishEvent(std::shared_ptr<Event> pevt);
 
-template<typename Y, typename T>
+template<typename T, typename Y>
 void subscribeEvent(Y* p)
 {
     EventId_t id = Event::getIdOfType<T>();
@@ -82,11 +82,11 @@ void subscribeEvent(Y* p)
     EventBus::getInstance().subscribeEvent(id, this);
 }
 
-template<typename Y, typename T>
+template<typename T, typename Y>
 void registerTimer(Y* p)
 {
     EventId_t id = Event::getIdOfType<T>();
-    subscribeEvent<Y, T>(p);
+    subscribeEvent<T, Y>(p);
     auto it = mapTimers.find(id);
     if (it == mapTimers.end())
     {

@@ -14,7 +14,7 @@ void HelloWorld::initActor(void)
     actors.push_back(std::shared_ptr<Actor>(new ActorA()));
     actors.push_back(std::shared_ptr<Actor>(new ActorB()));
     feal::initAll(actors);
-    registerTimer<HelloWorld, EventTimerShutdown>(this);
+    registerTimer<EventTimerShutdown>(this);
 }
 
 void HelloWorld::startActor(void)

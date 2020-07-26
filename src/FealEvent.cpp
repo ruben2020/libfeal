@@ -1,5 +1,11 @@
 #include "feal.h"
 
+feal::Event::~Event()
+{
+    delete sender;
+    sender = nullptr;
+}
+
 feal::EventId_t feal::Event::getId(void)
 {
     return 0; // which is invalid
@@ -26,5 +32,5 @@ void feal::Event::replyEvent(Event* pevt)
 
 void feal::Event::setSender(feal::Actor* act)
 {
-    sender = new std::shared_ptr<Actor>(act);
+    //sender = new std::shared_ptr<Actor>(act);
 }

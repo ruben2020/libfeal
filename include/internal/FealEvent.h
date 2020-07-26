@@ -22,7 +22,7 @@ public:
 Event() = default;
 Event( const Event & ) = default;
 Event& operator= ( const feal::Event & ) = default;
-virtual ~Event() = default;
+virtual ~Event();
 
 virtual EventId_t getId(void);
 void replyEvent(Event* pevt);

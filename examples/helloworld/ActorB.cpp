@@ -32,10 +32,10 @@ feal::EventId_t EventTimerB2::getId(void)
 void ActorB::initActor(void)
 {
     printf("ActorB initActor\n");
-    subscribeEvent<ActorB, EvtNotifyVege>(this);
-    subscribeEvent<ActorB, EvtNotifyFruit>(this);
-    registerTimer<ActorB, EventTimerB1>(this);
-    registerTimer<ActorB, EventTimerB2>(this);
+    subscribeEvent<EvtNotifyVege>(this);
+    subscribeEvent<EvtNotifyFruit>(this);
+    registerTimer<EventTimerB1>(this);
+    registerTimer<EventTimerB2>(this);
 }
 
 void ActorB::startActor(void)
