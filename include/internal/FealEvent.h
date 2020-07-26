@@ -1,6 +1,10 @@
 #ifndef _FEAL_EVENT_H
 #define _FEAL_EVENT_H
 
+#ifndef _FEAL_H
+#error "Please include feal.h and not the other internal Feal header files, to avoid include errors."
+#endif
+
 #include <vector>
 #include <memory>
 

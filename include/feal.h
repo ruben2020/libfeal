@@ -19,6 +19,7 @@ namespace feal
 
 #include "internal/FealEvent.h"
 #include "internal/FealEventBus.h"
+#include "internal/FealTimer.h"
 #include "internal/FealActor.h"
 
 

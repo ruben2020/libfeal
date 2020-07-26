@@ -12,10 +12,15 @@ feal::EventBus& feal::EventBus::getInstance(void)
     return *inst;
 }
 
+void feal::EventBus::destroyInstance(void)
+{
+    if (inst) inst->resetBus();
+    //delete inst;
+    //inst = nullptr;
+}
+
 feal::EventBus::~EventBus()
 {
-    mapEventSubscribers.clear();
-    inst = nullptr;
 }
 
 void feal::EventBus::subscribeEvent(feal::EventId_t& evtid, feal::Actor* ptr)
@@ -61,7 +66,7 @@ void feal::EventBus::unsubscribeEvent(feal::EventId_t& evtid, feal::Actor* ptr)
 
 void feal::EventBus::publishEvent(std::shared_ptr<Event> pevt)
 {
-    if (!pevt) return;
+    if ((!pevt)|| (eventBusOff)) return;
     const std::lock_guard<std::mutex> lock(mtxEventBus);
     auto it = mapEventSubscribers.find(pevt.get()->getId());
     if (it != mapEventSubscribers.end())
@@ -74,9 +79,17 @@ void feal::EventBus::publishEvent(std::shared_ptr<Event> pevt)
     }
 }
 
+void feal::EventBus::stopBus(void)
+{
+    eventBusOff = true;
+}
+
 void feal::EventBus::resetBus(void)
 {
-    const std::lock_guard<std::mutex> lock(mtxEventBus);
+    for (auto it = mapEventSubscribers.begin(); it != mapEventSubscribers.end(); ++it)
+    {
+        it->second.clear();
+    }
     mapEventSubscribers.clear();
 }
 

@@ -1,10 +1,15 @@
 #ifndef _FEAL_EVENT_BUS_H
 #define _FEAL_EVENT_BUS_H
 
+#ifndef _FEAL_H
+#error "Please include feal.h and not the other internal Feal header files, to avoid include errors."
+#endif
+
 #include <memory>
 #include <map>
 #include <vector>
 #include <mutex>
+#include <atomic>
 
 namespace feal
 {
@@ -26,9 +31,11 @@ EventBus& operator= ( const EventBus & ) = delete;
 ~EventBus();
 
 static EventBus& getInstance(void);
+static void destroyInstance(void);
 void subscribeEvent(EventId_t& evtid, Actor *ptr);
 void unsubscribeEvent(EventId_t& evtid, Actor *ptr);
 void publishEvent(std::shared_ptr<Event> pevt);
+void stopBus(void);
 void resetBus(void);
 
 private:
@@ -37,6 +44,7 @@ EventBus() = default;
 static EventBus* inst;
 map_evt_subsc_t mapEventSubscribers;
 std::mutex mtxEventBus;
+std::atomic_bool eventBusOff {false};
 
 };
 

@@ -9,6 +9,7 @@ include_directories( "../include" )
 set( FEAL_LIB_SRCS 
      FealEvent.cpp
      FealEventBus.cpp
+     FealTimer.cpp
      FealActor.cpp 
   )
 

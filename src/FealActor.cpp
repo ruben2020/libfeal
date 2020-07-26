@@ -32,18 +32,18 @@ void feal::Actor::start(void)
 {
     if (threadValid == false) return; // not possible after shutdown
     threadRunning = true;
-    if (actorthread.joinable() == false)
+    std::shared_ptr<Event> p((Event*) new EventStartActor());
+    receiveEvent(p);
+    if (actorThread.joinable() == false)
     {
         // event loop is newly starting
-        actorthread = std::thread(&eventLoopLauncher, this);
+        actorThread = std::thread(&eventLoopLauncher, this);
     }
     else
     {
         // event loop is resuming from pause
         cvEventLoop.notify_all();
     }
-    std::shared_ptr<Event> p((Event*) new EventStartActor());
-    receiveEvent(p);
 }
 
 void feal::Actor::handleEvent(std::shared_ptr<feal::EventPauseActor> pevt)
@@ -65,13 +65,15 @@ void feal::Actor::pause(void)
 
 void feal::Actor::shutdown(void)
 {
+    finalizeAllTimers();
     shutdownActor();
     threadValid = false;
     threadRunning = false;
     cvEventLoop.notify_all();
-    if (actorthread.joinable())
+    if ((actorThread.get_id() != std::this_thread::get_id()) &&
+                        (actorThread.joinable()))
     {
-        actorthread.join();
+        actorThread.join();
     }
     cvWaitShutdown.notify_all();
 }
@@ -85,6 +87,11 @@ void feal::Actor::wait_for_shutdown(void)
 {
     std::unique_lock<std::mutex> ulk(mtxWaitShutdown);
     cvWaitShutdown.wait(ulk);           
+    if ((actorThread.get_id() != std::this_thread::get_id()) &&
+                        (actorThread.joinable()))
+    {
+        actorThread.join();
+    }
 }
 
 void feal::Actor::eventLoopLauncher(feal::Actor* p)
@@ -109,7 +116,7 @@ void feal::Actor::eventLoop(void)
                 evtQueue.pop();
             }
             mtxEventQueue.unlock();
-            if (queue_empty) break;
+            if ((queue_empty) || (!threadValid)) break;
             id = fe.get()->getId();
             if (id == 0) continue;
             auto it = mapEventHandlers.find(id);
@@ -121,7 +128,7 @@ void feal::Actor::eventLoop(void)
         if (threadValid)
         {
             std::unique_lock<std::mutex> ulk(mtxEventLoop);
-            cvEventLoop.wait(ulk);           
+            cvEventLoop.wait(ulk);
         }
     }
     
@@ -142,9 +149,8 @@ void feal::Actor::publishEvent(Event* pevt)
 {
     if (pevt)
     {
-        pevt->setSender(this);
         std::shared_ptr<Event> spevt(pevt);
-        EventBus::getInstance().publishEvent(spevt);
+        publishEvent(spevt);
     }
 }
 
@@ -155,6 +161,23 @@ void feal::Actor::publishEvent(std::shared_ptr<feal::Event> pevt)
         pevt.get()->setSender(this);
         EventBus::getInstance().publishEvent(pevt);
     }
+}
+
+void feal::Actor::stopAllTimers(void)
+{
+    for (auto it = mapTimers.begin(); it != mapTimers.end(); ++it)
+    {
+        it->second.get()->stopTimer();
+    }
+}
+
+void feal::Actor::finalizeAllTimers(void)
+{
+    for (auto it = mapTimers.begin(); it != mapTimers.end(); ++it)
+    {
+        it->second.get()->finalizeTimer();
+    }
+    mapTimers.clear();
 }
 
 void feal::initAll(feal::actor_vec_t& vec)
