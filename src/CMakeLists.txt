@@ -10,7 +10,8 @@ set( FEAL_LIB_SRCS
      FealEvent.cpp
      FealEventBus.cpp
      FealTimer.cpp
-     FealActor.cpp 
+     FealActor.cpp
+     FealActorVector.cpp
   )
 
 add_library( feal_lib STATIC ${FEAL_LIB_SRCS} )

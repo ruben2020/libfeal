@@ -6,9 +6,10 @@ include_directories( "." )
 include_directories( "../../include" )
 
 set( HELLO_WORLD_SRCS 
-    HelloWorld.cpp
+    ActorsManager.cpp
     ActorA.cpp
     ActorB.cpp
+    main_helloworld.cpp
   )
 
 add_executable( fealhelloworld ${HELLO_WORLD_SRCS} )

@@ -1,11 +1,5 @@
 #include "feal.h"
 
-feal::Event::~Event()
-{
-    delete sender;
-    sender = nullptr;
-}
-
 feal::EventId_t feal::Event::getId(void)
 {
     return 0; // which is invalid
@@ -18,19 +12,21 @@ feal::EventId_t feal::Event::generateUniqueID(void)
     return uid;
 }
 
-void feal::Event::replyEvent(Event* pevt)
+std::shared_ptr<feal::Event> feal::Event::getptr(void)
 {
-    if ((sender != nullptr)&&(pevt))
+    return shared_from_this();
+}
+
+void feal::Event::replyEvent(std::shared_ptr<Event> spevt)
+{
+    if ((sender.expired() == false)&&(spevt))
     {
-        if (*sender)
-        {
-            std::shared_ptr<Event> spevt(pevt);
-            (**sender).receiveEvent(spevt);
-        }
+        std::shared_ptr<Actor> act = sender.lock();
+        act.get()->receiveEvent(spevt);
     }
 }
 
-void feal::Event::setSender(feal::Actor* act)
+void feal::Event::setSender(std::weak_ptr<feal::Actor>& act)
 {
-    //sender = new std::shared_ptr<Actor>(act);
+    sender = act;
 }

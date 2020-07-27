@@ -42,7 +42,7 @@ EventId_t getId(void);
 };
 
 
-class Actor
+class Actor : public std::enable_shared_from_this<Actor>
 {
 public:
 
@@ -63,7 +63,6 @@ virtual void initActor(void);
 virtual void startActor(void);
 virtual void pauseActor(void);
 virtual void shutdownActor(void);
-void publishEvent(Event* pevt);
 void publishEvent(std::shared_ptr<Event> pevt);
 
 template<typename T, typename Y>
@@ -79,23 +78,32 @@ void subscribeEvent(Y* p)
                 )
             );
     }
-    EventBus::getInstance().subscribeEvent(id, this);
+    EventBus::getInstance().subscribeEvent(id, shared_from_this());
 }
 
 template<typename T, typename Y>
 void registerTimer(Y* p)
 {
     EventId_t id = Event::getIdOfType<T>();
-    subscribeEvent<T, Y>(p);
+    auto ite = mapEventHandlers.find(id);
+    if (ite == mapEventHandlers.end())
+    {
+        mapEventHandlers.insert(std::make_pair(id,
+                [p](std::shared_ptr<Event> fe)
+                    {  p->handleEvent(std::dynamic_pointer_cast<T>(fe));  }
+                )
+            );
+    }
     auto it = mapTimers.find(id);
     if (it == mapTimers.end())
     {
-        Timer* timi = new Timer();
-        std::shared_ptr<Event> spevt((Event*) new T());
+        std::shared_ptr<Event> spevt = std::make_shared<T>();
+        std::weak_ptr<Actor> wkact = shared_from_this();
+        spevt.get()->setSender(wkact);
+        Timer *timi = new Timer();
         timi->setTimerEvent(spevt);
         timi->initTimer();
-        std::shared_ptr<Timer> tim(timi);
-        mapTimers.insert(std::make_pair(id, tim));
+        mapTimers[id] = std::unique_ptr<Timer>(timi);
     }
 }
 
@@ -108,7 +116,7 @@ void unsubscribeEvent(void)
         if (it->first == id) mapEventHandlers.erase(it);
         else ++it;
     }
-    EventBus::getInstance().unsubscribeEvent(id, this);
+    EventBus::getInstance().unsubscribeEvent(id, shared_from_this());
 }
 
 template< typename T, class D >
@@ -152,7 +160,7 @@ std::atomic_bool threadValid {true};
 std::atomic_bool threadRunning {false};
 std::queue<std::shared_ptr<Event>> evtQueue;
 std::map<EventId_t, std::function<void(std::shared_ptr<Event>)>> mapEventHandlers;
-std::map<EventId_t, std::shared_ptr<Timer>> mapTimers;
+std::map<EventId_t, std::unique_ptr<Timer>> mapTimers;
 std::thread actorThread;
 std::mutex mtxEventQueue;
 std::mutex mtxEventLoop;
@@ -168,15 +176,6 @@ void handleEvent(std::shared_ptr<EventPauseActor> pevt);
 
 };
 
-typedef  std::shared_ptr<Actor> actorptr_t;
-
-typedef std::vector<actorptr_t> actor_vec_t;
-
-void initAll(actor_vec_t& vec);
-void startAll(actor_vec_t& vec);
-void pauseAll(actor_vec_t &vec);
-void shutdownAll(actor_vec_t& vec);
-void receiveEventAll(actor_vec_t& vec, std::shared_ptr<Event> pevt);
 
 } // namespace feal
 

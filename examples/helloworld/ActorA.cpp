@@ -68,15 +68,15 @@ void ActorA::startActor(void)
 
     startTimerPeriodic<EventTimerA1>(std::chrono::seconds(3));
 
-    EvtNotifyVege* pevt = new EvtNotifyVege();
-    pevt->set_carrots(10);
-    pevt->set_tomatoes(20);
-    publishEvent((feal::Event*) pevt);
+    std::shared_ptr<feal::Event> pevt = std::make_shared<EvtNotifyVege>();
+    ((EvtNotifyVege*) pevt.get())->set_carrots(10);
+    ((EvtNotifyVege*) pevt.get())->set_tomatoes(20);
+    publishEvent(pevt);
 
-    EvtNotifyFruit* pevt2 = new EvtNotifyFruit();
-    pevt2->set_apples(30);
-    pevt2->set_oranges(40);
-    publishEvent((feal::Event*) pevt2);
+    std::shared_ptr<feal::Event> pevt2 = std::make_shared<EvtNotifyFruit>();
+    ((EvtNotifyFruit*) pevt2.get())->set_apples(30);
+    ((EvtNotifyFruit*) pevt2.get())->set_oranges(40);
+    publishEvent(pevt2);
 }
 
 void ActorA::pauseActor(void)
@@ -94,15 +94,15 @@ void ActorA::handleEvent(std::shared_ptr<EventCabbage> pevt)
     if (!pevt) return;
     printf("ActorA received cabbages = %d\n", pevt.get()->get_cabbages());
 
-    auto pevt1 = new EvtNotifyVege();
-    pevt1->set_carrots(100);
-    pevt1->set_tomatoes(200);
-    publishEvent((feal::Event*) pevt1);
-    
-    auto pevt2 = new EvtNotifyFruit();
-    pevt2->set_apples(300);
-    pevt2->set_oranges(400);
-    publishEvent((feal::Event*) pevt2);
+    std::shared_ptr<feal::Event> pevt1 = std::make_shared<EvtNotifyVege>();
+    ((EvtNotifyVege*) pevt1.get())->set_carrots(100);
+    ((EvtNotifyVege*) pevt1.get())->set_tomatoes(200);
+    publishEvent(pevt1);
+
+    std::shared_ptr<feal::Event> pevt2 = std::make_shared<EvtNotifyFruit>();
+    ((EvtNotifyFruit*) pevt2.get())->set_apples(300);
+    ((EvtNotifyFruit*) pevt2.get())->set_oranges(400);
+    publishEvent(pevt2);
 }
 
 

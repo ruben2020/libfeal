@@ -14,13 +14,13 @@ EventTimerShutdown& operator= ( const EventTimerShutdown & ) = default;
 feal::EventId_t getId(void);
 };
 
-class HelloWorld : public feal::Actor
+class ActorsManager : public feal::Actor
 {
 
 public:
 
-HelloWorld() = default;
-~HelloWorld() = default;
+ActorsManager() = default;
+~ActorsManager() = default;
 
 
 virtual void initActor(void);

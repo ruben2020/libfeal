@@ -15,15 +15,15 @@ feal::EventBus& feal::EventBus::getInstance(void)
 void feal::EventBus::destroyInstance(void)
 {
     if (inst) inst->resetBus();
-    //delete inst;
-    //inst = nullptr;
+    delete inst;
+    inst = nullptr;
 }
 
 feal::EventBus::~EventBus()
 {
 }
 
-void feal::EventBus::subscribeEvent(feal::EventId_t& evtid, feal::Actor* ptr)
+void feal::EventBus::subscribeEvent(const feal::EventId_t& evtid, feal::actorptr_t ptr)
 {
     const std::lock_guard<std::mutex> lock(mtxEventBus);
     auto it = mapEventSubscribers.find(evtid);
@@ -32,22 +32,22 @@ void feal::EventBus::subscribeEvent(feal::EventId_t& evtid, feal::Actor* ptr)
         bool found = false;
         for (auto itv = it->second.begin(); itv != it->second.end(); ++itv)
         {
-            if ((*itv) == actorptr_t(ptr))
+            if ((*itv) == ptr)
             {
                 found = true;
                 break;
             }
         }
-        if (!found) it->second.push_back(actorptr_t(ptr));
+        if (!found) it->second.push_back(ptr);
     }
     else
     {
-        mapEventSubscribers[evtid] = vec_actor_ptr_t { actorptr_t(ptr) };
+        mapEventSubscribers[evtid] = vec_actor_ptr_t { ptr };
     }
     
 }
 
-void feal::EventBus::unsubscribeEvent(feal::EventId_t& evtid, feal::Actor* ptr)
+void feal::EventBus::unsubscribeEvent(const feal::EventId_t& evtid, feal::actorptr_t ptr)
 {
     const std::lock_guard<std::mutex> lock(mtxEventBus);
     auto it = mapEventSubscribers.find(evtid);
@@ -55,7 +55,7 @@ void feal::EventBus::unsubscribeEvent(feal::EventId_t& evtid, feal::Actor* ptr)
     {
         for (auto itv = it->second.begin(); itv != it->second.end(); )
         {
-            if ((*itv) == actorptr_t(ptr))
+            if ((*itv) == ptr)
             {
                 it->second.erase(itv);
             }

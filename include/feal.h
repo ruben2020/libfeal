@@ -15,12 +15,14 @@
 namespace feal
 {
     typedef uint32_t EventId_t;
+    typedef uint32_t ActorId_t;
 }
 
 #include "internal/FealEvent.h"
 #include "internal/FealEventBus.h"
 #include "internal/FealTimer.h"
 #include "internal/FealActor.h"
+#include "internal/FealActorVector.h"
 
 
 #endif // _FEAL_H

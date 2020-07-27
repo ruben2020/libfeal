@@ -13,7 +13,7 @@ namespace feal
 
 class Actor;
 
-class Event
+class Event : public std::enable_shared_from_this<Event>
 {
 friend class Actor;
 
@@ -22,14 +22,16 @@ public:
 Event() = default;
 Event( const Event & ) = default;
 Event& operator= ( const feal::Event & ) = default;
-virtual ~Event();
+virtual ~Event() = default;
+
+std::shared_ptr<Event> getptr(void);
 
 virtual EventId_t getId(void);
-void replyEvent(Event* pevt);
+void replyEvent(std::shared_ptr<Event> spevt);
 
 protected:
 
-void setSender(feal::Actor* act);
+void setSender(std::weak_ptr<Actor>& act);
 
 template<typename T>
  static EventId_t getIdOfType()
@@ -44,7 +46,7 @@ template<typename T>
 
 
 private:
-std::shared_ptr<Actor>* sender = nullptr;
+std::weak_ptr<Actor> sender;
 static EventId_t generateUniqueID(void);
 
 };

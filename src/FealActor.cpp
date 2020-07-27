@@ -32,7 +32,7 @@ void feal::Actor::start(void)
 {
     if (threadValid == false) return; // not possible after shutdown
     threadRunning = true;
-    std::shared_ptr<Event> p((Event*) new EventStartActor());
+    std::shared_ptr<Event> p = std::make_shared<EventStartActor>();
     receiveEvent(p);
     if (actorThread.joinable() == false)
     {
@@ -59,7 +59,7 @@ void feal::Actor::handleEvent(std::shared_ptr<feal::EventPauseActor> pevt)
 void feal::Actor::pause(void)
 {
     if (threadValid == false) return; // not possible after shutdown
-    std::shared_ptr<Event> p((Event*) new EventPauseActor());
+    std::shared_ptr<Event> p = std::make_shared<EventPauseActor>();
     receiveEvent(p);
 }
 
@@ -145,20 +145,12 @@ void feal::Actor::receiveEvent(std::shared_ptr<feal::Event> pevt)
     }
 }
 
-void feal::Actor::publishEvent(Event* pevt)
-{
-    if (pevt)
-    {
-        std::shared_ptr<Event> spevt(pevt);
-        publishEvent(spevt);
-    }
-}
-
 void feal::Actor::publishEvent(std::shared_ptr<feal::Event> pevt)
 {
    if (pevt)
     {
-        pevt.get()->setSender(this);
+        std::weak_ptr<Actor> wkact = shared_from_this();
+        pevt.get()->setSender(wkact);
         EventBus::getInstance().publishEvent(pevt);
     }
 }
@@ -178,47 +170,6 @@ void feal::Actor::finalizeAllTimers(void)
         it->second.get()->finalizeTimer();
     }
     mapTimers.clear();
-}
-
-void feal::initAll(feal::actor_vec_t& vec)
-{
-    for (auto it = vec.begin(); it != vec.end(); ++it)
-    {
-        (**it).init();
-    }
-}
-
-void feal::startAll(feal::actor_vec_t& vec)
-{
-    for (auto it = vec.begin(); it != vec.end(); ++it)
-    {
-        (**it).start();
-    }
-}
-
-void feal::pauseAll(feal::actor_vec_t& vec)
-{
-    for (auto it = vec.begin(); it != vec.end(); ++it)
-    {
-        (**it).pause();
-    }
-}
-
-void feal::shutdownAll(feal::actor_vec_t& vec)
-{
-    for (auto it = vec.begin(); it != vec.end(); ++it)
-    {
-        (**it).shutdown();
-    }
-}
-
-void feal::receiveEventAll(feal::actor_vec_t& vec, std::shared_ptr<feal::Event> pevt)
-{
-    if (!pevt) return;
-    for (auto it = vec.begin(); it != vec.end(); ++it)
-    {
-        (**it).receiveEvent(pevt);
-    }
 }
 
 feal::EventId_t feal::EventStartActor::getId(void)

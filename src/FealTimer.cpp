@@ -29,7 +29,7 @@ void feal::Timer::timerLoop(void)
             {
                 if (timerPeriodic) tpoint += secs;
                 else timerActive = false;
-                EventBus::getInstance().publishEvent(timerEvent);
+                timerEvent.get()->replyEvent(timerEvent);
             }
         }
         else if (timerValid)
