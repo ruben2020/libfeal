@@ -71,7 +71,7 @@ void ActorB::handleEvent(std::shared_ptr<EventTimerB1> pevt)
 {
     static int s_cabbages =0;
     if (!pevt) return;
-    printf("ActorB::TimerB1 Elapsed\n");
+    printf("ActorB::TimerB1 Elapsed - repeats every %ld s\n", getTimerRepeat<EventTimerB1>().count());
     std::shared_ptr<feal::Event> evtCabbage = std::make_shared<EventCabbage>();
     ((EventCabbage*) evtCabbage.get())->set_cabbages(s_cabbages++);
     publishEvent(evtCabbage);

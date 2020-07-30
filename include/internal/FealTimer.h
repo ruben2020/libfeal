@@ -47,14 +47,30 @@ void startTimer(const D1& oneshot_time, const D2& repeat_time)
     secs = std::chrono::duration_cast<std::chrono::seconds>(repeat_time);
     mtxTimerVar.unlock();
     timerActive = true;
-    timerPeriodic = (repeat_time > std::chrono::seconds(0));
+    timerRepeat = (repeat_time > std::chrono::seconds(0));
     cvTimer.notify_all();
 }
+
+
+template< class D >
+bool setTimerRepeat(const D& repeat_time)
+{
+    bool ret = timerRepeat;
+    if (ret)
+    {
+        mtxTimerVar.lock();
+        secs = std::chrono::duration_cast<std::chrono::seconds>(repeat_time);
+        mtxTimerVar.unlock();
+    }
+    return ret;
+}
+
+std::chrono::seconds getTimerRepeat(void);
 
 std::atomic_bool timerValid {true};
 std::atomic_bool timerActive {false};
 std::atomic_bool timerDormant {false};
-std::atomic_bool timerPeriodic {false};
+std::atomic_bool timerRepeat {false};
 std::mutex mtxTimer;
 std::mutex mtxTimerVar;
 std::condition_variable cvTimer;

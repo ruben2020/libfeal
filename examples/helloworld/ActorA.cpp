@@ -103,6 +103,8 @@ void ActorA::handleEvent(std::shared_ptr<EventCabbage> pevt)
     ((EvtNotifyFruit*) pevt2.get())->set_apples(300);
     ((EvtNotifyFruit*) pevt2.get())->set_oranges(400);
     publishEvent(pevt2);
+
+    setTimerRepeat<EventTimerA1>(std::chrono::seconds(1));
 }
 
 

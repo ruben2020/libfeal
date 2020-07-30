@@ -30,7 +30,7 @@ void feal::Timer::timerLoop(void)
             cvTimer.wait_until(ulk1, tp);
             if (timerActive && timerValid)
             {
-                if (timerPeriodic)
+                if (timerRepeat)
                 {
                     mtxTimerVar.lock();
                     tpoint += secs;
@@ -52,7 +52,7 @@ void feal::Timer::timerLoop(void)
 void feal::Timer::stopTimer(void)
 {
     timerActive = false;
-    timerPeriodic = false;
+    timerRepeat = false;
     timerDormant = false;
     cvTimer.notify_all();
     do
@@ -61,10 +61,19 @@ void feal::Timer::stopTimer(void)
     } while (!timerDormant);
 }
 
+std::chrono::seconds feal::Timer::getTimerRepeat(void)
+{
+    std::chrono::seconds secs1;
+    mtxTimerVar.lock();
+    secs1 = secs;
+    mtxTimerVar.unlock();
+    return secs1;
+}
+
 void feal::Timer::finalizeTimer(void)
 {
     timerActive = false;
-    timerPeriodic = false;
+    timerRepeat = false;
     timerDormant = false;
     timerValid = false;
     cvTimer.notify_all();

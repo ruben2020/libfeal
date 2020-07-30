@@ -155,6 +155,32 @@ void stopTimer(void)
 
 void stopAllTimers(void);
 
+template< typename T, class D >
+bool setTimerRepeat(const D& repeat_time)
+{
+    bool ret = false;
+    EventId_t id = Event::getIdOfType<T>();
+    auto it = mapTimers.find(id);
+    if (it != mapTimers.end())
+    {
+        ret = it->second.get()->setTimerRepeat(repeat_time);
+    }
+    return ret;
+}
+
+template< typename T >
+std::chrono::seconds getTimerRepeat(void)
+{
+    EventId_t id = Event::getIdOfType<T>();
+    auto sec = std::chrono::seconds(0);
+    auto it = mapTimers.find(id);
+    if (it != mapTimers.end())
+    {
+       sec = it->second.get()->getTimerRepeat();
+    }
+    return sec;
+}
+
 private:
 
 std::atomic_bool threadValid {true};
