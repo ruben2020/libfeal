@@ -24,10 +24,18 @@ void feal::Timer::timerLoop(void)
         if (timerActive && timerValid)
         {
             std::unique_lock<std::mutex> ulk1(mtxTimer);
-            cvTimer.wait_until(ulk1, tpoint);
+            mtxTimerVar.lock();
+            std::chrono::time_point<std::chrono::steady_clock> tp = tpoint;
+            mtxTimerVar.unlock();
+            cvTimer.wait_until(ulk1, tp);
             if (timerActive && timerValid)
             {
-                if (timerPeriodic) tpoint += secs;
+                if (timerPeriodic)
+                {
+                    mtxTimerVar.lock();
+                    tpoint += secs;
+                    mtxTimerVar.unlock();
+                }
                 else timerActive = false;
                 timerEvent.get()->replyEvent(timerEvent);
             }
@@ -49,7 +57,7 @@ void feal::Timer::stopTimer(void)
     cvTimer.notify_all();
     do
     {
-        std::this_thread::sleep_for(std::chrono::microseconds(100));
+        std::this_thread::sleep_for(std::chrono::microseconds(50));
     } while (!timerDormant);
 }
 

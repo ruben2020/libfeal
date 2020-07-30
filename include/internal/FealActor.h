@@ -119,27 +119,28 @@ void unsubscribeEvent(void)
     EventBus::getInstance().unsubscribeEvent(id, shared_from_this());
 }
 
-template< typename T, class D >
-void startTimer(const D& rel_time)
+template< typename T, class D1, class D2 >
+void startTimer(const D1& oneshot_time, const D2& repeat_time)
 {
     EventId_t id = Event::getIdOfType<T>();
     auto it = mapTimers.find(id);
     if (it != mapTimers.end())
     {
-        it->second.get()->startTimer(rel_time);
+        it->second.get()->startTimer(oneshot_time, repeat_time);
     }    
 }
 
-template< typename T, class D >
-void startTimerPeriodic(const D& rel_time)
+template< typename T, class D1 >
+void startTimer(const D1& oneshot_time)
 {
     EventId_t id = Event::getIdOfType<T>();
     auto it = mapTimers.find(id);
     if (it != mapTimers.end())
     {
-        it->second.get()->startTimerPeriodic(rel_time);
+        it->second.get()->startTimer(oneshot_time, std::chrono::seconds(0));
     }    
 }
+
 
 template< typename T >
 void stopTimer(void)

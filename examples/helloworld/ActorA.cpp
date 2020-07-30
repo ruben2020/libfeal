@@ -66,7 +66,7 @@ void ActorA::startActor(void)
 {
     printf("ActorA startActor\n");
 
-    startTimerPeriodic<EventTimerA1>(std::chrono::seconds(3));
+    startTimer<EventTimerA1>(std::chrono::seconds(3), std::chrono::seconds(3));
 
     std::shared_ptr<feal::Event> pevt = std::make_shared<EvtNotifyVege>();
     ((EvtNotifyVege*) pevt.get())->set_carrots(10);

@@ -41,7 +41,7 @@ void ActorB::initActor(void)
 void ActorB::startActor(void)
 {
     printf("ActorB startActor\n");
-    startTimerPeriodic<EventTimerB1>(std::chrono::milliseconds(2000));
+    startTimer<EventTimerB1>(std::chrono::milliseconds(2000), std::chrono::seconds(2));
     startTimer<EventTimerB2>(std::chrono::seconds(11));
 }
 
