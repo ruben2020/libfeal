@@ -23,6 +23,8 @@ namespace feal
 #include "internal/FealTimer.h"
 #include "internal/FealActor.h"
 #include "internal/FealActorVector.h"
+#include "internal/FealStream.h"
+#include "internal/FealTCPStream.h"
 
 
 #endif // _FEAL_H
