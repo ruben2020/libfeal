@@ -11,17 +11,17 @@ feal::EventId_t EventTimerShutdown::getId(void)
 void ActorsManager::initActor(void)
 {
     printf("HelloWorld initActor\n");
+    timers.init(this);
     actors.push_back(std::make_shared<ActorA>());
     actors.push_back(std::make_shared<ActorB>());
     feal::initAll(actors);
-    registerTimer<EventTimerShutdown>(this);
 }
 
 void ActorsManager::startActor(void)
 {
     printf("HelloWorld startActor\n");
     feal::startAll(actors);
-    startTimer<EventTimerShutdown>(std::chrono::seconds(31));
+    timers.startTimer<EventTimerShutdown>(std::chrono::seconds(31));
 }
 
 void ActorsManager::pauseActor(void)

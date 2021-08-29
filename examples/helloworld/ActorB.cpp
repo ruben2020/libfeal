@@ -32,17 +32,16 @@ feal::EventId_t EventTimerB2::getId(void)
 void ActorB::initActor(void)
 {
     printf("ActorB initActor\n");
+    timers.init(this);
     subscribeEvent<EvtNotifyVege>(this);
     subscribeEvent<EvtNotifyFruit>(this);
-    registerTimer<EventTimerB1>(this);
-    registerTimer<EventTimerB2>(this);
 }
 
 void ActorB::startActor(void)
 {
     printf("ActorB startActor\n");
-    startTimer<EventTimerB1>(std::chrono::milliseconds(2000), std::chrono::seconds(2));
-    startTimer<EventTimerB2>(std::chrono::seconds(11));
+    timers.startTimer<EventTimerB1>(std::chrono::milliseconds(2000), std::chrono::seconds(2));
+    timers.startTimer<EventTimerB2>(std::chrono::seconds(11));
 }
 
 void ActorB::pauseActor(void)
@@ -71,7 +70,7 @@ void ActorB::handleEvent(std::shared_ptr<EventTimerB1> pevt)
 {
     static int s_cabbages =0;
     if (!pevt) return;
-    printf("ActorB::TimerB1 Elapsed - repeats every %ld s\n", getTimerRepeat<EventTimerB1>().count());
+    printf("ActorB::TimerB1 Elapsed - repeats every %ld s\n", timers.getTimerRepeat<EventTimerB1>().count());
     std::shared_ptr<feal::Event> evtCabbage = std::make_shared<EventCabbage>();
     ((EventCabbage*) evtCabbage.get())->set_cabbages(s_cabbages++);
     publishEvent(evtCabbage);
@@ -83,5 +82,5 @@ void ActorB::handleEvent(std::shared_ptr<EventTimerB2> pevt)
 {
     if (!pevt) return;
     printf("ActorB::TimerB2 Elapsed\n");
-    stopTimer<EventTimerB1>();
+    timers.stopTimer<EventTimerB1>();
 }

@@ -29,10 +29,6 @@ std::shared_ptr<Event> getptr(void);
 virtual EventId_t getId(void);
 void replyEvent(std::shared_ptr<Event> spevt);
 
-protected:
-
-void setSender(std::weak_ptr<Actor>& act);
-
 template<typename T>
  static EventId_t getIdOfType()
  {
@@ -44,6 +40,7 @@ template<typename T>
      return s_evtId;
  }
 
+void setSender(std::weak_ptr<Actor>& act);
 
 private:
 std::weak_ptr<Actor> sender;

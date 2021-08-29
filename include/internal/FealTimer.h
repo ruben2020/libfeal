@@ -22,7 +22,6 @@ class Actor;
 
 class Timer
 {
-friend class Actor;
 
 public:
 Timer() = default;
@@ -30,10 +29,8 @@ Timer( const Timer & ) = default;
 Timer& operator= ( const Timer & ) = default;
 ~Timer();
 
-protected:
 std::thread timerThread;
 
-private:
 void stopTimer(void);
 void finalizeTimer(void);
 void initTimer(void);
@@ -66,7 +63,9 @@ bool setTimerRepeat(const D& repeat_time)
 }
 
 std::chrono::seconds getTimerRepeat(void);
+void setTimerEvent(std::shared_ptr<Event> timEvt);
 
+private:
 std::atomic_bool timerValid {true};
 std::atomic_bool timerActive {false};
 std::atomic_bool timerDormant {false};
@@ -80,7 +79,6 @@ std::shared_ptr<Event> timerEvent;
 
 static void timerLoopLauncher(Timer *p);
 void timerLoop(void);
-void setTimerEvent(std::shared_ptr<Event> timEvt);
 
 };
 

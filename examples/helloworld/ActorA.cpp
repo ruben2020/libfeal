@@ -58,15 +58,15 @@ feal::EventId_t EventTimerA1::getId(void)
 void ActorA::initActor(void)
 {
     printf("ActorA initActor\n");
+    timers.init(this);
     subscribeEvent<EventCabbage>(this);
-    registerTimer<EventTimerA1>(this);
 }
 
 void ActorA::startActor(void)
 {
     printf("ActorA startActor\n");
 
-    startTimer<EventTimerA1>(std::chrono::seconds(3), std::chrono::seconds(3));
+    timers.startTimer<EventTimerA1>(std::chrono::seconds(3), std::chrono::seconds(3));
 
     std::shared_ptr<feal::Event> pevt = std::make_shared<EvtNotifyVege>();
     ((EvtNotifyVege*) pevt.get())->set_carrots(10);
@@ -104,7 +104,7 @@ void ActorA::handleEvent(std::shared_ptr<EventCabbage> pevt)
     ((EvtNotifyFruit*) pevt2.get())->set_oranges(400);
     publishEvent(pevt2);
 
-    setTimerRepeat<EventTimerA1>(std::chrono::seconds(1));
+    timers.setTimerRepeat<EventTimerA1>(std::chrono::seconds(1));
 }
 
 

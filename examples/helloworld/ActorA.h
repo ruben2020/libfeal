@@ -78,6 +78,7 @@ void handleEvent(std::shared_ptr<EventCabbage> pevt);
 void handleEvent(std::shared_ptr<EventTimerA1> pevt);
 
 private:
+feal::Timers<ActorA> timers;
 
 };
 

@@ -32,6 +32,7 @@ void handleEvent(std::shared_ptr<EventTimerShutdown> pevt);
 
 private:
 std::vector<std::shared_ptr<feal::Actor>> actors;
+feal::Timers<ActorsManager> timers;
 
 };
 

@@ -12,8 +12,8 @@ set( FEAL_LIB_SRCS
      FealTimer.cpp
      FealActor.cpp
      FealActorVector.cpp
-     FealStream.cpp
-     FealTCPStream.cpp
+     # FealStream.cpp
+     # FealTCPStream.cpp
   )
 
 add_library( feal_lib STATIC ${FEAL_LIB_SRCS} )

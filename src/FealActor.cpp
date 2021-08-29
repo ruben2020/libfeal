@@ -44,6 +44,8 @@ void feal::Actor::start(void)
         // event loop is resuming from pause
         cvEventLoop.notify_all();
     }
+    for (std::vector<feal::Tool*>::size_type i=0; i < vecTool.size(); i++)
+        (vecTool[i])->start();
 }
 
 void feal::Actor::handleEvent(std::shared_ptr<feal::EventPauseActor> pevt)
@@ -61,12 +63,15 @@ void feal::Actor::pause(void)
     if (threadValid == false) return; // not possible after shutdown
     std::shared_ptr<Event> p = std::make_shared<EventPauseActor>();
     receiveEvent(p);
+    for (std::vector<feal::Tool*>::size_type i=0; i < vecTool.size(); i++)
+        (vecTool[i])->pause();
 }
 
 void feal::Actor::shutdown(void)
 {
-    finalizeAllTimers();
     shutdownActor();
+    for (std::vector<feal::Tool*>::size_type i=0; i < vecTool.size(); i++)
+        (vecTool[i])->shutdown();
     threadValid = false;
     threadRunning = false;
     cvEventLoop.notify_all();
@@ -92,6 +97,11 @@ void feal::Actor::wait_for_shutdown(void)
     {
         actorThread.join();
     }
+}
+
+void feal::Actor::addTool(Tool* p)
+{
+    vecTool.push_back(p);
 }
 
 void feal::Actor::eventLoopLauncher(feal::Actor* p)
@@ -153,23 +163,6 @@ void feal::Actor::publishEvent(std::shared_ptr<feal::Event> pevt)
         pevt.get()->setSender(wkact);
         EventBus::getInstance().publishEvent(pevt);
     }
-}
-
-void feal::Actor::stopAllTimers(void)
-{
-    for (auto it = mapTimers.begin(); it != mapTimers.end(); ++it)
-    {
-        it->second.get()->stopTimer();
-    }
-}
-
-void feal::Actor::finalizeAllTimers(void)
-{
-    for (auto it = mapTimers.begin(); it != mapTimers.end(); ++it)
-    {
-        it->second.get()->finalizeTimer();
-    }
-    mapTimers.clear();
 }
 
 feal::EventId_t feal::EventStartActor::getId(void)

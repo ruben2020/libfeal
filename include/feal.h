@@ -18,13 +18,15 @@ namespace feal
     typedef uint32_t ActorId_t;
 }
 
+#include "internal/FealTool.h"
 #include "internal/FealEvent.h"
 #include "internal/FealEventBus.h"
 #include "internal/FealTimer.h"
+#include "internal/FealTimers.h"
 #include "internal/FealActor.h"
 #include "internal/FealActorVector.h"
-#include "internal/FealStream.h"
-#include "internal/FealTCPStream.h"
+//#include "internal/FealStream.h"
+//#include "internal/FealTCPStream.h"
 
 
 #endif // _FEAL_H
