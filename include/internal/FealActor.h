@@ -59,7 +59,7 @@ void wait_for_shutdown(void);
 void addTool(Tool* p);
 
 template<typename T, typename Y>
-void addEvent(Y* p, T k)
+void addEvent(Y* p, T& k)
 {
     EventId_t id = k.getId();
     if (id == 0) id = Event::getIdOfType<T>();

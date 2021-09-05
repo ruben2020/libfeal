@@ -45,7 +45,7 @@ void feal::Actor::start(void)
         cvEventLoop.notify_all();
     }
     for (std::vector<feal::Tool*>::size_type i=0; i < vecTool.size(); i++)
-        (vecTool[i])->start();
+        (vecTool[i])->startTool();
 }
 
 void feal::Actor::handleEvent(std::shared_ptr<feal::EventPauseActor> pevt)
@@ -64,14 +64,14 @@ void feal::Actor::pause(void)
     std::shared_ptr<Event> p = std::make_shared<EventPauseActor>();
     receiveEvent(p);
     for (std::vector<feal::Tool*>::size_type i=0; i < vecTool.size(); i++)
-        (vecTool[i])->pause();
+        (vecTool[i])->pauseTool();
 }
 
 void feal::Actor::shutdown(void)
 {
     shutdownActor();
     for (std::vector<feal::Tool*>::size_type i=0; i < vecTool.size(); i++)
-        (vecTool[i])->shutdown();
+        (vecTool[i])->shutdownTool();
     threadValid = false;
     threadRunning = false;
     cvEventLoop.notify_all();

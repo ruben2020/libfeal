@@ -7,13 +7,12 @@ find_package(Threads REQUIRED)
 include_directories( "../include" )
 
 set( FEAL_LIB_SRCS 
+     FealCommon.cpp
      FealEvent.cpp
      FealEventBus.cpp
      FealTimer.cpp
      FealActor.cpp
      FealActorVector.cpp
-     # FealStream.cpp
-     # FealTCPStream.cpp
   )
 
 add_library( feal_lib STATIC ${FEAL_LIB_SRCS} )

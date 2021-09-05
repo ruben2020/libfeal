@@ -12,12 +12,7 @@
 #define FEALDEBUGLOG(x)
 #endif
 
-namespace feal
-{
-    typedef uint32_t EventId_t;
-    typedef uint32_t ActorId_t;
-}
-
+#include "internal/FealCommon.h"
 #include "internal/FealTool.h"
 #include "internal/FealEvent.h"
 #include "internal/FealEventBus.h"
@@ -25,8 +20,8 @@ namespace feal
 #include "internal/FealTimers.h"
 #include "internal/FealActor.h"
 #include "internal/FealActorVector.h"
-//#include "internal/FealStream.h"
-//#include "internal/FealTCPStream.h"
+#include "internal/FealBaseStream.h"
+#include "internal/FealStream.h"
 
 
 #endif // _FEAL_H

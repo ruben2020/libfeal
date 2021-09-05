@@ -25,7 +25,7 @@ void init(Y* p)
     p->addTool(this);
 }
 
-virtual void shutdown(void)
+void shutdownTool(void)
 {
     finalizeAllTimers();
 }
@@ -144,7 +144,8 @@ void createTimer(void)
 {
     if (actorptr == nullptr) return;
     EventId_t id = Event::getIdOfType<T>();
-    actorptr->addEvent(actorptr, T());
+    T inst;
+    actorptr->addEvent(actorptr, inst);
     auto it = mapTimers.find(id);
     if (it == mapTimers.end())
     {

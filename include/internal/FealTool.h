@@ -15,9 +15,9 @@ public:
 Tool() = default;
 virtual ~Tool() = default;
 
-virtual void start(void){}
-virtual void pause(void){}
-virtual void shutdown(void){}
+virtual void startTool(void){}
+virtual void pauseTool(void){}
+virtual void shutdownTool(void){}
 
 };
 

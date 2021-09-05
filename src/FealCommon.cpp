@@ -1,0 +1,38 @@
+#include "feal.h"
+
+#if defined(unix) || defined(__unix__) || defined(__unix)
+void feal::ipaddr_posix2feal(sockaddr_ip* su, feal::ipaddr* fa)
+{
+    if ((fa == nullptr) || (su == nullptr)) return;
+    fa->family = su->sa.sa_family == AF_INET6 ? feal::ipaddr::INET6 : feal::ipaddr::INET;
+    if (fa->family == feal::ipaddr::INET)
+    {
+        fa->port = ntohs(su->in.sin_port);
+        inet_ntop(AF_INET, &(su->in.sin_addr), fa->addr, INET_ADDRSTRLEN);
+    }
+    else if (fa->family == feal::ipaddr::INET6)
+    {
+        fa->port = ntohs(su->in6.sin6_port);
+        inet_ntop(AF_INET6, &(su->in6.sin6_addr), fa->addr, INET6_ADDRSTRLEN);
+    }
+}
+
+int feal::ipaddr_feal2posix(feal::ipaddr* fa, sockaddr_ip* su)
+{
+    int res = -1;
+    if ((fa == nullptr) || (su == nullptr)) return -1;
+    su->sa.sa_family = (unsigned short) fa->family;
+    if (fa->family == feal::ipaddr::INET)
+    {
+        su->in.sin_port = htons(fa->port);
+        res = inet_pton(AF_INET, fa->addr, &(su->in.sin_addr));
+    }
+    else if (fa->family == feal::ipaddr::INET6)
+    {
+        su->in6.sin6_port = htons(fa->port);
+        res = inet_pton(AF_INET6, fa->addr, &(su->in6.sin6_addr));
+    }
+    return res;
+}
+#endif
+
