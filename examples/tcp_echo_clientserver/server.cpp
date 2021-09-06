@@ -10,6 +10,11 @@ feal::EventId_t EvtEndTimer::getId(void)
     return getIdOfType<EvtEndTimer>();
 }
 
+feal::EventId_t EvtRetryTimer::getId(void)
+{
+    return getIdOfType<EvtRetryTimer>();
+}
+
 void Server::initActor(void)
 {
     printf("Server::initActor\n");
@@ -44,20 +49,24 @@ void Server::shutdownActor(void)
 
 void Server::start_server(void)
 {
-    feal::ipaddr Serveraddr;
-    Serveraddr.family = feal::ipaddr::INET;
-    Serveraddr.port = 11001;
-    strcpy(Serveraddr.addr, "127.0.0.1");
+    feal::ipaddr serveraddr;
+    serveraddr.family = feal::ipaddr::INET;
+    serveraddr.port = 11001;
+    strcpy(serveraddr.addr, "127.0.0.1");
     printf("Starting Server on 127.0.0.1:11001\n");
-    feal::sockerrenum se = stream.create_and_bind(&Serveraddr);
+    feal::sockerrenum se = stream.create_and_bind(&serveraddr);
     if (se != feal::S_OK)
     {
         printf("Error binding to 127.0.0.1:11001  err %d\n", se);
+        timers.startTimer<EvtRetryTimer>(std::chrono::seconds(5));
+        return;
     }
     se = stream.listen_sock();
     if (se != feal::S_OK)
     {
         printf("Error listening to 127.0.0.1:11001  err %d\n", se);
+        timers.startTimer<EvtRetryTimer>(std::chrono::seconds(5));
+        return;
     }
     printf("Listening ...\n");
 }
@@ -67,6 +76,13 @@ void Server::handleEvent(std::shared_ptr<EvtEndTimer> pevt)
     if (!pevt ) return;
     printf("Server::EvtEndTimer Elapsed\n");
     shutdown();
+}
+
+void Server::handleEvent(std::shared_ptr<EvtRetryTimer> pevt)
+{
+    if (!pevt ) return;
+    printf("Server::EvtRetryTimer Elapsed\n");
+    start_server();
 }
 
 void Server::handleEvent(std::shared_ptr<feal::EvtIncomingConn> pevt)

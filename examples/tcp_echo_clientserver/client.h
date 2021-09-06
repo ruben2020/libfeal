@@ -57,11 +57,11 @@ void handleEvent(std::shared_ptr<feal::EvtConnectionShutdown> pevt);
 
 protected:
 
+feal::Timers<Client> timers;
+feal::Stream<Client> stream;
 virtual void connect_to_server(void);
 
 private:
-feal::Timers<Client> timers;
-feal::Stream<Client> stream;
 int n=0;
 
 void send_something(void);
