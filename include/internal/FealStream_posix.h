@@ -8,6 +8,7 @@
 #include <cstring>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/un.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <fcntl.h>
@@ -169,6 +170,27 @@ sockerrenum create_and_bind(feal::ipaddr* fa)
     return res;
 }
 
+sockerrenum create_and_bind(struct sockaddr_un* su)
+{
+    sockerrenum res = S_OK;
+    int ret;
+    if (su == nullptr) return res;
+    BaseStream<Y>::sockfd = socket(su->sun_family, SOCK_STREAM, 0);
+    if (BaseStream<Y>::sockfd == -1)
+    {
+        res = static_cast<sockerrenum>(errno);
+        return res;
+    }
+    socklen_t length = sizeof(su->sun_family) + strlen(su->sun_path) + 1;
+    ret = bind(BaseStream<Y>::sockfd, (const struct sockaddr*) su, length);
+    if (ret == -1)
+    {
+        res = static_cast<sockerrenum>(errno);
+        return res;
+    }
+    return res;
+}
+
 sockerrenum create_and_connect(feal::ipaddr* fa)
 {
     sockerrenum res = S_OK;
@@ -217,6 +239,48 @@ sockerrenum create_and_connect(feal::ipaddr* fa)
     connectThread = std::thread(&connectLoopLauncher, this);
     return res;
 }
+
+sockerrenum create_and_connect(struct sockaddr_un* su)
+{
+    sockerrenum res = S_OK;
+    int ret;
+    if (su == nullptr) return res;
+    BaseStream<Y>::sockfd = socket(su->sun_family, SOCK_STREAM, 0);
+    if (BaseStream<Y>::sockfd == -1)
+    {
+        res = static_cast<sockerrenum>(errno);
+        return res;
+    }
+    setnonblocking(BaseStream<Y>::sockfd);
+    socklen_t length = sizeof(su->sun_family) + strlen(su->sun_path) + 1;
+    ret = connect(BaseStream<Y>::sockfd, (const struct sockaddr*) su, length);
+    if ((ret == -1) && (errno != EINPROGRESS))
+    {
+        res = static_cast<sockerrenum>(errno);
+        return res;
+    }
+    else if ((ret == -1) && (errno == EINPROGRESS))
+    {
+        FEALDEBUGLOG("do_connect_in_progress");
+        BaseStream<Y>::do_connect_in_progress();
+    }
+    else if (ret == 0)
+    {
+        FEALDEBUGLOG("do_connect_ok");
+        BaseStream<Y>::do_connect_ok();
+    }
+    EvtConnectedToServer ects;
+    EvtDataReadAvail edra;
+    EvtDataWriteAvail edwa;
+    EvtConnectionShutdown ecs;
+    actorptr->addEvent(actorptr, ects);
+    actorptr->addEvent(actorptr, edra);
+    actorptr->addEvent(actorptr, edwa);
+    actorptr->addEvent(actorptr, ecs);
+    connectThread = std::thread(&connectLoopLauncher, this);
+    return res;
+}
+
 
 sockerrenum listen_sock(int backlog = 32)
 {
@@ -331,6 +395,20 @@ sockerrenum getpeername_sock(feal::ipaddr* fa, socket_t fd = -1)
     return res;
 }
 
+sockerrenum getpeername_sock(struct sockaddr_un* su, socket_t fd = -1)
+{
+    sockerrenum res = S_OK;
+    struct sockaddr_un an;
+    if (fd == -1) fd = BaseStream<Y>::sockfd;
+    socklen_t length = sizeof(an);
+    int ret = getpeername(fd, (struct sockaddr*) su, &length);
+    if (ret == -1)
+    {
+        res = static_cast<sockerrenum>(errno);
+        return res;
+    }
+    return res;
+}
 
 private:
 

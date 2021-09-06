@@ -4,4 +4,5 @@ project(fealexamples)
 
 add_subdirectory( "helloworld" )
 add_subdirectory( "tcp_echo_clientserver" )
+add_subdirectory( "uns_echo_clientserver" )
 
