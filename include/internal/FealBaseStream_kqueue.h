@@ -154,12 +154,6 @@ void do_send_avail_notify(int fd)
     kevent(kq, (const struct kevent	*) change_event, 1, nullptr, 0, nullptr);
 }
 
-void do_recv_complete(int fd, ssize_t numbytes)
-{
-    (void)(fd);
-    (void)(numbytes);
-}
-
 void connectLoop(void)
 {
     int nevts = 0;

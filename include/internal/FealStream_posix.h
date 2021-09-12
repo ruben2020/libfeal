@@ -341,7 +341,6 @@ sockerrenum recv_sock(void *buf, uint32_t len, int32_t* bytes, socket_t fd = -1)
     sockerrenum res = S_OK;
     if (fd == -1) fd = BaseStream<Y>::sockfd;
     ssize_t numbytes = recv(fd, buf, (size_t) len, MSG_DONTWAIT);
-    BaseStream<Y>::do_recv_complete(fd, numbytes);
     if (numbytes == -1)
     {
         res = static_cast<sockerrenum>(errno);
@@ -368,6 +367,7 @@ sockerrenum send_sock(void *buf, uint32_t len, int32_t* bytes, socket_t fd = -1)
     if (bytes) *bytes = (int32_t) numbytes;
     return res;
 }
+
 sockerrenum disconnect_client(socket_t client_sockfd)
 {
     sockerrenum res = S_OK;
