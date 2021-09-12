@@ -51,6 +51,7 @@ void serverLoop(void)
     {
         if (sockfd == -1) break;
         nfds = poll(events, max_events - 1, 500);
+        //printf("nfds = %d\n", nfds);
         if (nfds ==  0) continue; // timeout
         if (nfds == -1) break; // error
         for (unsigned int i = 0; i < max_events - 1; i++)
@@ -164,6 +165,7 @@ void do_send_avail_notify(int fd)
 
 void do_recv_complete(int fd, ssize_t numbytes)
 {
+    //printf("fd = %d, numbytes = %zd\n", fd, numbytes);
     if (numbytes == 0)
     {
         if (fd == sockfd) shutdown(fd, SHUT_RDWR);
@@ -204,6 +206,7 @@ void connectLoop(void)
     {
         if (sockfd == -1) break;
         nfds = poll(events, max_events - 1, 500);
+        //printf("nfds = %d\n", nfds);
         if (nfds ==  0) continue; // timeout
         if (nfds == -1) break; // error
         for (unsigned int i = 0; i < max_events - 1; i++)

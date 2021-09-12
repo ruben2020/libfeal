@@ -32,6 +32,7 @@ void Serveruns::start_server(void)
 
 void Serveruns::print_client_address(feal::socket_t fd)
 {
+#if defined (__linux__)
     socklen_t len;
     struct ucred ucred;
 
@@ -44,4 +45,11 @@ void Serveruns::print_client_address(feal::socket_t fd)
 
     printf("Credentials from SO_PEERCRED: pid=%ld, euid=%ld, egid=%ld\n",
         (long) ucred.pid, (long) ucred.uid, (long) ucred.gid);
+#else
+    uid_t euid=0;
+    gid_t egid=0;
+    getpeereid(fd, &euid, &egid);
+    printf("Credentials from getpeerid: euid=%ld, egid=%ld\n",
+        (long) euid, (long) egid);
+#endif
 }

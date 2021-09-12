@@ -159,9 +159,13 @@ sockerrenum create_and_bind(feal::ipaddr* fa)
         res = static_cast<sockerrenum>(errno);
         return res;
     }
-    if (fa->family == feal::ipaddr::INET6) setipv6only(BaseStream<Y>::sockfd);
+    socklen_t length = sizeof(su.in);
+    if (fa->family == feal::ipaddr::INET6)
+    {
+        setipv6only(BaseStream<Y>::sockfd);
+        length = sizeof(su.in6);
+    }
     setnonblocking(BaseStream<Y>::sockfd);
-    socklen_t length = sizeof(su);
     ret = bind(BaseStream<Y>::sockfd, &(su.sa), length);
     if (ret == -1)
     {
@@ -213,7 +217,11 @@ sockerrenum create_and_connect(feal::ipaddr* fa)
         return res;
     }
     setnonblocking(BaseStream<Y>::sockfd);
-    socklen_t length = sizeof(su);
+    socklen_t length = sizeof(su.in);
+    if (fa->family == feal::ipaddr::INET6)
+    {
+        length = sizeof(su.in6);
+    }
     ret = connect(BaseStream<Y>::sockfd, &(su.sa), length);
     if ((ret == -1) && (errno != EINPROGRESS))
     {
