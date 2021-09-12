@@ -150,6 +150,11 @@ void do_send_avail_notify(int fd)
     }
 }
 
+void do_recv_complete(int fd, ssize_t numbytes)
+{
+    (void)(fd);
+    (void)(numbytes);
+}
 
 void connectLoop(void)
 {

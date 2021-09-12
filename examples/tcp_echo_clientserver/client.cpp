@@ -111,6 +111,7 @@ void Client::handleEvent(std::shared_ptr<feal::EvtDataReadAvail> pevt)
     printf("Client::EvtDataReadAvail\n");
     char buf[30];
     int32_t bytes;
+    memset(&buf, 0, sizeof(buf));
     feal::sockerrenum se = stream.recv_sock((void*) buf, sizeof(buf), &bytes);
     if (se != feal::S_OK) printf("Error receiving: %d\n", se);
     else printf("Received %d bytes: \"%s\"\n", bytes, buf);

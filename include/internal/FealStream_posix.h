@@ -160,6 +160,7 @@ sockerrenum create_and_bind(feal::ipaddr* fa)
         return res;
     }
     if (fa->family == feal::ipaddr::INET6) setipv6only(BaseStream<Y>::sockfd);
+    setnonblocking(BaseStream<Y>::sockfd);
     socklen_t length = sizeof(su);
     ret = bind(BaseStream<Y>::sockfd, &(su.sa), length);
     if (ret == -1)
@@ -181,6 +182,7 @@ sockerrenum create_and_bind(struct sockaddr_un* su)
         res = static_cast<sockerrenum>(errno);
         return res;
     }
+    setnonblocking(BaseStream<Y>::sockfd);
     socklen_t length = sizeof(su->sun_family) + strlen(su->sun_path) + 1;
     ret = bind(BaseStream<Y>::sockfd, (const struct sockaddr*) su, length);
     if (ret == -1)
@@ -329,7 +331,8 @@ sockerrenum recv_sock(void *buf, uint32_t len, int32_t* bytes, socket_t fd = -1)
 {
     sockerrenum res = S_OK;
     if (fd == -1) fd = BaseStream<Y>::sockfd;
-    auto numbytes = recv(fd, buf, (size_t) len, 0);
+    ssize_t numbytes = recv(fd, buf, (size_t) len, MSG_DONTWAIT);
+    BaseStream<Y>::do_recv_complete(fd, numbytes);
     if (numbytes == -1)
     {
         res = static_cast<sockerrenum>(errno);
@@ -343,7 +346,7 @@ sockerrenum send_sock(void *buf, uint32_t len, int32_t* bytes, socket_t fd = -1)
 {
     sockerrenum res = S_OK;
     if (fd == -1) fd = BaseStream<Y>::sockfd;
-    auto numbytes = send(fd, buf, (size_t) len, 0);
+    ssize_t numbytes = send(fd, buf, (size_t) len, MSG_DONTWAIT);
     if (numbytes == -1)
     {
         if ((errno == EAGAIN)||(errno == EWOULDBLOCK))
