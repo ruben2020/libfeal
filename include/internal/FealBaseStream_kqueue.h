@@ -33,7 +33,7 @@ virtual void client_read_avail(int client_sockfd){(void)(client_sockfd);}
 virtual void client_write_avail(int client_sockfd){(void)(client_sockfd);}
 virtual void client_shutdown(int client_sockfd){(void)(client_sockfd);}
 virtual void server_shutdown(void){}
-virtual void connected_to_server(void){}
+virtual void connected_to_server(int fd){(void)(fd);}
 virtual void connection_read_avail(void){}
 virtual void connection_write_avail(void){}
 virtual void connection_shutdown(void){}
@@ -143,7 +143,7 @@ void do_connect_ok(void)
     {
         printf("do_connect_ok err %d\n", errno);
     }
-    else connected_to_server();
+    else connected_to_server(sockfd);
 }
 
 void do_send_avail_notify(int fd)
@@ -192,7 +192,7 @@ void connectLoop(void)
                 if (waitingforconn)
                 {
                     waitingforconn = false;
-                    connected_to_server();
+                    connected_to_server((int) event[i].ident);
                 }
                 else
                 {

@@ -102,6 +102,7 @@ EventId_t getId(void)
     return getIdOfType<EvtConnectedToServer>();
 }
 sockerrenum errnum = S_OK;
+socket_t server_sockfd = -1;
 };
 
 class EvtConnectionShutdown : public Event
@@ -514,10 +515,11 @@ void server_shutdown(void)
     actorptr->receiveEvent(evt);
 }
 
-void connected_to_server(void)
+void connected_to_server(int fd)
 {
     if (actorptr == nullptr) return;
     std::shared_ptr<EvtConnectedToServer> evt = std::make_shared<EvtConnectedToServer>();
+    evt.get()->server_sockfd = fd;
     actorptr->receiveEvent(evt);
 }
 

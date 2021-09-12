@@ -13,7 +13,7 @@
       defined (__OpenBSD__) || defined (__DragonFly__)
 #include "FealBaseStream_kqueue.h"
 #else
-#error "Unsupported operating system"
+#include "FealBaseStream_poll.h"
 #endif
 
 

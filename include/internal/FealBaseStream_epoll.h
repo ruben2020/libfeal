@@ -31,7 +31,7 @@ virtual void client_read_avail(int client_sockfd){(void)(client_sockfd);}
 virtual void client_write_avail(int client_sockfd){(void)(client_sockfd);}
 virtual void client_shutdown(int client_sockfd){(void)(client_sockfd);}
 virtual void server_shutdown(void){}
-virtual void connected_to_server(void){}
+virtual void connected_to_server(int fd){(void)(fd);}
 virtual void connection_read_avail(void){}
 virtual void connection_write_avail(void){}
 virtual void connection_shutdown(void){}
@@ -137,7 +137,7 @@ void do_connect_ok(void)
         FEALDEBUGLOG("epoll_ctl error");
         return;
     }
-    connected_to_server();
+    connected_to_server(sockfd);
 }
 
 void do_send_avail_notify(int fd)
@@ -186,7 +186,7 @@ void connectLoop(void)
                 if (waitingforconn)
                 {
                     waitingforconn = false;
-                    connected_to_server();
+                    connected_to_server(events[i].data.fd);
                 }
                 else
                 {
