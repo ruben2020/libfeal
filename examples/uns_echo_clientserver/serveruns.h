@@ -17,6 +17,7 @@ protected:
 
 void start_server(void);
 void print_client_address(feal::socket_t fd);
+void get_client_address(feal::socket_t fd, char* addr);
 
 };
 

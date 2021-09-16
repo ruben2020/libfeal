@@ -11,10 +11,11 @@ feal::EventId_t EvtClientDisconnected::getId(void)
 }
 
 
-void ClientHandler::setParam(feal::Stream<Server>* p, feal::socket_t fd)
+void ClientHandler::setParam(feal::Stream<Server>* p, feal::socket_t fd, char *s)
 {
     stream = p;
     sockfd = fd;
+    addrstr = s;
 }
 
 void ClientHandler::initActor(void)
@@ -55,7 +56,8 @@ void ClientHandler::handleEvent(std::shared_ptr<feal::EvtDataReadAvail> pevt)
     if (se != feal::S_OK) printf("Error receiving: %d\n", se);
     else
     {
-        printf("Received %d bytes: \"%s\"\n", bytes, buf);
+        printf("Received %d bytes \"%s\" from %s\n", bytes, buf, addrstr.c_str());
+        printf("Sending back %d bytes \"%s\" to %s\n", bytes, buf, addrstr.c_str());
         se = stream->send_sock((void*) buf, MIN(strlen(buf) + 1, sizeof(buf)), &bytes, sockfd);
         if (se != feal::S_OK) printf("Error sending \"ClientHandler n\": %d\n", se);
     }

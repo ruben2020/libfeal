@@ -30,7 +30,7 @@ public:
 
 ClientHandler()=default;
 ~ClientHandler() = default;
-void setParam(feal::Stream<Server>* p, feal::socket_t fd);
+void setParam(feal::Stream<Server>* p, feal::socket_t fd, char *s);
 
 void initActor(void);
 void startActor(void);
@@ -44,6 +44,7 @@ void handleEvent(std::shared_ptr<feal::EvtClientShutdown> pevt);
 private:
 feal::Stream<Server>* stream = nullptr;
 feal::socket_t sockfd = -1;
+std::string addrstr;
 
 };
 

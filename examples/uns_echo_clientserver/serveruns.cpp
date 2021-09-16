@@ -53,3 +53,27 @@ void Serveruns::print_client_address(feal::socket_t fd)
         (long) euid, (long) egid);
 #endif
 }
+
+void Serveruns::get_client_address(feal::socket_t fd, char* addr)
+{
+#if defined (__linux__)
+    socklen_t len;
+    struct ucred ucred;
+
+    len = sizeof(struct ucred);
+
+    if (getsockopt(fd, SOL_SOCKET, SO_PEERCRED, &ucred, &len) == -1) {
+        //getsockopt failed
+        return;
+    }
+
+    if (addr) sprintf(addr, "pid=%ld, euid=%ld, egid=%ld",
+        (long) ucred.pid, (long) ucred.uid, (long) ucred.gid);
+#else
+    uid_t euid=0;
+    gid_t egid=0;
+    getpeereid(fd, &euid, &egid);
+    if (addr) sprintf(addr, "euid=%ld, egid=%ld",
+                (long) euid, (long) egid);
+#endif
+}
