@@ -17,7 +17,7 @@ void Server6::start_server(void)
         timers.startTimer<EvtRetryTimer>(std::chrono::seconds(5));
         return;
     }
-    se = stream.listen_sock();
+    se = stream.listen();
     if (se != feal::S_OK)
     {
         printf("Error listening to ::1 port 11001  err %d\n", se);

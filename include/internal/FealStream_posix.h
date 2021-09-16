@@ -294,11 +294,11 @@ sockerrenum create_and_connect(struct sockaddr_un* su)
 }
 
 
-sockerrenum listen_sock(int backlog = 32)
+sockerrenum listen(int backlog = 32)
 {
     sockerrenum res = S_OK;
     if (actorptr == nullptr) return res;
-    if (listen(BaseStream<Y>::sockfd, backlog) == -1)
+    if (::listen(BaseStream<Y>::sockfd, backlog) == -1)
         res = static_cast<sockerrenum>(errno);
     else
     {
@@ -337,11 +337,11 @@ sockerrenum recv_start(T* p, socket_t client_sockfd)
     return res;
 }
 
-sockerrenum recv_sock(void *buf, uint32_t len, int32_t* bytes, socket_t fd = -1)
+sockerrenum recv(void *buf, uint32_t len, int32_t* bytes, socket_t fd = -1)
 {
     sockerrenum res = S_OK;
     if (fd == -1) fd = BaseStream<Y>::sockfd;
-    ssize_t numbytes = recv(fd, buf, (size_t) len, MSG_DONTWAIT);
+    ssize_t numbytes = ::recv(fd, buf, (size_t) len, MSG_DONTWAIT);
     if (numbytes == -1)
     {
         res = static_cast<sockerrenum>(errno);
@@ -351,11 +351,11 @@ sockerrenum recv_sock(void *buf, uint32_t len, int32_t* bytes, socket_t fd = -1)
     return res;
 }
 
-sockerrenum send_sock(void *buf, uint32_t len, int32_t* bytes, socket_t fd = -1)
+sockerrenum send(void *buf, uint32_t len, int32_t* bytes, socket_t fd = -1)
 {
     sockerrenum res = S_OK;
     if (fd == -1) fd = BaseStream<Y>::sockfd;
-    ssize_t numbytes = send(fd, buf, (size_t) len, MSG_DONTWAIT);
+    ssize_t numbytes = ::send(fd, buf, (size_t) len, MSG_DONTWAIT);
     if (numbytes == -1)
     {
         if ((errno == EAGAIN)||(errno == EWOULDBLOCK))
@@ -391,14 +391,14 @@ sockerrenum disconnect_and_reset(void)
     return res;
 }
 
-sockerrenum getpeername_sock(feal::ipaddr* fa, socket_t fd = -1)
+sockerrenum getpeername(feal::ipaddr* fa, socket_t fd = -1)
 {
     sockerrenum res = S_OK;
     if (fd == -1) fd = BaseStream<Y>::sockfd;
     sockaddr_ip su;
     memset(&su, 0, sizeof(su));
     socklen_t length = sizeof(su);
-    int ret = getpeername(fd, &(su.sa), &length);
+    int ret = ::getpeername(fd, &(su.sa), &length);
     if (ret == -1)
     {
         res = static_cast<sockerrenum>(errno);
@@ -408,13 +408,43 @@ sockerrenum getpeername_sock(feal::ipaddr* fa, socket_t fd = -1)
     return res;
 }
 
-sockerrenum getpeername_sock(struct sockaddr_un* su, socket_t fd = -1)
+sockerrenum getpeername(struct sockaddr_un* su, socket_t fd = -1)
 {
     sockerrenum res = S_OK;
     struct sockaddr_un an;
     if (fd == -1) fd = BaseStream<Y>::sockfd;
     socklen_t length = sizeof(an);
-    int ret = getpeername(fd, (struct sockaddr*) su, &length);
+    int ret = ::getpeername(fd, (struct sockaddr*) su, &length);
+    if (ret == -1)
+    {
+        res = static_cast<sockerrenum>(errno);
+        return res;
+    }
+    return res;
+}
+
+sockerrenum getpeereid(uid_t* euid, gid_t* egid)
+{
+    return getpeerid(BaseStream<Y>::sockfd, euid, egid);
+}
+
+static sockerrenum getpeereid(socket_t fd, uid_t* euid, gid_t* egid)
+{
+    sockerrenum res = S_OK;
+    int ret;
+#if defined (__linux__)
+    socklen_t len;
+    struct ucred ucred;
+    len = sizeof(struct ucred);
+    ret = getsockopt(fd, SOL_SOCKET, SO_PEERCRED, &ucred, &len);
+    if (ret != -1)
+    {
+        *euid = (uid_t) ucred.uid;
+        *egid = (gid_t) ucred.gid;
+    }
+#else
+    ret = ::getpeereid(fd, euid, egid);
+#endif
     if (ret == -1)
     {
         res = static_cast<sockerrenum>(errno);

@@ -20,7 +20,7 @@ void Serveruns::start_server(void)
         timers.startTimer<EvtRetryTimer>(std::chrono::seconds(5));
         return;
     }
-    se = stream.listen_sock();
+    se = stream.listen();
     if (se != feal::S_OK)
     {
         printf("Error listening to %s  err %d\n", SERVERPATH, se);
@@ -32,48 +32,19 @@ void Serveruns::start_server(void)
 
 void Serveruns::print_client_address(feal::socket_t fd)
 {
-#if defined (__linux__)
-    socklen_t len;
-    struct ucred ucred;
-
-    len = sizeof(struct ucred);
-
-    if (getsockopt(fd, SOL_SOCKET, SO_PEERCRED, &ucred, &len) == -1) {
-        //getsockopt failed
-        return;
-    }
-
-    printf("Credentials from SO_PEERCRED: pid=%ld, euid=%ld, egid=%ld\n",
-        (long) ucred.pid, (long) ucred.uid, (long) ucred.gid);
-#else
     uid_t euid=0;
     gid_t egid=0;
-    getpeereid(fd, &euid, &egid);
+    stream.getpeereid(fd, &euid, &egid);
     printf("Credentials from getpeerid: euid=%ld, egid=%ld\n",
         (long) euid, (long) egid);
-#endif
 }
 
 void Serveruns::get_client_address(feal::socket_t fd, char* addr)
 {
-#if defined (__linux__)
-    socklen_t len;
-    struct ucred ucred;
 
-    len = sizeof(struct ucred);
-
-    if (getsockopt(fd, SOL_SOCKET, SO_PEERCRED, &ucred, &len) == -1) {
-        //getsockopt failed
-        return;
-    }
-
-    if (addr) sprintf(addr, "pid=%ld, euid=%ld, egid=%ld",
-        (long) ucred.pid, (long) ucred.uid, (long) ucred.gid);
-#else
     uid_t euid=0;
     gid_t egid=0;
-    getpeereid(fd, &euid, &egid);
+    stream.getpeereid(fd, &euid, &egid);
     if (addr) sprintf(addr, "euid=%ld, egid=%ld",
                 (long) euid, (long) egid);
-#endif
 }

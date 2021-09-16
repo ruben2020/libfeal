@@ -52,13 +52,13 @@ void ClientHandler::handleEvent(std::shared_ptr<feal::EvtDataReadAvail> pevt)
     char buf[30];
     memset(&buf, 0, sizeof(buf));
     int32_t bytes;
-    feal::sockerrenum se = stream->recv_sock((void*) buf, sizeof(buf), &bytes, sockfd);
+    feal::sockerrenum se = stream->recv((void*) buf, sizeof(buf), &bytes, sockfd);
     if (se != feal::S_OK) printf("Error receiving: %d\n", se);
     else
     {
         printf("Received %d bytes \"%s\" from %s\n", bytes, buf, addrstr.c_str());
         printf("Sending back %d bytes \"%s\" to %s\n", bytes, buf, addrstr.c_str());
-        se = stream->send_sock((void*) buf, MIN(strlen(buf) + 1, sizeof(buf)), &bytes, sockfd);
+        se = stream->send((void*) buf, MIN(strlen(buf) + 1, sizeof(buf)), &bytes, sockfd);
         if (se != feal::S_OK) printf("Error sending \"ClientHandler n\": %d\n", se);
     }
 }

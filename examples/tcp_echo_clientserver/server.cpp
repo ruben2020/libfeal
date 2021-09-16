@@ -61,7 +61,7 @@ void Server::start_server(void)
         timers.startTimer<EvtRetryTimer>(std::chrono::seconds(5));
         return;
     }
-    se = stream.listen_sock();
+    se = stream.listen();
     if (se != feal::S_OK)
     {
         printf("Error listening to 127.0.0.1:11001  err %d\n", se);
@@ -113,7 +113,7 @@ void Server::print_client_address(feal::socket_t fd)
 {
     feal::sockerrenum se = feal::S_OK;
     feal::ipaddr fa;
-    se = stream.getpeername_sock(&fa, fd);
+    se = stream.getpeername(&fa, fd);
     if (se == feal::S_OK)
     {
         printf("ClientHandler(%d): %s addr %s port %d\n",
@@ -129,7 +129,7 @@ void Server::get_client_address(feal::socket_t fd, char* addr)
 {
     feal::sockerrenum se = feal::S_OK;
     feal::ipaddr fa;
-    se = stream.getpeername_sock(&fa, fd);
+    se = stream.getpeername(&fa, fd);
     if ((se == feal::S_OK)&&(addr))
     {
         sprintf(addr, "%s %s port %d",
