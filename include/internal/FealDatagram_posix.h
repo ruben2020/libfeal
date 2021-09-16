@@ -19,6 +19,11 @@
 #include <sys/epoll.h>
 #else
 #include <sys/event.h>
+
+#ifndef MSG_CONFIRM
+#define MSG_CONFIRM 0
+#endif
+
 #endif
 
 namespace feal
@@ -227,7 +232,6 @@ sockerrenum send_to(void *buf, uint32_t len, int32_t* bytes,
     bool confirm = false)
 {
     sockerrenum res = S_OK;
-    int ret;
     if ((dest == nullptr)||(destaddrlen <= 0)) return res;
     int flags = ((confirm ? MSG_CONFIRM : 0) | MSG_DONTWAIT);
     ssize_t numbytes = sendto(sockfd, buf, (size_t) len,
