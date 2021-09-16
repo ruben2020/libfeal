@@ -34,5 +34,38 @@ int feal::ipaddr_feal2posix(feal::ipaddr* fa, sockaddr_ip* su)
     }
     return res;
 }
+
+int feal::setnonblocking(int fd)
+{
+	if (fcntl(fd, F_SETFD, fcntl(fd, F_GETFD, 0) | O_NONBLOCK) ==
+	    -1)
+    {
+		return -1;
+	}
+	return 0;
+}
+
+int feal::setipv6only(int fd)
+{
+    int on = 1;
+    if (setsockopt(fd, IPPROTO_IPV6, IPV6_V6ONLY,
+        (char *)&on, sizeof(on)) == -1)
+    {
+        return -1;
+    }
+    return 0;
+}
+
+int feal::datareadavaillen(int fd)
+{
+    int len;
+    int ret = -1;
+    if (ioctl(fd, FIONREAD, &len) != -1)
+        {
+            ret = len;
+        }
+    return ret;
+}
+
 #endif
 

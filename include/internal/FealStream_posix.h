@@ -6,12 +6,12 @@
 #endif
 
 #include <cstring>
+#include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <fcntl.h>
 #include <unistd.h>
 #include <errno.h>
 
@@ -45,7 +45,8 @@ EventId_t getId(void)
 {
     return getIdOfType<EvtDataReadAvail>();
 }
-socket_t client_sockfd = -1;
+socket_t sockfd = -1;
+int datalen = -1;
 };
 
 class EvtDataWriteAvail : public Event
@@ -59,7 +60,7 @@ EventId_t getId(void)
 {
     return getIdOfType<EvtDataWriteAvail>();
 }
-socket_t client_sockfd = -1;
+socket_t sockfd = -1;
 };
 
 
@@ -462,7 +463,8 @@ int accept_new_conn(void)
 void client_read_avail(socket_t client_sockfd)
 {
     std::shared_ptr<EvtDataReadAvail> evt = std::make_shared<EvtDataReadAvail>();
-    evt.get()->client_sockfd = client_sockfd;
+    evt.get()->sockfd = client_sockfd;
+    evt.get()->datalen = datareadavaillen(client_sockfd);
     auto it = mapReaders.find(client_sockfd);
     if (it != mapReaders.end())
     {
@@ -478,7 +480,7 @@ void client_read_avail(socket_t client_sockfd)
 void client_write_avail(socket_t client_sockfd)
 {
     std::shared_ptr<EvtDataWriteAvail> evt = std::make_shared<EvtDataWriteAvail>();
-    evt.get()->client_sockfd = client_sockfd;
+    evt.get()->sockfd = client_sockfd;
     auto it = mapReaders.find(client_sockfd);
     if (it != mapReaders.end())
     {
@@ -527,7 +529,8 @@ void connection_read_avail(void)
 {
     if (actorptr == nullptr) return;
     std::shared_ptr<EvtDataReadAvail> evt = std::make_shared<EvtDataReadAvail>();
-    evt.get()->client_sockfd = BaseStream<Y>::sockfd;
+    evt.get()->sockfd = BaseStream<Y>::sockfd;
+    evt.get()->datalen = datareadavaillen(BaseStream<Y>::sockfd);
     actorptr->receiveEvent(evt);
 }
 
@@ -535,7 +538,7 @@ void connection_write_avail(void)
 {
     if (actorptr == nullptr) return;
     std::shared_ptr<EvtDataWriteAvail> evt = std::make_shared<EvtDataWriteAvail>();
-    evt.get()->client_sockfd = BaseStream<Y>::sockfd;
+    evt.get()->sockfd = BaseStream<Y>::sockfd;
     actorptr->receiveEvent(evt);
 }
 
@@ -546,29 +549,7 @@ void connection_shutdown(void)
     actorptr->receiveEvent(evt);
 }
 
-static int setnonblocking(int fd)
-{
-	if (fcntl(fd, F_SETFD, fcntl(fd, F_GETFD, 0) | O_NONBLOCK) ==
-	    -1)
-    {
-		return -1;
-	}
-	return 0;
-}
-
-static int setipv6only(int fd)
-{
-    int on = 1;
-    if (setsockopt(fd, IPPROTO_IPV6, IPV6_V6ONLY,
-        (char *)&on, sizeof(on)) == -1)
-    {
-        return -1;
-    }
-    return 0;
-}
-
 };
-
 
 
 } // namespace feal

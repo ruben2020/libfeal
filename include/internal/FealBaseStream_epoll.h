@@ -24,7 +24,6 @@ protected:
 socket_t sockfd = -1;
 int epfd = -1;
 bool waitingforconn = false;
-Y* actorptr = nullptr;
 
 virtual int  accept_new_conn(void){return -1;}
 virtual void client_read_avail(int client_sockfd){(void)(client_sockfd);}

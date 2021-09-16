@@ -22,6 +22,7 @@
 #include "internal/FealActorVector.h"
 #include "internal/FealBaseStream.h"
 #include "internal/FealStream.h"
+#include "internal/FealDatagram.h"
 
 
 #endif // _FEAL_H

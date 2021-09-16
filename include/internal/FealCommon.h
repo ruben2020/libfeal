@@ -10,6 +10,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <errno.h>
 
@@ -165,6 +166,7 @@ typedef union sockaddr_ip {
 
     typedef uint32_t EventId_t;
     typedef uint32_t ActorId_t;
+    typedef enum {INET=AF_INET, INET6=AF_INET6, UNIX=AF_UNIX} family_t;
 
     typedef struct {
         enum {INET=AF_INET, INET6=AF_INET6} family;
@@ -175,6 +177,9 @@ typedef union sockaddr_ip {
 #if defined(unix) || defined(__unix__) || defined(__unix)
 void ipaddr_posix2feal(sockaddr_ip* su, ipaddr* fa);
 int  ipaddr_feal2posix(ipaddr* fa, sockaddr_ip* su);
+int  setnonblocking(int fd);
+int  setipv6only(int fd);
+int  datareadavaillen(int fd);
 #endif
 
 }
