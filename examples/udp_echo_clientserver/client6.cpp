@@ -4,7 +4,7 @@
 
 void Client6::send_to_server(void)
 {
-    feal::sockerrenum se;
+    feal::errenum se;
     serveraddr.family = feal::ipaddr::INET6;
     serveraddr.port = 12001;
     strcpy(serveraddr.addr, "::1");

@@ -96,13 +96,13 @@ void shutdownTool(void)
     close_and_reset();
 }
 
-sockerrenum create_sock(family_t fam)
+errenum create_sock(family_t fam)
 {
-    sockerrenum res = S_OK;
+    errenum res = S_OK;
     sockfd = socket((int) fam, SOCK_DGRAM, 0);
     if (sockfd == -1)
     {
-        res = static_cast<sockerrenum>(errno);
+        res = static_cast<errenum>(errno);
         return res;
     }
     setnonblocking(sockfd);
@@ -116,9 +116,9 @@ sockerrenum create_sock(family_t fam)
     return res;
 }
 
-sockerrenum bind_sock(feal::ipaddr* fa)
+errenum bind_sock(feal::ipaddr* fa)
 {
-    sockerrenum res = S_OK;
+    errenum res = S_OK;
     int ret;
     if (fa == nullptr) return res;
     sockaddr_ip su;
@@ -126,7 +126,7 @@ sockerrenum bind_sock(feal::ipaddr* fa)
     ret = ipaddr_feal2posix(fa, &su);
     if (ret != 1)
     {
-        res = static_cast<sockerrenum>(errno);
+        res = static_cast<errenum>(errno);
         return  res;
     }
     socklen_t length = sizeof(su.in);
@@ -138,30 +138,30 @@ sockerrenum bind_sock(feal::ipaddr* fa)
     ret = bind(sockfd, &(su.sa), length);
     if (ret == -1)
     {
-        res = static_cast<sockerrenum>(errno);
+        res = static_cast<errenum>(errno);
         return res;
     }
     return res;
 }
 
-sockerrenum bind_sock(struct sockaddr_un* su)
+errenum bind_sock(struct sockaddr_un* su)
 {
-    sockerrenum res = S_OK;
+    errenum res = S_OK;
     int ret;
     if (su == nullptr) return res;
     socklen_t length = sizeof(su->sun_family) + strlen(su->sun_path) + 1;
     ret = bind(sockfd, (const struct sockaddr*) su, length);
     if (ret == -1)
     {
-        res = static_cast<sockerrenum>(errno);
+        res = static_cast<errenum>(errno);
         return res;
     }
     return res;
 }
 
-sockerrenum recv_from(void *buf, uint32_t len, int32_t* bytes, feal::ipaddr* src)
+errenum recv_from(void *buf, uint32_t len, int32_t* bytes, feal::ipaddr* src)
 {
-    sockerrenum res = S_OK;
+    errenum res = S_OK;
     sockaddr_ip su;
     socklen_t addrlen = sizeof(su);
     memset(&su, 0, sizeof(su));
@@ -169,7 +169,7 @@ sockerrenum recv_from(void *buf, uint32_t len, int32_t* bytes, feal::ipaddr* src
                 MSG_DONTWAIT, &(su.sa), &addrlen);
     if (numbytes == -1)
     {
-        res = static_cast<sockerrenum>(errno);
+        res = static_cast<errenum>(errno);
         return res;
     }
     if (bytes) *bytes = (int32_t) numbytes;
@@ -177,25 +177,25 @@ sockerrenum recv_from(void *buf, uint32_t len, int32_t* bytes, feal::ipaddr* src
     return res;
 }
 
-sockerrenum recv_from(void *buf, uint32_t len, int32_t* bytes,
+errenum recv_from(void *buf, uint32_t len, int32_t* bytes,
     struct sockaddr_un* src, socklen_t *srcaddrlen)
 {
-    sockerrenum res = S_OK;
+    errenum res = S_OK;
     ssize_t numbytes = recvfrom(sockfd, buf, (size_t) len, 
                 MSG_DONTWAIT, (struct sockaddr *) src, srcaddrlen);
     if (numbytes == -1)
     {
-        res = static_cast<sockerrenum>(errno);
+        res = static_cast<errenum>(errno);
         return res;
     }
     if (bytes) *bytes = (int32_t) numbytes;
     return res;
 }
 
-sockerrenum send_to(void *buf, uint32_t len, int32_t* bytes, 
+errenum send_to(void *buf, uint32_t len, int32_t* bytes, 
     feal::ipaddr* dest, bool confirm = false)
 {
-    sockerrenum res = S_OK;
+    errenum res = S_OK;
     int ret;
     if (dest == nullptr) return res;
     sockaddr_ip su;
@@ -203,7 +203,7 @@ sockerrenum send_to(void *buf, uint32_t len, int32_t* bytes,
     ret = ipaddr_feal2posix(dest, &su);
     if (ret != 1)
     {
-        res = static_cast<sockerrenum>(errno);
+        res = static_cast<errenum>(errno);
         return  res;
     }
     socklen_t length = sizeof(su.in);
@@ -220,18 +220,18 @@ sockerrenum send_to(void *buf, uint32_t len, int32_t* bytes,
         {
             do_send_avail_notify();
         }
-        res = static_cast<sockerrenum>(errno);
+        res = static_cast<errenum>(errno);
         return res;
     }
     if (bytes) *bytes = (int32_t) numbytes;
     return res;
 }
 
-sockerrenum send_to(void *buf, uint32_t len, int32_t* bytes,
+errenum send_to(void *buf, uint32_t len, int32_t* bytes,
     struct sockaddr_un* dest, socklen_t destaddrlen,
     bool confirm = false)
 {
-    sockerrenum res = S_OK;
+    errenum res = S_OK;
     if ((dest == nullptr)||(destaddrlen <= 0)) return res;
     int flags = ((confirm ? MSG_CONFIRM : 0) | MSG_DONTWAIT);
     ssize_t numbytes = sendto(sockfd, buf, (size_t) len,
@@ -242,18 +242,18 @@ sockerrenum send_to(void *buf, uint32_t len, int32_t* bytes,
         {
             do_send_avail_notify();
         }
-        res = static_cast<sockerrenum>(errno);
+        res = static_cast<errenum>(errno);
         return res;
     }
     if (bytes) *bytes = (int32_t) numbytes;
     return res;
 }
 
-sockerrenum close_and_reset(void)
+errenum close_and_reset(void)
 {
-    sockerrenum res = S_OK;
+    errenum res = S_OK;
     if ((sockfd != -1)&&(shutdown(sockfd, SHUT_RDWR) == -1))
-        res = static_cast<sockerrenum>(errno);
+        res = static_cast<errenum>(errno);
     close(sockfd);
     sockfd = -1;
 #if defined (__linux__)

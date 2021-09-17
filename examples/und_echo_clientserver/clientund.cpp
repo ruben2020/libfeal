@@ -60,7 +60,7 @@ void Clientund::shutdownActor(void)
 
 void Clientund::send_to_server(void)
 {
-    feal::sockerrenum se;
+    feal::errenum se;
     struct sockaddr_un clientaddr;
     serveraddr.sun_family = AF_UNIX;
     strcpy(serveraddr.sun_path, SERVERPATH);
@@ -94,7 +94,7 @@ void Clientund::send_something(void)
     memset(&buf, 0, sizeof(buf));
     sprintf(buf, "Client %d", n++);
     printf("Trying to send \"%s\" to %s\n", buf, SERVERPATH);
-    feal::sockerrenum se = dgram.send_to((void*) buf, MIN(strlen(buf) + 1,
+    feal::errenum se = dgram.send_to((void*) buf, MIN(strlen(buf) + 1,
         sizeof(buf)), &bytes, &serveraddr, sizeof(serveraddr));
     if (se != feal::S_OK) printf("Error sending \"Client n\": %d\n", se);
 }
@@ -125,7 +125,7 @@ void Clientund::handleEvent(std::shared_ptr<feal::EvtDgramReadAvail> pevt)
     memset(&buf, 0, sizeof(buf));
     struct sockaddr_un recvaddr;
     socklen_t recvaddr_len = sizeof(recvaddr);
-    feal::sockerrenum se = dgram.recv_from((void*) buf,
+    feal::errenum se = dgram.recv_from((void*) buf,
         sizeof(buf), &bytes, &recvaddr, &recvaddr_len);
     if (se != feal::S_OK) printf("Error receiving: %d\n", se);
     else printf("Received %d bytes: \"%s\" from %s\n", bytes, buf, recvaddr.sun_path);

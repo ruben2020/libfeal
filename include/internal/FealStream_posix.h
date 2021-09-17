@@ -30,7 +30,7 @@ EventId_t getId(void)
 {
     return getIdOfType<EvtIncomingConn>();
 }
-sockerrenum errnum = S_OK;
+errenum errnum = S_OK;
 socket_t client_sockfd = -1;
 };
 
@@ -102,7 +102,7 @@ EventId_t getId(void)
 {
     return getIdOfType<EvtConnectedToServer>();
 }
-sockerrenum errnum = S_OK;
+errenum errnum = S_OK;
 socket_t server_sockfd = -1;
 };
 
@@ -142,9 +142,9 @@ void shutdownTool(void)
     disconnect_and_reset();
 }
 
-sockerrenum create_and_bind(feal::ipaddr* fa)
+errenum create_and_bind(feal::ipaddr* fa)
 {
-    sockerrenum res = S_OK;
+    errenum res = S_OK;
     int ret;
     if (fa == nullptr) return res;
     sockaddr_ip su;
@@ -152,13 +152,13 @@ sockerrenum create_and_bind(feal::ipaddr* fa)
     ret = ipaddr_feal2posix(fa, &su);
     if (ret != 1)
     {
-        res = static_cast<sockerrenum>(errno);
+        res = static_cast<errenum>(errno);
         return  res;
     }
     BaseStream<Y>::sockfd = socket(fa->family, SOCK_STREAM, 0);
     if (BaseStream<Y>::sockfd == -1)
     {
-        res = static_cast<sockerrenum>(errno);
+        res = static_cast<errenum>(errno);
         return res;
     }
     socklen_t length = sizeof(su.in);
@@ -171,21 +171,21 @@ sockerrenum create_and_bind(feal::ipaddr* fa)
     ret = bind(BaseStream<Y>::sockfd, &(su.sa), length);
     if (ret == -1)
     {
-        res = static_cast<sockerrenum>(errno);
+        res = static_cast<errenum>(errno);
         return res;
     }
     return res;
 }
 
-sockerrenum create_and_bind(struct sockaddr_un* su)
+errenum create_and_bind(struct sockaddr_un* su)
 {
-    sockerrenum res = S_OK;
+    errenum res = S_OK;
     int ret;
     if (su == nullptr) return res;
     BaseStream<Y>::sockfd = socket(su->sun_family, SOCK_STREAM, 0);
     if (BaseStream<Y>::sockfd == -1)
     {
-        res = static_cast<sockerrenum>(errno);
+        res = static_cast<errenum>(errno);
         return res;
     }
     setnonblocking(BaseStream<Y>::sockfd);
@@ -193,15 +193,15 @@ sockerrenum create_and_bind(struct sockaddr_un* su)
     ret = bind(BaseStream<Y>::sockfd, (const struct sockaddr*) su, length);
     if (ret == -1)
     {
-        res = static_cast<sockerrenum>(errno);
+        res = static_cast<errenum>(errno);
         return res;
     }
     return res;
 }
 
-sockerrenum create_and_connect(feal::ipaddr* fa)
+errenum create_and_connect(feal::ipaddr* fa)
 {
-    sockerrenum res = S_OK;
+    errenum res = S_OK;
     int ret;
     if (fa == nullptr) return res;
     sockaddr_ip su;
@@ -209,13 +209,13 @@ sockerrenum create_and_connect(feal::ipaddr* fa)
     ret = ipaddr_feal2posix(fa, &su);
     if (ret != 1)
     {
-        res = static_cast<sockerrenum>(errno);
+        res = static_cast<errenum>(errno);
         return  res;
     }
     BaseStream<Y>::sockfd = socket(fa->family, SOCK_STREAM, 0);
     if (BaseStream<Y>::sockfd == -1)
     {
-        res = static_cast<sockerrenum>(errno);
+        res = static_cast<errenum>(errno);
         return res;
     }
     setnonblocking(BaseStream<Y>::sockfd);
@@ -227,7 +227,7 @@ sockerrenum create_and_connect(feal::ipaddr* fa)
     ret = connect(BaseStream<Y>::sockfd, &(su.sa), length);
     if ((ret == -1) && (errno != EINPROGRESS))
     {
-        res = static_cast<sockerrenum>(errno);
+        res = static_cast<errenum>(errno);
         return res;
     }
     else if ((ret == -1) && (errno == EINPROGRESS))
@@ -252,15 +252,15 @@ sockerrenum create_and_connect(feal::ipaddr* fa)
     return res;
 }
 
-sockerrenum create_and_connect(struct sockaddr_un* su)
+errenum create_and_connect(struct sockaddr_un* su)
 {
-    sockerrenum res = S_OK;
+    errenum res = S_OK;
     int ret;
     if (su == nullptr) return res;
     BaseStream<Y>::sockfd = socket(su->sun_family, SOCK_STREAM, 0);
     if (BaseStream<Y>::sockfd == -1)
     {
-        res = static_cast<sockerrenum>(errno);
+        res = static_cast<errenum>(errno);
         return res;
     }
     setnonblocking(BaseStream<Y>::sockfd);
@@ -268,7 +268,7 @@ sockerrenum create_and_connect(struct sockaddr_un* su)
     ret = connect(BaseStream<Y>::sockfd, (const struct sockaddr*) su, length);
     if ((ret == -1) && (errno != EINPROGRESS))
     {
-        res = static_cast<sockerrenum>(errno);
+        res = static_cast<errenum>(errno);
         return res;
     }
     else if ((ret == -1) && (errno == EINPROGRESS))
@@ -294,12 +294,12 @@ sockerrenum create_and_connect(struct sockaddr_un* su)
 }
 
 
-sockerrenum listen(int backlog = 32)
+errenum listen(int backlog = 32)
 {
-    sockerrenum res = S_OK;
+    errenum res = S_OK;
     if (actorptr == nullptr) return res;
     if (::listen(BaseStream<Y>::sockfd, backlog) == -1)
-        res = static_cast<sockerrenum>(errno);
+        res = static_cast<errenum>(errno);
     else
     {
         EvtIncomingConn eic;
@@ -312,9 +312,9 @@ sockerrenum listen(int backlog = 32)
 }
 
 template<class T>
-sockerrenum recv_start(T* p, socket_t client_sockfd)
+errenum recv_start(T* p, socket_t client_sockfd)
 {
-    sockerrenum res = S_OK;
+    errenum res = S_OK;
     std::weak_ptr<Actor> wkact;
     if (p)
     {
@@ -332,28 +332,28 @@ sockerrenum recv_start(T* p, socket_t client_sockfd)
         mapReaders[client_sockfd] = wkact;
         setnonblocking(client_sockfd);
         if (BaseStream<Y>::do_client_read_start(client_sockfd) == -1)
-            res = static_cast<sockerrenum>(errno);
+            res = static_cast<errenum>(errno);
     }
     return res;
 }
 
-sockerrenum recv(void *buf, uint32_t len, int32_t* bytes, socket_t fd = -1)
+errenum recv(void *buf, uint32_t len, int32_t* bytes, socket_t fd = -1)
 {
-    sockerrenum res = S_OK;
+    errenum res = S_OK;
     if (fd == -1) fd = BaseStream<Y>::sockfd;
     ssize_t numbytes = ::recv(fd, buf, (size_t) len, MSG_DONTWAIT);
     if (numbytes == -1)
     {
-        res = static_cast<sockerrenum>(errno);
+        res = static_cast<errenum>(errno);
         return res;
     }
     if (bytes) *bytes = (int32_t) numbytes;
     return res;
 }
 
-sockerrenum send(void *buf, uint32_t len, int32_t* bytes, socket_t fd = -1)
+errenum send(void *buf, uint32_t len, int32_t* bytes, socket_t fd = -1)
 {
-    sockerrenum res = S_OK;
+    errenum res = S_OK;
     if (fd == -1) fd = BaseStream<Y>::sockfd;
     ssize_t numbytes = ::send(fd, buf, (size_t) len, MSG_DONTWAIT);
     if (numbytes == -1)
@@ -362,38 +362,38 @@ sockerrenum send(void *buf, uint32_t len, int32_t* bytes, socket_t fd = -1)
         {
             BaseStream<Y>::do_send_avail_notify(fd);
         }
-        res = static_cast<sockerrenum>(errno);
+        res = static_cast<errenum>(errno);
         return res;
     }
     if (bytes) *bytes = (int32_t) numbytes;
     return res;
 }
 
-sockerrenum disconnect_client(socket_t client_sockfd)
+errenum disconnect_client(socket_t client_sockfd)
 {
-    sockerrenum res = S_OK;
+    errenum res = S_OK;
     mapReaders.erase(client_sockfd);
     if (BaseStream<Y>::do_client_shutdown(client_sockfd) == -1)
-        res = static_cast<sockerrenum>(errno);
+        res = static_cast<errenum>(errno);
     return res;
 }
 
-sockerrenum disconnect_and_reset(void)
+errenum disconnect_and_reset(void)
 {
     for (auto it=mapReaders.begin(); it!=mapReaders.end(); ++it)
         BaseStream<Y>::do_client_shutdown(it->first);
     mapReaders.clear();
-    sockerrenum res = S_OK;
+    errenum res = S_OK;
     if (BaseStream<Y>::do_full_shutdown() == -1)
-        res = static_cast<sockerrenum>(errno);
+        res = static_cast<errenum>(errno);
     if (serverThread.joinable()) serverThread.join();
     if (connectThread.joinable()) connectThread.join();
     return res;
 }
 
-sockerrenum getpeername(feal::ipaddr* fa, socket_t fd = -1)
+errenum getpeername(feal::ipaddr* fa, socket_t fd = -1)
 {
-    sockerrenum res = S_OK;
+    errenum res = S_OK;
     if (fd == -1) fd = BaseStream<Y>::sockfd;
     sockaddr_ip su;
     memset(&su, 0, sizeof(su));
@@ -401,36 +401,36 @@ sockerrenum getpeername(feal::ipaddr* fa, socket_t fd = -1)
     int ret = ::getpeername(fd, &(su.sa), &length);
     if (ret == -1)
     {
-        res = static_cast<sockerrenum>(errno);
+        res = static_cast<errenum>(errno);
         return res;
     }
     if (fa) ipaddr_posix2feal(&su, fa);
     return res;
 }
 
-sockerrenum getpeername(struct sockaddr_un* su, socket_t fd = -1)
+errenum getpeername(struct sockaddr_un* su, socket_t fd = -1)
 {
-    sockerrenum res = S_OK;
+    errenum res = S_OK;
     struct sockaddr_un an;
     if (fd == -1) fd = BaseStream<Y>::sockfd;
     socklen_t length = sizeof(an);
     int ret = ::getpeername(fd, (struct sockaddr*) su, &length);
     if (ret == -1)
     {
-        res = static_cast<sockerrenum>(errno);
+        res = static_cast<errenum>(errno);
         return res;
     }
     return res;
 }
 
-sockerrenum getpeereid(uid_t* euid, gid_t* egid)
+errenum getpeereid(uid_t* euid, gid_t* egid)
 {
     return getpeerid(BaseStream<Y>::sockfd, euid, egid);
 }
 
-static sockerrenum getpeereid(socket_t fd, uid_t* euid, gid_t* egid)
+static errenum getpeereid(socket_t fd, uid_t* euid, gid_t* egid)
 {
-    sockerrenum res = S_OK;
+    errenum res = S_OK;
     int ret;
 #if defined (__linux__)
     socklen_t len;
@@ -447,7 +447,7 @@ static sockerrenum getpeereid(socket_t fd, uid_t* euid, gid_t* egid)
 #endif
     if (ret == -1)
     {
-        res = static_cast<sockerrenum>(errno);
+        res = static_cast<errenum>(errno);
         return res;
     }
     return res;
@@ -480,7 +480,7 @@ int accept_new_conn(void)
     incomingevt.get()->client_sockfd = sock_conn_fd;
     if (sock_conn_fd == -1)
     {
-        incomingevt.get()->errnum = static_cast<sockerrenum>(errno);
+        incomingevt.get()->errnum = static_cast<errenum>(errno);
     }
     else
     {

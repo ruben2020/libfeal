@@ -10,7 +10,7 @@ void Server6::start_server(void)
     serveraddr.port = 11001;
     strcpy(serveraddr.addr, "::1");
     printf("Starting Server on ::1 port 11001\n");
-    feal::sockerrenum se = stream.create_and_bind(&serveraddr);
+    feal::errenum se = stream.create_and_bind(&serveraddr);
     if (se != feal::S_OK)
     {
         printf("Error binding to ::1 port 11001  err %d\n", se);

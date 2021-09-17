@@ -43,7 +43,7 @@ void Server::shutdownActor(void)
 void Server::start_listening(void)
 {
     feal::ipaddr serveraddr;
-    feal::sockerrenum se;
+    feal::errenum se;
     serveraddr.family = feal::ipaddr::INET;
     serveraddr.port = 12001;
     strcpy(serveraddr.addr, "127.0.0.1");
@@ -89,7 +89,7 @@ void Server::handleEvent(std::shared_ptr<feal::EvtDgramReadAvail> pevt)
     int32_t bytes;
     memset(&buf, 0, sizeof(buf));
     feal::ipaddr recvaddr;
-    feal::sockerrenum se = dgram.recv_from((void*) buf, sizeof(buf), &bytes, &recvaddr);
+    feal::errenum se = dgram.recv_from((void*) buf, sizeof(buf), &bytes, &recvaddr);
     if (se != feal::S_OK) printf("Error receiving: %d\n", se);
     else printf("Received %d bytes: \"%s\" from %s:%d\n", bytes, buf, recvaddr.addr, recvaddr.port);
     printf("Sending back \"%s\" to %s:%d\n", buf, recvaddr.addr, recvaddr.port);

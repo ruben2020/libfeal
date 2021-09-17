@@ -10,7 +10,7 @@ void Clientuns::connect_to_server(void)
     serveraddr.sun_family = AF_UNIX;
     strcpy(serveraddr.sun_path, SERVERPATH);
     printf("Trying to connect %s\n", SERVERPATH);
-    feal::sockerrenum se = stream.create_and_connect(&serveraddr);
+    feal::errenum se = stream.create_and_connect(&serveraddr);
     if (se != feal::S_OK)
     {
         printf("Error connecting to %s  err %d\n", SERVERPATH, se);

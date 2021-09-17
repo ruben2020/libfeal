@@ -26,7 +26,7 @@ void ClientHandler::initActor(void)
 void ClientHandler::startActor(void)
 {
     printf("ClientHandler(%d)::startActor\n", sockfd);
-    feal::sockerrenum se =feal::S_OK;
+    feal::errenum se =feal::S_OK;
     if (stream) se = stream->recv_start(this, sockfd);
     if (se != feal::S_OK)
     {
@@ -52,7 +52,7 @@ void ClientHandler::handleEvent(std::shared_ptr<feal::EvtDataReadAvail> pevt)
     char buf[30];
     memset(&buf, 0, sizeof(buf));
     int32_t bytes;
-    feal::sockerrenum se = stream->recv((void*) buf, sizeof(buf), &bytes, sockfd);
+    feal::errenum se = stream->recv((void*) buf, sizeof(buf), &bytes, sockfd);
     if (se != feal::S_OK) printf("Error receiving: %d\n", se);
     else
     {

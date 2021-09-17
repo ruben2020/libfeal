@@ -42,7 +42,7 @@ void Client::shutdownActor(void)
 
 void Client::send_to_server(void)
 {
-    feal::sockerrenum se;
+    feal::errenum se;
     serveraddr.family = feal::ipaddr::INET;
     serveraddr.port = 12001;
     strcpy(serveraddr.addr, "127.0.0.1");
@@ -58,7 +58,7 @@ void Client::send_something(void)
     memset(&buf, 0, sizeof(buf));
     sprintf(buf, "Client %d", n++);
     printf("Trying to send \"%s\" to %s:%d\n", buf, serveraddr.addr, serveraddr.port);
-    feal::sockerrenum se = dgram.send_to((void*) buf, MIN(strlen(buf) + 1, sizeof(buf)), &bytes, &serveraddr);
+    feal::errenum se = dgram.send_to((void*) buf, MIN(strlen(buf) + 1, sizeof(buf)), &bytes, &serveraddr);
     if (se != feal::S_OK) printf("Error sending \"Client n\": %d\n", se);
 }
 
@@ -87,7 +87,7 @@ void Client::handleEvent(std::shared_ptr<feal::EvtDgramReadAvail> pevt)
     int32_t bytes;
     memset(&buf, 0, sizeof(buf));
     feal::ipaddr recvaddr;
-    feal::sockerrenum se = dgram.recv_from((void*) buf, sizeof(buf), &bytes, &recvaddr);
+    feal::errenum se = dgram.recv_from((void*) buf, sizeof(buf), &bytes, &recvaddr);
     if (se != feal::S_OK) printf("Error receiving: %d\n", se);
     else printf("Received %d bytes: \"%s\" from %s:%d\n", bytes, buf, recvaddr.addr, recvaddr.port);
 }

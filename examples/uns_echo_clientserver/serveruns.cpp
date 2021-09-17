@@ -13,7 +13,7 @@ void Serveruns::start_server(void)
     strcpy(serveraddr.sun_path, SERVERPATH);
     unlink(SERVERPATH);
     printf("Starting Server on %s\n", SERVERPATH);
-    feal::sockerrenum se = stream.create_and_bind(&serveraddr);
+    feal::errenum se = stream.create_and_bind(&serveraddr);
     if (se != feal::S_OK)
     {
         printf("Error binding to %s  err %d\n", SERVERPATH, se);

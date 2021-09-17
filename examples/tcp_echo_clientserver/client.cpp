@@ -52,7 +52,7 @@ void Client::connect_to_server(void)
     serveraddr.port = 11001;
     strcpy(serveraddr.addr, "127.0.0.1");
     printf("Trying to connect to 127.0.0.1:11001\n");
-    feal::sockerrenum se = stream.create_and_connect(&serveraddr);
+    feal::errenum se = stream.create_and_connect(&serveraddr);
     if (se != feal::S_OK)
     {
         printf("Error connecting to 127.0.0.1:11001  err %d\n", se);
@@ -67,7 +67,7 @@ void Client::send_something(void)
     memset(&buf, 0, sizeof(buf));
     sprintf(buf, "Client %d", n++);
     printf("Trying to send \"%s\"\n",buf);
-    feal::sockerrenum se = stream.send((void*) buf, MIN(strlen(buf) + 1, sizeof(buf)), &bytes);
+    feal::errenum se = stream.send((void*) buf, MIN(strlen(buf) + 1, sizeof(buf)), &bytes);
     if (se != feal::S_OK) printf("Error sending \"Client n\": %d\n", se);
 }
 
@@ -101,7 +101,7 @@ void Client::handleEvent(std::shared_ptr<feal::EvtConnectedToServer> pevt)
     strcpy(buf, "Hello! Client here!");
     int32_t bytes;
     printf("Trying to send \"Hello! Client here!\"\n");
-    feal::sockerrenum se = stream.send((void*) buf, sizeof(buf), &bytes);
+    feal::errenum se = stream.send((void*) buf, sizeof(buf), &bytes);
     if (se != feal::S_OK) printf("Error sending \"Hello! Client here!\": %d\n", se);
 }
 
@@ -112,7 +112,7 @@ void Client::handleEvent(std::shared_ptr<feal::EvtDataReadAvail> pevt)
     char buf[30];
     int32_t bytes;
     memset(&buf, 0, sizeof(buf));
-    feal::sockerrenum se = stream.recv((void*) buf, sizeof(buf), &bytes);
+    feal::errenum se = stream.recv((void*) buf, sizeof(buf), &bytes);
     if (se != feal::S_OK) printf("Error receiving: %d\n", se);
     else printf("Received %d bytes: \"%s\"\n", bytes, buf);
     timers.startTimer<EvtDelayTimer>(std::chrono::seconds(2));

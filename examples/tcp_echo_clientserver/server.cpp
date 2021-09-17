@@ -54,7 +54,7 @@ void Server::start_server(void)
     serveraddr.port = 11001;
     strcpy(serveraddr.addr, "127.0.0.1");
     printf("Starting Server on 127.0.0.1:11001\n");
-    feal::sockerrenum se = stream.create_and_bind(&serveraddr);
+    feal::errenum se = stream.create_and_bind(&serveraddr);
     if (se != feal::S_OK)
     {
         printf("Error binding to 127.0.0.1:11001  err %d\n", se);
@@ -111,7 +111,7 @@ void Server::handleEvent(std::shared_ptr<feal::EvtIncomingConn> pevt)
 
 void Server::print_client_address(feal::socket_t fd)
 {
-    feal::sockerrenum se = feal::S_OK;
+    feal::errenum se = feal::S_OK;
     feal::ipaddr fa;
     se = stream.getpeername(&fa, fd);
     if (se == feal::S_OK)
@@ -127,7 +127,7 @@ void Server::print_client_address(feal::socket_t fd)
 
 void Server::get_client_address(feal::socket_t fd, char* addr)
 {
-    feal::sockerrenum se = feal::S_OK;
+    feal::errenum se = feal::S_OK;
     feal::ipaddr fa;
     se = stream.getpeername(&fa, fd);
     if ((se == feal::S_OK)&&(addr))

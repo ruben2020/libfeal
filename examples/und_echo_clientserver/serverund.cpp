@@ -44,7 +44,7 @@ void Serverund::shutdownActor(void)
 void Serverund::start_listening(void)
 {
     struct sockaddr_un serveraddr;
-    feal::sockerrenum se;
+    feal::errenum se;
     serveraddr.sun_family = AF_UNIX;
     strcpy(serveraddr.sun_path, SERVERPATH);
     unlink(SERVERPATH);
@@ -91,7 +91,7 @@ void Serverund::handleEvent(std::shared_ptr<feal::EvtDgramReadAvail> pevt)
     memset(&buf, 0, sizeof(buf));
     struct sockaddr_un recvaddr;
     socklen_t recvaddr_len = sizeof(recvaddr);
-    feal::sockerrenum se = dgram.recv_from((void*) buf, sizeof(buf), &bytes, &recvaddr, &recvaddr_len);
+    feal::errenum se = dgram.recv_from((void*) buf, sizeof(buf), &bytes, &recvaddr, &recvaddr_len);
     if (se != feal::S_OK) printf("Error receiving: %d\n", se);
     else printf("Received %d bytes: \"%s\" from %s\n", bytes, buf, recvaddr.sun_path);
     printf("Sending back \"%s\" to %s\n", buf, recvaddr.sun_path);

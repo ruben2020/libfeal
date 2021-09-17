@@ -151,7 +151,7 @@ typedef enum
     S_EXFULL = EXFULL
 #endif
 
-} sockerrenum;
+} errenum;
 
 
 typedef int socket_t;
