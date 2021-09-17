@@ -23,6 +23,7 @@
 #include "internal/FealBaseStream.h"
 #include "internal/FealStream.h"
 #include "internal/FealDatagram.h"
-
+#include "internal/FealBaseSignal.h"
+#include "internal/FealSignal.h"
 
 #endif // _FEAL_H

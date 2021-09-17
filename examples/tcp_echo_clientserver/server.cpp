@@ -15,18 +15,25 @@ feal::EventId_t EvtRetryTimer::getId(void)
     return getIdOfType<EvtRetryTimer>();
 }
 
+feal::EventId_t EvtSigInt::getId(void)
+{
+    return getIdOfType<EvtSigInt>();
+}
+
 void Server::initActor(void)
 {
     printf("Server::initActor\n");
     timers.init(this);
     stream.init(this);
+    signal.init(this);
     subscribeEvent<EvtClientDisconnected>(this);
+    signal.registersignal<EvtSigInt>(SIGINT);
 }
 
 void Server::startActor(void)
 {
     printf("Server::startActor\n");
-    timers.startTimer<EvtEndTimer>(std::chrono::seconds(80));\
+    timers.startTimer<EvtEndTimer>(std::chrono::seconds(80));
     start_server();
 }
 
@@ -154,4 +161,13 @@ void Server::handleEvent(std::shared_ptr<EvtClientDisconnected> pevt)
         it->second.get()->shutdown();
     }
     mapch.erase(pevt.get()->client_sockfd);
+}
+
+void Server::handleEvent(std::shared_ptr<EvtSigInt> pevt)
+{
+    if (!pevt ) return;
+    printf("Server::EvtSigInt (signum=%d, sicode=%d)\n", 
+        pevt.get()->signo, pevt.get()->sicode);
+    timers.stopTimer<EvtEndTimer>();
+    shutdown();
 }

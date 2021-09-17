@@ -74,6 +74,34 @@ void addEvent(Y* p, T& k)
     }
 }
 
+template<typename T, typename Y>
+void subscribeEvent(Y* p, T& k)
+{
+    EventId_t id = k.getId();
+    auto it = mapEventHandlers.find(id);
+    if (it == mapEventHandlers.end())
+    {
+        mapEventHandlers.insert(std::make_pair(id,
+                [p](std::shared_ptr<Event> fe)
+                    {  p->handleEvent(std::dynamic_pointer_cast<T>(fe));  }
+                )
+            );
+    }
+    EventBus::getInstance().subscribeEvent(id, shared_from_this());
+}
+
+template<typename T>
+void unsubscribeEvent(T& k)
+{
+    EventId_t id = k.getId();
+    for (auto it = mapEventHandlers.begin(); it != mapEventHandlers.end(); )
+    {
+        if (it->first == id) mapEventHandlers.erase(it);
+        else ++it;
+    }
+    EventBus::getInstance().unsubscribeEvent(id, shared_from_this());
+}
+
 protected:
 
 virtual void initActor(void);

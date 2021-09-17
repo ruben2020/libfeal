@@ -33,6 +33,15 @@ EvtRetryTimer& operator= ( const EvtRetryTimer & ) = default;
 feal::EventId_t getId(void);
 };
 
+class EvtSigInt : public feal::EventSignal
+{
+public:
+EvtSigInt() = default;
+EvtSigInt( const EvtSigInt & ) = default;
+EvtSigInt& operator= ( const EvtSigInt & ) = default;
+~EvtSigInt() = default;
+feal::EventId_t getId(void);
+};
 
 class Client : public feal::Actor
 {
@@ -54,11 +63,13 @@ void handleEvent(std::shared_ptr<feal::EvtConnectedToServer> pevt);
 void handleEvent(std::shared_ptr<feal::EvtDataReadAvail> pevt);
 void handleEvent(std::shared_ptr<feal::EvtDataWriteAvail> pevt);
 void handleEvent(std::shared_ptr<feal::EvtConnectionShutdown> pevt);
+void handleEvent(std::shared_ptr<EvtSigInt> pevt);
 
 protected:
 
 feal::Timers<Client> timers;
 feal::Stream<Client> stream;
+feal::Signal<Client> signal;
 virtual void connect_to_server(void);
 
 private:
