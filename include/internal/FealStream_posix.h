@@ -19,105 +19,6 @@
 namespace feal
 {
 
-class EvtIncomingConn : public Event
-{
-public:
-EvtIncomingConn() = default;
-EvtIncomingConn( const EvtIncomingConn & ) = default;
-EvtIncomingConn& operator= ( const EvtIncomingConn & ) = default;
-~EvtIncomingConn() = default;
-EventId_t getId(void)
-{
-    return getIdOfType<EvtIncomingConn>();
-}
-errenum errnum = S_OK;
-socket_t client_sockfd = -1;
-};
-
-class EvtDataReadAvail : public Event
-{
-public:
-EvtDataReadAvail() = default;
-EvtDataReadAvail( const EvtDataReadAvail & ) = default;
-EvtDataReadAvail& operator= ( const EvtDataReadAvail & ) = default;
-~EvtDataReadAvail() = default;
-EventId_t getId(void)
-{
-    return getIdOfType<EvtDataReadAvail>();
-}
-socket_t sockfd = -1;
-int datalen = -1;
-};
-
-class EvtDataWriteAvail : public Event
-{
-public:
-EvtDataWriteAvail() = default;
-EvtDataWriteAvail( const EvtDataWriteAvail & ) = default;
-EvtDataWriteAvail& operator= ( const EvtDataWriteAvail & ) = default;
-~EvtDataWriteAvail() = default;
-EventId_t getId(void)
-{
-    return getIdOfType<EvtDataWriteAvail>();
-}
-socket_t sockfd = -1;
-};
-
-
-class EvtClientShutdown : public Event
-{
-public:
-EvtClientShutdown() = default;
-EvtClientShutdown( const EvtClientShutdown & ) = default;
-EvtClientShutdown& operator= ( const EvtClientShutdown & ) = default;
-~EvtClientShutdown() = default;
-EventId_t getId(void)
-{
-    return getIdOfType<EvtClientShutdown>();
-}
-socket_t client_sockfd = -1;
-};
-
-class EvtServerShutdown : public Event
-{
-public:
-EvtServerShutdown() = default;
-EvtServerShutdown( const EvtServerShutdown & ) = default;
-EvtServerShutdown& operator= ( const EvtServerShutdown & ) = default;
-~EvtServerShutdown() = default;
-EventId_t getId(void)
-{
-    return getIdOfType<EvtServerShutdown>();
-}
-};
-
-class EvtConnectedToServer : public Event
-{
-public:
-EvtConnectedToServer() = default;
-EvtConnectedToServer( const EvtConnectedToServer & ) = default;
-EvtConnectedToServer& operator= ( const EvtConnectedToServer & ) = default;
-~EvtConnectedToServer() = default;
-EventId_t getId(void)
-{
-    return getIdOfType<EvtConnectedToServer>();
-}
-errenum errnum = S_OK;
-socket_t server_sockfd = -1;
-};
-
-class EvtConnectionShutdown : public Event
-{
-public:
-EvtConnectionShutdown() = default;
-EvtConnectionShutdown( const EvtConnectionShutdown & ) = default;
-EvtConnectionShutdown& operator= ( const EvtConnectionShutdown & ) = default;
-~EvtConnectionShutdown() = default;
-EventId_t getId(void)
-{
-    return getIdOfType<EvtConnectionShutdown>();
-}
-};
 
 template<typename Y>
 class Stream : public BaseStream<Y>
@@ -144,7 +45,7 @@ void shutdownTool(void)
 
 errenum create_and_bind(feal::ipaddr* fa)
 {
-    errenum res = S_OK;
+    errenum res = FEAL_OK;
     int ret;
     if (fa == nullptr) return res;
     sockaddr_ip su;
@@ -179,7 +80,7 @@ errenum create_and_bind(feal::ipaddr* fa)
 
 errenum create_and_bind(struct sockaddr_un* su)
 {
-    errenum res = S_OK;
+    errenum res = FEAL_OK;
     int ret;
     if (su == nullptr) return res;
     BaseStream<Y>::sockfd = socket(su->sun_family, SOCK_STREAM, 0);
@@ -201,7 +102,7 @@ errenum create_and_bind(struct sockaddr_un* su)
 
 errenum create_and_connect(feal::ipaddr* fa)
 {
-    errenum res = S_OK;
+    errenum res = FEAL_OK;
     int ret;
     if (fa == nullptr) return res;
     sockaddr_ip su;
@@ -254,7 +155,7 @@ errenum create_and_connect(feal::ipaddr* fa)
 
 errenum create_and_connect(struct sockaddr_un* su)
 {
-    errenum res = S_OK;
+    errenum res = FEAL_OK;
     int ret;
     if (su == nullptr) return res;
     BaseStream<Y>::sockfd = socket(su->sun_family, SOCK_STREAM, 0);
@@ -296,7 +197,7 @@ errenum create_and_connect(struct sockaddr_un* su)
 
 errenum listen(int backlog = 32)
 {
-    errenum res = S_OK;
+    errenum res = FEAL_OK;
     if (actorptr == nullptr) return res;
     if (::listen(BaseStream<Y>::sockfd, backlog) == -1)
         res = static_cast<errenum>(errno);
@@ -314,7 +215,7 @@ errenum listen(int backlog = 32)
 template<class T>
 errenum recv_start(T* p, socket_t client_sockfd)
 {
-    errenum res = S_OK;
+    errenum res = FEAL_OK;
     std::weak_ptr<Actor> wkact;
     if (p)
     {
@@ -339,7 +240,7 @@ errenum recv_start(T* p, socket_t client_sockfd)
 
 errenum recv(void *buf, uint32_t len, int32_t* bytes, socket_t fd = -1)
 {
-    errenum res = S_OK;
+    errenum res = FEAL_OK;
     if (fd == -1) fd = BaseStream<Y>::sockfd;
     ssize_t numbytes = ::recv(fd, buf, (size_t) len, MSG_DONTWAIT);
     if (numbytes == -1)
@@ -353,7 +254,7 @@ errenum recv(void *buf, uint32_t len, int32_t* bytes, socket_t fd = -1)
 
 errenum send(void *buf, uint32_t len, int32_t* bytes, socket_t fd = -1)
 {
-    errenum res = S_OK;
+    errenum res = FEAL_OK;
     if (fd == -1) fd = BaseStream<Y>::sockfd;
     ssize_t numbytes = ::send(fd, buf, (size_t) len, MSG_DONTWAIT);
     if (numbytes == -1)
@@ -371,7 +272,7 @@ errenum send(void *buf, uint32_t len, int32_t* bytes, socket_t fd = -1)
 
 errenum disconnect_client(socket_t client_sockfd)
 {
-    errenum res = S_OK;
+    errenum res = FEAL_OK;
     mapReaders.erase(client_sockfd);
     if (BaseStream<Y>::do_client_shutdown(client_sockfd) == -1)
         res = static_cast<errenum>(errno);
@@ -383,7 +284,7 @@ errenum disconnect_and_reset(void)
     for (auto it=mapReaders.begin(); it!=mapReaders.end(); ++it)
         BaseStream<Y>::do_client_shutdown(it->first);
     mapReaders.clear();
-    errenum res = S_OK;
+    errenum res = FEAL_OK;
     if (BaseStream<Y>::do_full_shutdown() == -1)
         res = static_cast<errenum>(errno);
     if (serverThread.joinable()) serverThread.join();
@@ -393,7 +294,7 @@ errenum disconnect_and_reset(void)
 
 errenum getpeername(feal::ipaddr* fa, socket_t fd = -1)
 {
-    errenum res = S_OK;
+    errenum res = FEAL_OK;
     if (fd == -1) fd = BaseStream<Y>::sockfd;
     sockaddr_ip su;
     memset(&su, 0, sizeof(su));
@@ -410,7 +311,7 @@ errenum getpeername(feal::ipaddr* fa, socket_t fd = -1)
 
 errenum getpeername(struct sockaddr_un* su, socket_t fd = -1)
 {
-    errenum res = S_OK;
+    errenum res = FEAL_OK;
     struct sockaddr_un an;
     if (fd == -1) fd = BaseStream<Y>::sockfd;
     socklen_t length = sizeof(an);
@@ -430,7 +331,7 @@ errenum getpeereid(uid_t* euid, gid_t* egid)
 
 static errenum getpeereid(socket_t fd, uid_t* euid, gid_t* egid)
 {
-    errenum res = S_OK;
+    errenum res = FEAL_OK;
     int ret;
 #if defined (__linux__)
     socklen_t len;
@@ -484,7 +385,7 @@ int accept_new_conn(void)
     }
     else
     {
-        incomingevt.get()->errnum = S_OK;
+        incomingevt.get()->errnum = FEAL_OK;
     }
     actorptr->receiveEvent(incomingevt);
     return sock_conn_fd;

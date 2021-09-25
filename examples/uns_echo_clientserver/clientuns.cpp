@@ -11,7 +11,7 @@ void Clientuns::connect_to_server(void)
     strcpy(serveraddr.sun_path, SERVERPATH);
     printf("Trying to connect %s\n", SERVERPATH);
     feal::errenum se = stream.create_and_connect(&serveraddr);
-    if (se != feal::S_OK)
+    if (se != feal::FEAL_OK)
     {
         printf("Error connecting to %s  err %d\n", SERVERPATH, se);
         timers.startTimer<EvtRetryTimer>(std::chrono::seconds(5));

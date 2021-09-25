@@ -29,8 +29,8 @@ void Client::initActor(void)
     printf("Client::initActor\n");
     timers.init(this);
     stream.init(this);
-    signal.init(this);
-    signal.registersignal<EvtSigInt>(SIGINT);
+    //signal.init(this);
+    //signal.registersignal<EvtSigInt>(SIGINT);
 }
 
 void Client::startActor(void)
@@ -60,7 +60,7 @@ void Client::connect_to_server(void)
     strcpy(serveraddr.addr, "127.0.0.1");
     printf("Trying to connect to 127.0.0.1:11001\n");
     feal::errenum se = stream.create_and_connect(&serveraddr);
-    if (se != feal::S_OK)
+    if (se != feal::FEAL_OK)
     {
         printf("Error connecting to 127.0.0.1:11001  err %d\n", se);
         timers.startTimer<EvtRetryTimer>(std::chrono::seconds(5));
@@ -75,7 +75,7 @@ void Client::send_something(void)
     sprintf(buf, "Client %d", n++);
     printf("Trying to send \"%s\"\n",buf);
     feal::errenum se = stream.send((void*) buf, MIN(strlen(buf) + 1, sizeof(buf)), &bytes);
-    if (se != feal::S_OK) printf("Error sending \"Client n\": %d\n", se);
+    if (se != feal::FEAL_OK) printf("Error sending \"Client n\": %d\n", se);
 }
 
 void Client::handleEvent(std::shared_ptr<EvtEndTimer> pevt)
@@ -109,7 +109,7 @@ void Client::handleEvent(std::shared_ptr<feal::EvtConnectedToServer> pevt)
     int32_t bytes;
     printf("Trying to send \"Hello! Client here!\"\n");
     feal::errenum se = stream.send((void*) buf, sizeof(buf), &bytes);
-    if (se != feal::S_OK) printf("Error sending \"Hello! Client here!\": %d\n", se);
+    if (se != feal::FEAL_OK) printf("Error sending \"Hello! Client here!\": %d\n", se);
 }
 
 void Client::handleEvent(std::shared_ptr<feal::EvtDataReadAvail> pevt)
@@ -120,7 +120,7 @@ void Client::handleEvent(std::shared_ptr<feal::EvtDataReadAvail> pevt)
     int32_t bytes;
     memset(&buf, 0, sizeof(buf));
     feal::errenum se = stream.recv((void*) buf, sizeof(buf), &bytes);
-    if (se != feal::S_OK) printf("Error receiving: %d\n", se);
+    if (se != feal::FEAL_OK) printf("Error receiving: %d\n", se);
     else printf("Received %d bytes: \"%s\"\n", bytes, buf);
     timers.startTimer<EvtDelayTimer>(std::chrono::seconds(2));
 }
@@ -144,8 +144,8 @@ void Client::handleEvent(std::shared_ptr<feal::EvtConnectionShutdown> pevt)
 void Client::handleEvent(std::shared_ptr<EvtSigInt> pevt)
 {
     if (!pevt ) return;
-    printf("Client::EvtSigInt (signum=%d, sicode=%d)\n", 
-        pevt.get()->signo, pevt.get()->sicode);
+    /*printf("Client::EvtSigInt (signum=%d, sicode=%d)\n", 
+        pevt.get()->signo, pevt.get()->sicode);*/
     timers.stopTimer<EvtEndTimer>();
     stream.disconnect_and_reset();
     shutdown();

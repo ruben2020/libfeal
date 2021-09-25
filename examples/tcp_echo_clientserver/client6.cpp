@@ -10,7 +10,7 @@ void Client6::connect_to_server(void)
     strcpy(serveraddr.addr, "::1");
     printf("Trying to connect ::1 port 11001\n");
     feal::errenum se = stream.create_and_connect(&serveraddr);
-    if (se != feal::S_OK)
+    if (se != feal::FEAL_OK)
     {
         printf("Error connecting to ::1 port 11001  err %d\n", se);
         timers.startTimer<EvtRetryTimer>(std::chrono::seconds(5));

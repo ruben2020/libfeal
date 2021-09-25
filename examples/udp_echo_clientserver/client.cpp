@@ -47,7 +47,7 @@ void Client::send_to_server(void)
     serveraddr.port = 12001;
     strcpy(serveraddr.addr, "127.0.0.1");
     se = dgram.create_sock((feal::family_t) serveraddr.family);
-    if (se != feal::S_OK) printf("create sock: %d\n", se);
+    if (se != feal::FEAL_OK) printf("create sock: %d\n", se);
     timers.startTimer<EvtDelayTimer>(std::chrono::seconds(1));
 }
 
@@ -59,7 +59,7 @@ void Client::send_something(void)
     sprintf(buf, "Client %d", n++);
     printf("Trying to send \"%s\" to %s:%d\n", buf, serveraddr.addr, serveraddr.port);
     feal::errenum se = dgram.send_to((void*) buf, MIN(strlen(buf) + 1, sizeof(buf)), &bytes, &serveraddr);
-    if (se != feal::S_OK) printf("Error sending \"Client n\": %d\n", se);
+    if (se != feal::FEAL_OK) printf("Error sending \"Client n\": %d\n", se);
 }
 
 void Client::handleEvent(std::shared_ptr<EvtEndTimer> pevt)
@@ -88,7 +88,7 @@ void Client::handleEvent(std::shared_ptr<feal::EvtDgramReadAvail> pevt)
     memset(&buf, 0, sizeof(buf));
     feal::ipaddr recvaddr;
     feal::errenum se = dgram.recv_from((void*) buf, sizeof(buf), &bytes, &recvaddr);
-    if (se != feal::S_OK) printf("Error receiving: %d\n", se);
+    if (se != feal::FEAL_OK) printf("Error receiving: %d\n", se);
     else printf("Received %d bytes: \"%s\" from %s:%d\n", bytes, buf, recvaddr.addr, recvaddr.port);
 }
 

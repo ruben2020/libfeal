@@ -130,6 +130,7 @@ void do_connect_in_progress(void)
 void do_connect_ok(void)
 {
     epfd = epoll_create(1);
+    waitingforconn = false;
     if (epoll_ctl_add(epfd, sockfd, 
         (EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP)) == -1)
     {

@@ -13,9 +13,14 @@ set( FEAL_LIB_SRCS
      FealTimer.cpp
      FealActor.cpp
      FealActorVector.cpp
-     FealBaseSignal.cpp
-     FealSignal.cpp
+     #FealBaseSignal.cpp
+     #FealSignal.cpp
   )
 
 add_library( feal_lib STATIC ${FEAL_LIB_SRCS} )
+
+if(WIN32)
+target_link_libraries( feal_lib Threads::Threads ws2_32 )
+else(WIN32)
 target_link_libraries( feal_lib Threads::Threads )
+endif(WIN32)

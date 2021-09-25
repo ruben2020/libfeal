@@ -37,7 +37,7 @@ void init(void);
 template<class T>
 errenum registersignal(int signum)
 {
-    errenum ee = S_OK;
+    errenum ee = FEAL_OK;
     std::shared_ptr<EventSignal> k = std::make_shared<T>();
     EventId_t id = Event::getIdOfType<T>();
     const std::lock_guard<std::mutex> lock(mtxMapSig);
@@ -76,7 +76,7 @@ errenum registersignal(int signum)
 template<class T>
 errenum deregistersignal(int signum)
 {
-    errenum ee = S_OK;
+    errenum ee = FEAL_OK;
     std::shared_ptr<EventSignal> k = std::make_shared<T>();
     EventId_t id = Event::getIdOfType<T>();
     const std::lock_guard<std::mutex> lock(mtxMapSig);

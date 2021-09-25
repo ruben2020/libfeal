@@ -14,14 +14,14 @@ void Serveruns::start_server(void)
     unlink(SERVERPATH);
     printf("Starting Server on %s\n", SERVERPATH);
     feal::errenum se = stream.create_and_bind(&serveraddr);
-    if (se != feal::S_OK)
+    if (se != feal::FEAL_OK)
     {
         printf("Error binding to %s  err %d\n", SERVERPATH, se);
         timers.startTimer<EvtRetryTimer>(std::chrono::seconds(5));
         return;
     }
     se = stream.listen();
-    if (se != feal::S_OK)
+    if (se != feal::FEAL_OK)
     {
         printf("Error listening to %s  err %d\n", SERVERPATH, se);
         timers.startTimer<EvtRetryTimer>(std::chrono::seconds(5));

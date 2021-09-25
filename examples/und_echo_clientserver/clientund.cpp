@@ -72,13 +72,13 @@ void Clientund::send_to_server(void)
     strcat(clientaddr.sun_path, buf);
     unlink(clientaddr.sun_path);
     se = dgram.create_sock((feal::family_t) clientaddr.sun_family);
-    if (se != feal::S_OK)
+    if (se != feal::FEAL_OK)
     {
         printf("create sock: %d\n", se);
         return;
     }
     se = dgram.bind_sock(&clientaddr);
-    if (se != feal::S_OK)
+    if (se != feal::FEAL_OK)
     {
         printf("bind sock: %d\n", se);
         return;
@@ -96,7 +96,7 @@ void Clientund::send_something(void)
     printf("Trying to send \"%s\" to %s\n", buf, SERVERPATH);
     feal::errenum se = dgram.send_to((void*) buf, MIN(strlen(buf) + 1,
         sizeof(buf)), &bytes, &serveraddr, sizeof(serveraddr));
-    if (se != feal::S_OK) printf("Error sending \"Client n\": %d\n", se);
+    if (se != feal::FEAL_OK) printf("Error sending \"Client n\": %d\n", se);
 }
 
 void Clientund::handleEvent(std::shared_ptr<EvtEndTimer> pevt)
@@ -127,7 +127,7 @@ void Clientund::handleEvent(std::shared_ptr<feal::EvtDgramReadAvail> pevt)
     socklen_t recvaddr_len = sizeof(recvaddr);
     feal::errenum se = dgram.recv_from((void*) buf,
         sizeof(buf), &bytes, &recvaddr, &recvaddr_len);
-    if (se != feal::S_OK) printf("Error receiving: %d\n", se);
+    if (se != feal::FEAL_OK) printf("Error receiving: %d\n", se);
     else printf("Received %d bytes: \"%s\" from %s\n", bytes, buf, recvaddr.sun_path);
 }
 

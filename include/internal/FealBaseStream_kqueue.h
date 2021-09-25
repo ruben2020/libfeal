@@ -136,6 +136,7 @@ void do_connect_ok(void)
 {
     struct kevent change_event[2];
     memset(&change_event, 0, sizeof(change_event));
+    waitingforconn = false;
     kq = kqueue();
     EV_SET(change_event, sockfd, EVFILT_READ, EV_ADD | EV_ENABLE | EV_CLEAR, 0, 0, 0);
     if (kevent(kq, (const struct kevent	*) change_event, 1, nullptr, 0, nullptr) == -1)

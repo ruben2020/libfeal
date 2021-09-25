@@ -34,7 +34,7 @@ int feal::ipaddr_feal2posix(feal::ipaddr* fa, sockaddr_ip* su)
     return res;
 }
 
-int feal::setnonblocking(int fd)
+int feal::setnonblocking(socket_t fd)
 {
 	if (fcntl(fd, F_SETFD, fcntl(fd, F_GETFD, 0) | O_NONBLOCK) ==
 	    -1)
@@ -44,7 +44,7 @@ int feal::setnonblocking(int fd)
 	return 0;
 }
 
-int feal::setipv6only(int fd)
+int feal::setipv6only(socket_t fd)
 {
     int on = 1;
     if (setsockopt(fd, IPPROTO_IPV6, IPV6_V6ONLY,
@@ -55,7 +55,7 @@ int feal::setipv6only(int fd)
     return 0;
 }
 
-int feal::datareadavaillen(int fd)
+int feal::datareadavaillen(socket_t fd)
 {
     int len;
     int ret = -1;

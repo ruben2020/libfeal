@@ -20,15 +20,15 @@ void ClientHandler::setParam(feal::Stream<Server>* p, feal::socket_t fd, char *s
 
 void ClientHandler::initActor(void)
 {
-    printf("ClientHandler(%d)::initActor\n", sockfd);
+    printf("ClientHandler(%ld)::initActor\n", (long int) sockfd);
 }
 
 void ClientHandler::startActor(void)
 {
-    printf("ClientHandler(%d)::startActor\n", sockfd);
-    feal::errenum se =feal::S_OK;
+    printf("ClientHandler(%ld)::startActor\n", (long int) sockfd);
+    feal::errenum se =feal::FEAL_OK;
     if (stream) se = stream->recv_start(this, sockfd);
-    if (se != feal::S_OK)
+    if (se != feal::FEAL_OK)
     {
         printf("Error3 %d\n", se);
     }
@@ -36,42 +36,42 @@ void ClientHandler::startActor(void)
 
 void ClientHandler::pauseActor(void)
 {
-    printf("ClientHandler(%d)::pauseActor\n", sockfd);
+    printf("ClientHandler(%ld)::pauseActor\n", (long int) sockfd);
 }
 
 void ClientHandler::shutdownActor(void)
 {
-    printf("ClientHandler(%d)::shutdownActor\n", sockfd);
+    printf("ClientHandler(%ld)::shutdownActor\n", (long int) sockfd);
     stream->disconnect_client(sockfd);
 }
 
 void ClientHandler::handleEvent(std::shared_ptr<feal::EvtDataReadAvail> pevt)
 {
+    printf("ClientHandler(%ld)::EvtDataReadAvail\n", (long int) sockfd);
     if ((!pevt)||(!stream)) return;
-    printf("ClientHandler(%d)::EvtDataReadAvail\n", sockfd);
     char buf[30];
     memset(&buf, 0, sizeof(buf));
     int32_t bytes;
     feal::errenum se = stream->recv((void*) buf, sizeof(buf), &bytes, sockfd);
-    if (se != feal::S_OK) printf("Error receiving: %d\n", se);
+    if (se != feal::FEAL_OK) printf("Error receiving: %d\n", se);
     else
     {
         printf("Received %d bytes \"%s\" from %s\n", bytes, buf, addrstr.c_str());
         printf("Sending back %d bytes \"%s\" to %s\n", bytes, buf, addrstr.c_str());
         se = stream->send((void*) buf, MIN(strlen(buf) + 1, sizeof(buf)), &bytes, sockfd);
-        if (se != feal::S_OK) printf("Error sending \"ClientHandler n\": %d\n", se);
+        if (se != feal::FEAL_OK) printf("Error sending \"ClientHandler n\": %d\n", se);
     }
 }
 
 void ClientHandler::handleEvent(std::shared_ptr<feal::EvtDataWriteAvail> pevt)
 {
     if (!pevt) return;
-    printf("ClientHandler(%d)::EvtDataWriteAvail\n", sockfd);
+    printf("ClientHandler(%ld)::EvtDataWriteAvail\n", (long int) sockfd);
 }
 void ClientHandler::handleEvent(std::shared_ptr<feal::EvtClientShutdown> pevt)
 {
     if (!pevt) return;
-    printf("ClientHandler(%d)::EvtClientShutdown\n", sockfd);
+    printf("ClientHandler(%ld)::EvtClientShutdown\n", (long int) sockfd);
     std::shared_ptr<EvtClientDisconnected> pevt2 = std::make_shared<EvtClientDisconnected>();
     pevt2.get()->client_sockfd = sockfd;
     publishEvent(pevt2);

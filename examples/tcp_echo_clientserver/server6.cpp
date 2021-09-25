@@ -11,14 +11,14 @@ void Server6::start_server(void)
     strcpy(serveraddr.addr, "::1");
     printf("Starting Server on ::1 port 11001\n");
     feal::errenum se = stream.create_and_bind(&serveraddr);
-    if (se != feal::S_OK)
+    if (se != feal::FEAL_OK)
     {
         printf("Error binding to ::1 port 11001  err %d\n", se);
         timers.startTimer<EvtRetryTimer>(std::chrono::seconds(5));
         return;
     }
     se = stream.listen();
-    if (se != feal::S_OK)
+    if (se != feal::FEAL_OK)
     {
         printf("Error listening to ::1 port 11001  err %d\n", se);
         timers.startTimer<EvtRetryTimer>(std::chrono::seconds(5));

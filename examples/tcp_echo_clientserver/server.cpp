@@ -25,9 +25,9 @@ void Server::initActor(void)
     printf("Server::initActor\n");
     timers.init(this);
     stream.init(this);
-    signal.init(this);
+    //signal.init(this);
     subscribeEvent<EvtClientDisconnected>(this);
-    signal.registersignal<EvtSigInt>(SIGINT);
+    //signal.registersignal<EvtSigInt>(SIGINT);
 }
 
 void Server::startActor(void)
@@ -62,14 +62,14 @@ void Server::start_server(void)
     strcpy(serveraddr.addr, "127.0.0.1");
     printf("Starting Server on 127.0.0.1:11001\n");
     feal::errenum se = stream.create_and_bind(&serveraddr);
-    if (se != feal::S_OK)
+    if (se != feal::FEAL_OK)
     {
         printf("Error binding to 127.0.0.1:11001  err %d\n", se);
         timers.startTimer<EvtRetryTimer>(std::chrono::seconds(5));
         return;
     }
     se = stream.listen();
-    if (se != feal::S_OK)
+    if (se != feal::FEAL_OK)
     {
         printf("Error listening to 127.0.0.1:11001  err %d\n", se);
         timers.startTimer<EvtRetryTimer>(std::chrono::seconds(5));
@@ -96,8 +96,8 @@ void Server::handleEvent(std::shared_ptr<feal::EvtIncomingConn> pevt)
 {
     if (!pevt ) return;
     printf("Server::EvtIncomingConn\n");
-    printf("Incoming connection, client socket: %d\n", pevt.get()->client_sockfd);
-    if (pevt.get()-> errnum != feal::S_OK)
+    printf("Incoming connection, client socket: %ld\n", (long int) pevt.get()->client_sockfd);
+    if (pevt.get()-> errnum != feal::FEAL_OK)
     {
     	printf("Error1 %d\n", pevt.get()-> errnum);
     	return;
@@ -118,26 +118,26 @@ void Server::handleEvent(std::shared_ptr<feal::EvtIncomingConn> pevt)
 
 void Server::print_client_address(feal::socket_t fd)
 {
-    feal::errenum se = feal::S_OK;
+    feal::errenum se = feal::FEAL_OK;
     feal::ipaddr fa;
     se = stream.getpeername(&fa, fd);
-    if (se == feal::S_OK)
+    if (se == feal::FEAL_OK)
     {
-        printf("ClientHandler(%d): %s addr %s port %d\n",
-            fd, (fa.family == feal::ipaddr::INET ? "IPv4" : "IPv6"), fa.addr, fa.port);
+        printf("ClientHandler(%ld): %s addr %s port %d\n",
+            (long int) fd, (fa.family == feal::ipaddr::INET ? "IPv4" : "IPv6"), fa.addr, fa.port);
     }
-    else if (se != feal::S_ENOTCONN)
+    else if (se != feal::FEAL_ENOTCONN)
     {
-        printf("Error2 %d, fd=%d\n", se, fd);
+        printf("Error2 %d, fd=%ld\n", se, (long int) fd);
     }
 }
 
 void Server::get_client_address(feal::socket_t fd, char* addr)
 {
-    feal::errenum se = feal::S_OK;
+    feal::errenum se = feal::FEAL_OK;
     feal::ipaddr fa;
     se = stream.getpeername(&fa, fd);
-    if ((se == feal::S_OK)&&(addr))
+    if ((se == feal::FEAL_OK)&&(addr))
     {
         sprintf(addr, "%s %s port %d",
             (fa.family == feal::ipaddr::INET ? "IPv4" : "IPv6"), fa.addr, fa.port);
@@ -166,8 +166,8 @@ void Server::handleEvent(std::shared_ptr<EvtClientDisconnected> pevt)
 void Server::handleEvent(std::shared_ptr<EvtSigInt> pevt)
 {
     if (!pevt ) return;
-    printf("Server::EvtSigInt (signum=%d, sicode=%d)\n", 
-        pevt.get()->signo, pevt.get()->sicode);
+    /*printf("Server::EvtSigInt (signum=%d, sicode=%d)\n", 
+        pevt.get()->signo, pevt.get()->sicode);*/
     timers.stopTimer<EvtEndTimer>();
     shutdown();
 }
