@@ -13,6 +13,10 @@
 #include <unistd.h>
 #include <errno.h>
 
+#define SOCK_STARTUP()
+
+#define SOCK_CLEANUP()
+
 namespace feal
 {
     

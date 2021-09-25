@@ -36,13 +36,8 @@ errenum create_and_bind(feal::ipaddr* fa)
     errenum res = FEAL_OK;
     int ret;
     if (fa == nullptr) return res;
-    WSADATA wsa;
     sockaddr_ip su;
     memset(&su, 0, sizeof(su));
-    if (WSAStartup(MAKEWORD(2,2),&wsa) != 0)
-    {
-        return res;
-    }
     ret = ipaddr_feal2posix(fa, &su);
     if (ret == SOCKET_ERROR)
     {
@@ -79,13 +74,8 @@ errenum create_and_connect(feal::ipaddr* fa)
     errenum res = FEAL_OK;
     int ret;
     if (fa == nullptr) return res;
-    WSADATA wsa;
     sockaddr_ip su;
     memset(&su, 0, sizeof(su));
-    if (WSAStartup(MAKEWORD(2,2),&wsa) != 0)
-    {
-        return res;
-    }
     ret = ipaddr_feal2posix(fa, &su);
     if (ret == SOCKET_ERROR)
     {
@@ -292,7 +282,7 @@ int accept_new_conn(void)
 
 void client_read_avail(socket_t client_sockfd)
 {
-    printf("client_read_avail %ld\n", (long int) client_sockfd);
+    //printf("client_read_avail %ld\n", (long int) client_sockfd);
     std::shared_ptr<EvtDataReadAvail> evt = std::make_shared<EvtDataReadAvail>();
     evt.get()->sockfd = client_sockfd;
     evt.get()->datalen = datareadavaillen(client_sockfd);
@@ -311,7 +301,7 @@ void client_read_avail(socket_t client_sockfd)
 
 void client_write_avail(socket_t client_sockfd)
 {
-    printf("client_write_avail %ld\n", (long int) client_sockfd);
+    //printf("client_write_avail %ld\n", (long int) client_sockfd);
     std::shared_ptr<EvtDataWriteAvail> evt = std::make_shared<EvtDataWriteAvail>();
     evt.get()->sockfd = client_sockfd;
     auto it = mapReaders.find(client_sockfd);
@@ -328,7 +318,7 @@ void client_write_avail(socket_t client_sockfd)
 
 void client_shutdown(socket_t client_sockfd)
 {
-    printf("client_shutdown %ld\n", (long int) client_sockfd);
+    //printf("client_shutdown %ld\n", (long int) client_sockfd);
     std::shared_ptr<EvtClientShutdown> evtclshutdown = std::make_shared<EvtClientShutdown>();
     evtclshutdown.get()->client_sockfd = client_sockfd;
     auto it = mapReaders.find(client_sockfd);

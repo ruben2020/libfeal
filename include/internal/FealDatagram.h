@@ -5,6 +5,56 @@
 #error "Please include feal.h and not the other internal Feal header files, to avoid include errors."
 #endif
 
+namespace feal
+{
+
+class EvtDgramReadAvail : public Event
+{
+public:
+EvtDgramReadAvail() = default;
+EvtDgramReadAvail( const EvtDgramReadAvail & ) = default;
+EvtDgramReadAvail& operator= ( const EvtDgramReadAvail & ) = default;
+~EvtDgramReadAvail() = default;
+EventId_t getId(void)
+{
+    return getIdOfType<EvtDgramReadAvail>();
+}
+socket_t sockfd = -1;
+int datalen = -1;
+};
+
+class EvtDgramWriteAvail : public Event
+{
+public:
+EvtDgramWriteAvail() = default;
+EvtDgramWriteAvail( const EvtDgramWriteAvail & ) = default;
+EvtDgramWriteAvail& operator= ( const EvtDgramWriteAvail & ) = default;
+~EvtDgramWriteAvail() = default;
+EventId_t getId(void)
+{
+    return getIdOfType<EvtDgramWriteAvail>();
+}
+socket_t sockfd = -1;
+};
+
+
+class EvtSockErr : public Event
+{
+public:
+EvtSockErr() = default;
+EvtSockErr( const EvtSockErr & ) = default;
+EvtSockErr& operator= ( const EvtSockErr & ) = default;
+~EvtSockErr() = default;
+EventId_t getId(void)
+{
+    return getIdOfType<EvtSockErr>();
+}
+
+};
+
+}
+
+
 #if defined (_WIN32)
 #include "FealDatagram_winsock.h"
 #elif defined (__linux__)

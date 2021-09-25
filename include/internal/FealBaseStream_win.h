@@ -115,7 +115,7 @@ void serverLoop(void)
 
 int do_client_read_start(socket_t client_sockfd)
 {
-    printf("do_client_read_start %ld\n", (long int) client_sockfd);
+    //printf("do_client_read_start %ld\n", (long int) client_sockfd);
     for (int i=1; i < max_events; i++)
     {
         if (sockread[i] == client_sockfd) break;
@@ -130,7 +130,7 @@ int do_client_read_start(socket_t client_sockfd)
 
 int do_client_shutdown(socket_t client_sockfd)
 {
-    printf("do_client_shutdown %ld\n", (long int) client_sockfd);
+    //printf("do_client_shutdown %ld\n", (long int) client_sockfd);
     for (int i=1; i < max_events; i++)
     {
         if (sockread[i] == client_sockfd)
@@ -165,7 +165,6 @@ int do_full_shutdown(void)
     closesocket(sockfd);
     sockfd = INVALID_SOCKET;
     waitingforconn = false;
-    WSACleanup();
     return ret;
 }
 
@@ -266,7 +265,7 @@ void connectLoop(void)
                     //printf("connection read avail %ld\n", (long int) sockread[i]);
                     sockread[i] = INVALID_SOCKET;
                     connection_read_avail();
-                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                    //std::this_thread::sleep_for(std::chrono::milliseconds(1));
                 }
                 continue;
             }
@@ -296,7 +295,7 @@ void connectLoop(void)
 
 private:
 
-#define FEALBASESTREAM_MAXEVENTS       (FD_SETSIZE > 32 ? 32 : FD_SETSIZE)
+#define FEALBASESTREAM_MAXEVENTS       (FD_SETSIZE > 64 ? 64 : FD_SETSIZE)
 const int max_events = FEALBASESTREAM_MAXEVENTS;
 socket_t sockread[FEALBASESTREAM_MAXEVENTS];
 socket_t sockwrite[FEALBASESTREAM_MAXEVENTS];

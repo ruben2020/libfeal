@@ -4,7 +4,9 @@ project(fealexamples)
 
 add_subdirectory( "actors_and_timers" )
 add_subdirectory( "tcp_echo_clientserver" )
-#add_subdirectory( "uns_echo_clientserver" )
-#add_subdirectory( "udp_echo_clientserver" )
-#add_subdirectory( "und_echo_clientserver" )
-
+add_subdirectory( "udp_echo_clientserver" )
+if(WIN32)
+else(WIN32)
+add_subdirectory( "uns_echo_clientserver" )
+add_subdirectory( "und_echo_clientserver" )
+endif(WIN32)

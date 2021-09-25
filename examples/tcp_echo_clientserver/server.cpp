@@ -126,7 +126,7 @@ void Server::print_client_address(feal::socket_t fd)
         printf("ClientHandler(%ld): %s addr %s port %d\n",
             (long int) fd, (fa.family == feal::ipaddr::INET ? "IPv4" : "IPv6"), fa.addr, fa.port);
     }
-    else if (se != feal::FEAL_ENOTCONN)
+    else if ((se != feal::FEAL_ENOTCONN)&&(se != feal::FEAL_ENOTSOCK))
     {
         printf("Error2 %d, fd=%ld\n", se, (long int) fd);
     }

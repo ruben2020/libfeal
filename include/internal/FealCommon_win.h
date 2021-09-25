@@ -10,9 +10,14 @@
 #include <ws2tcpip.h>
 #include <windows.h>
 
+#define SOCK_STARTUP() \
+    WSADATA wsa; \
+    if (WSAStartup(MAKEWORD(2,2),&wsa) != 0) return 1;
+
+#define SOCK_CLEANUP()  WSACleanup()
+
 namespace feal
 {
-
 
 typedef enum
 {
