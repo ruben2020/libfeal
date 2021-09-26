@@ -1,3 +1,4 @@
+#include <cstdio>
 #include "feal.h"
 
 feal::Timer::~Timer()
@@ -19,15 +20,15 @@ void feal::Timer::timerLoopLauncher(feal::Timer *p)
 
 void feal::Timer::timerLoop(void)
 {
+    std::unique_lock<std::mutex> ulk(mtxTimer);
     while (timerValid)
     {
         if (timerActive && timerValid)
         {
-            std::unique_lock<std::mutex> ulk1(mtxTimer);
             mtxTimerVar.lock();
             std::chrono::time_point<std::chrono::steady_clock> tp = tpoint;
             mtxTimerVar.unlock();
-            cvTimer.wait_until(ulk1, tp);
+            cvTimer.wait_until(ulk, tp);
             if (timerActive && timerValid)
             {
                 if (timerRepeat)
@@ -43,8 +44,7 @@ void feal::Timer::timerLoop(void)
         else if (timerValid)
         {
             timerDormant = true;
-            std::unique_lock<std::mutex> ulk2(mtxTimer);
-            cvTimer.wait(ulk2);
+            cvTimer.wait(ulk);
         }
     }
 }
@@ -57,7 +57,11 @@ void feal::Timer::stopTimer(void)
     cvTimer.notify_all();
     do
     {
+#if defined (_WIN32)
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+#else
         std::this_thread::sleep_for(std::chrono::microseconds(50));
+#endif
     } while (!timerDormant);
 }
 
