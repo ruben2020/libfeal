@@ -4,6 +4,23 @@ void (* feal::BaseSignal::recvsig_fp) (int,int) = nullptr;
 
 #if defined (_WIN32)
 
+int feal::BaseSignal::do_registersignal(int signum)
+{
+    signal(signum, &win_sighandler);
+    return 0;
+}
+
+int feal::BaseSignal::do_deregistersignal(int signum)
+{
+    signal(signum, nullptr);
+    return 0;
+}
+
+void feal::BaseSignal::win_sighandler(int sig)
+{
+    if (recvsig_fp) recvsig_fp(sig, 0);
+}
+
 #elif defined(unix) || defined(__unix__) || defined(__unix)
 
 int feal::BaseSignal::do_registersignal(int signum)

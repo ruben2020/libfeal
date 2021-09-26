@@ -5,18 +5,37 @@
 #error "Please include feal.h and not the other internal Feal header files, to avoid include errors."
 #endif
 
+#include <signal.h>
+
+namespace feal
+{
+
+class BaseSignal : public Tool
+{
+public:
+BaseSignal() = default;
+BaseSignal( const BaseSignal & ) = default;
+BaseSignal& operator= ( const BaseSignal & ) = default;
+~BaseSignal() = default;
+
+protected:
+static void (*recvsig_fp) (int,int);
+
+int do_registersignal(int signum);
+int do_deregistersignal(int signum);
+
+private:
+
 #if defined (_WIN32)
-#include "FealBaseSignal_win.h"
-#elif defined (__linux__)
-#include "FealBaseSignal_posix.h"
-#elif defined (__APPLE__)   || defined (__FreeBSD__) || defined (__NetBSD_) || \
-      defined (__OpenBSD__) || defined (__DragonFly__)
-#include "FealBaseSignal_posix.h"
-#elif defined(unix) || defined(__unix__) || defined(__unix)
-#include "FealBaseSignal_posix.h"
+static void win_sighandler(int sig);
 #else
-#error "Unsupported operating system"
+static void posix_sighandler(int sig, siginfo_t *info, void *ucontext);
 #endif
+
+};
+
+
+} // namespace feal
 
 
 #endif // _FEAL_BASESIGNAL_H
