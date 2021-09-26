@@ -13,8 +13,8 @@ set( FEAL_LIB_SRCS
      FealTimer.cpp
      FealActor.cpp
      FealActorVector.cpp
-     #FealBaseSignal.cpp
-     #FealSignal.cpp
+     FealBaseSignal.cpp
+     FealSignal.cpp
   )
 
 add_library( feal_lib STATIC ${FEAL_LIB_SRCS} )

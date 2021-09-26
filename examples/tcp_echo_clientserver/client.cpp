@@ -29,8 +29,8 @@ void Client::initActor(void)
     printf("Client::initActor\n");
     timers.init(this);
     stream.init(this);
-    //signal.init(this);
-    //signal.registersignal<EvtSigInt>(SIGINT);
+    signal.init(this);
+    signal.registersignal<EvtSigInt>(SIGINT);
 }
 
 void Client::startActor(void)
@@ -144,8 +144,8 @@ void Client::handleEvent(std::shared_ptr<feal::EvtConnectionShutdown> pevt)
 void Client::handleEvent(std::shared_ptr<EvtSigInt> pevt)
 {
     if (!pevt ) return;
-    /*printf("Client::EvtSigInt (signum=%d, sicode=%d)\n", 
-        pevt.get()->signo, pevt.get()->sicode);*/
+    printf("Client::EvtSigInt (signum=%d, sicode=%d)\n", 
+        pevt.get()->signo, pevt.get()->sicode);
     timers.stopTimer<EvtEndTimer>();
     stream.disconnect_and_reset();
     shutdown();

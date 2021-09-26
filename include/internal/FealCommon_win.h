@@ -113,7 +113,8 @@ typedef enum
 
 
 typedef SOCKET socket_t;
-
+#define FEAL_INVALID_SOCKET (INVALID_SOCKET)
+#define FEAL_SOCKET_ERROR (SOCKET_ERROR)
 
 typedef union sockaddr_ip {
     struct sockaddr sa;

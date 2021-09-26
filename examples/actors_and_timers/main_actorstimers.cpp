@@ -10,6 +10,6 @@ int main(void)
     actmgr.get()->start();
     actmgr.get()->wait_for_shutdown();
     feal::EventBus::getInstance().destroyInstance();
-    printf("HelloWorld terminating program\n");
+    printf("Actors&Timers terminating program\n");
     return 0;
 }

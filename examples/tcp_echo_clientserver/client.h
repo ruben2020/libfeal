@@ -33,7 +33,7 @@ EvtRetryTimer& operator= ( const EvtRetryTimer & ) = default;
 feal::EventId_t getId(void);
 };
 
-class EvtSigInt : public feal::Event //Signal
+class EvtSigInt : public feal::EventSignal
 {
 public:
 EvtSigInt() = default;
@@ -69,7 +69,7 @@ protected:
 
 feal::Timers<Client> timers;
 feal::Stream<Client> stream;
-//feal::Signal<Client> signal;
+feal::Signal<Client> signal;
 virtual void connect_to_server(void);
 
 private:

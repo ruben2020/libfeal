@@ -448,7 +448,7 @@ void server_shutdown(void)
     actorptr->receiveEvent(evt);
 }
 
-void connected_to_server(int fd)
+void connected_to_server(socket_t fd)
 {
     if (actorptr == nullptr) return;
     std::shared_ptr<EvtConnectedToServer> evt = std::make_shared<EvtConnectedToServer>();

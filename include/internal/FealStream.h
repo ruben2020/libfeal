@@ -21,7 +21,7 @@ EventId_t getId(void)
     return getIdOfType<EvtIncomingConn>();
 }
 errenum errnum = FEAL_OK;
-socket_t client_sockfd = -1;
+socket_t client_sockfd = FEAL_INVALID_SOCKET;
 };
 
 class EvtDataReadAvail : public Event
@@ -35,7 +35,7 @@ EventId_t getId(void)
 {
     return getIdOfType<EvtDataReadAvail>();
 }
-socket_t sockfd = -1;
+socket_t sockfd = FEAL_INVALID_SOCKET;
 int datalen = -1;
 };
 
@@ -50,7 +50,7 @@ EventId_t getId(void)
 {
     return getIdOfType<EvtDataWriteAvail>();
 }
-socket_t sockfd = -1;
+socket_t sockfd = FEAL_INVALID_SOCKET;
 };
 
 
@@ -65,7 +65,7 @@ EventId_t getId(void)
 {
     return getIdOfType<EvtClientShutdown>();
 }
-socket_t client_sockfd = -1;
+socket_t client_sockfd = FEAL_INVALID_SOCKET;
 };
 
 class EvtServerShutdown : public Event
@@ -93,7 +93,7 @@ EventId_t getId(void)
     return getIdOfType<EvtConnectedToServer>();
 }
 errenum errnum = FEAL_OK;
-socket_t server_sockfd = -1;
+socket_t server_sockfd = FEAL_INVALID_SOCKET;
 };
 
 class EvtConnectionShutdown : public Event

@@ -25,9 +25,9 @@ void Server::initActor(void)
     printf("Server::initActor\n");
     timers.init(this);
     stream.init(this);
-    //signal.init(this);
+    signal.init(this);
     subscribeEvent<EvtClientDisconnected>(this);
-    //signal.registersignal<EvtSigInt>(SIGINT);
+    signal.registersignal<EvtSigInt>(SIGINT);
 }
 
 void Server::startActor(void)
@@ -166,8 +166,8 @@ void Server::handleEvent(std::shared_ptr<EvtClientDisconnected> pevt)
 void Server::handleEvent(std::shared_ptr<EvtSigInt> pevt)
 {
     if (!pevt ) return;
-    /*printf("Server::EvtSigInt (signum=%d, sicode=%d)\n", 
-        pevt.get()->signo, pevt.get()->sicode);*/
+    printf("Server::EvtSigInt (signum=%d, sicode=%d)\n", 
+        pevt.get()->signo, pevt.get()->sicode);
     timers.stopTimer<EvtEndTimer>();
     shutdown();
 }

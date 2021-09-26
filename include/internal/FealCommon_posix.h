@@ -158,6 +158,8 @@ typedef enum
 
 
 typedef int socket_t;
+#define FEAL_INVALID_SOCKET (-1)
+#define FEAL_SOCKET_ERROR (-1)
 
 typedef union sockaddr_ip {
     struct sockaddr sa;

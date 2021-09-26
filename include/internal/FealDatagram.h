@@ -19,7 +19,7 @@ EventId_t getId(void)
 {
     return getIdOfType<EvtDgramReadAvail>();
 }
-socket_t sockfd = -1;
+socket_t sockfd = FEAL_INVALID_SOCKET;
 int datalen = -1;
 };
 
@@ -34,7 +34,7 @@ EventId_t getId(void)
 {
     return getIdOfType<EvtDgramWriteAvail>();
 }
-socket_t sockfd = -1;
+socket_t sockfd = FEAL_INVALID_SOCKET;
 };
 
 

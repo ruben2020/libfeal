@@ -1,17 +1,17 @@
 
 cmake_minimum_required(VERSION 3.2.2)
-project(fealhelloworld)
+project(fealactorstimers)
 
 include_directories( "." )
 include_directories( "../../include" )
 
-set( HELLO_WORLD_SRCS 
+set( ACTORSTIMERS_SRCS 
     ActorsManager.cpp
     ActorA.cpp
     ActorB.cpp
-    main_helloworld.cpp
+    main_actorstimers.cpp
   )
 
-add_executable( fealhelloworld ${HELLO_WORLD_SRCS} )
-target_link_libraries( fealhelloworld feal_lib )
+add_executable( fealactorstimers ${ACTORSTIMERS_SRCS} )
+target_link_libraries( fealactorstimers feal_lib )
 

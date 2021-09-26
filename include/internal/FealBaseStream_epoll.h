@@ -26,11 +26,11 @@ int epfd = -1;
 bool waitingforconn = false;
 
 virtual int  accept_new_conn(void){return -1;}
-virtual void client_read_avail(int client_sockfd){(void)(client_sockfd);}
-virtual void client_write_avail(int client_sockfd){(void)(client_sockfd);}
-virtual void client_shutdown(int client_sockfd){(void)(client_sockfd);}
+virtual void client_read_avail(socket_t client_sockfd){(void)(client_sockfd);}
+virtual void client_write_avail(socket_t client_sockfd){(void)(client_sockfd);}
+virtual void client_shutdown(socket_t client_sockfd){(void)(client_sockfd);}
 virtual void server_shutdown(void){}
-virtual void connected_to_server(int fd){(void)(fd);}
+virtual void connected_to_server(socket_t fd){(void)(fd);}
 virtual void connection_read_avail(void){}
 virtual void connection_write_avail(void){}
 virtual void connection_shutdown(void){}
