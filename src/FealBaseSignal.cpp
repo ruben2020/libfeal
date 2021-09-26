@@ -1,0 +1,37 @@
+#include "feal.h"
+
+void (* feal::BaseSignal::recvsig_fp) (int,int) = nullptr;
+
+#if defined (_WIN32)
+
+#elif defined(unix) || defined(__unix__) || defined(__unix)
+
+int feal::BaseSignal::do_registersignal(int signum)
+{
+    struct sigaction sa;
+    sa.sa_sigaction = &posix_sighandler;
+    sigemptyset(&(sa.sa_mask));
+    sa.sa_flags = (SA_RESTART | SA_SIGINFO);
+    return sigaction(signum, &sa, nullptr);
+}
+
+int feal::BaseSignal::do_deregistersignal(int signum)
+{
+    struct sigaction sa;
+    sa.sa_handler = SIG_DFL; // go back to default
+    sigemptyset(&(sa.sa_mask));
+    sa.sa_flags = 0;
+    return sigaction(signum, &sa, nullptr);
+}
+
+void feal::BaseSignal::posix_sighandler(int sig, siginfo_t *info, void *ucontext)
+{
+    (void)ucontext;
+    int sicode = -1;
+    if (info) sicode = info->si_code;
+    if (recvsig_fp) recvsig_fp(sig, sicode);
+}
+
+#else
+#error "Unsupported operating system"
+#endif

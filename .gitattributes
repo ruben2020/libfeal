@@ -1,0 +1,19 @@
+
+*.cmd eol=crlf
+*.bat eol=crlf
+
+*.sh eol=lf
+
+*.c eol=lf
+*.h eol=lf
+*.cc eol=lf
+*.hh eol=lf
+*.cpp eol=lf
+*.hpp eol=lf
+*.cxx eol=lf
+*.hxx eol=lf
+
+*.md eol=lf
+CMakeLists.txt eol=lf
+LICENSE eol=lf
+

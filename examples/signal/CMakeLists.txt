@@ -1,0 +1,16 @@
+
+cmake_minimum_required(VERSION 3.2.2)
+project(fealsignal)
+
+include_directories( "." )
+include_directories( "../../include" )
+
+set( SIGNAL_SRCS 
+    ActorsManager.cpp
+    ActorA.cpp
+    main_signal.cpp
+  )
+
+add_executable( fealsignal ${SIGNAL_SRCS} )
+target_link_libraries( fealsignal feal_lib )
+
