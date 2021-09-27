@@ -1,5 +1,13 @@
 #include "feal.h"
 
+#if defined (_WIN32)
+#define BUFCAST(x) (char *) x
+#define CLOSESOCKET(x) closesocket(x)
+#else
+#define BUFCAST(x) (void *) x
+#define CLOSESOCKET(x) close(x)
+#endif
+
 feal::EventId_t feal::EvtDgramReadAvail::getId(void)
 {
     return getIdOfType<EvtDgramReadAvail>();
@@ -72,7 +80,7 @@ feal::errenum feal::DatagramGeneric::recv_from(void *buf,
     sockaddr_ip su;
     socklen_t addrlen = sizeof(su);
     memset(&su, 0, sizeof(su));
-    ssize_t numbytes = recvfrom(sockfd, buf, (size_t) len, 
+    ssize_t numbytes = recvfrom(sockfd, BUFCAST(buf), (size_t) len, 
                 MSG_DONTWAIT, &(su.sa), &addrlen);
 #if defined (_WIN32)
     sockread[0] = sockfd;
@@ -131,7 +139,7 @@ feal::errenum feal::DatagramGeneric::send_to(void *buf,
 #else
     int flags = ((confirm ? MSG_CONFIRM : 0) | MSG_DONTWAIT);
 #endif
-    ssize_t numbytes = sendto(sockfd, buf, (size_t) len,
+    ssize_t numbytes = sendto(sockfd, BUFCAST(buf), (size_t) len,
             flags, &(su.sa), length);
     if (numbytes == FEAL_SOCKET_ERROR)
     {
@@ -178,10 +186,10 @@ feal::errenum feal::DatagramGeneric::send_to(void *buf,
 feal::errenum feal::DatagramGeneric::close_and_reset(void)
 {
     errenum res = FEAL_OK;
-    if ((sockfd != FEAL_SOCKET_ERROR)&&
+    if ((sockfd != FEAL_INVALID_SOCKET)&&
         (shutdown(sockfd, FEAL_SHUT_RDWR) == FEAL_SOCKET_ERROR))
         res = static_cast<errenum>(FEAL_GETSOCKETERRNO);
-    close(sockfd);
+    CLOSESOCKET(sockfd);
     sockfd = FEAL_INVALID_SOCKET;
 #if defined (_WIN32)
     for (int j=0; j < max_events; j++)
@@ -369,7 +377,7 @@ void feal::DatagramGeneric::dgramLoop(void)
 void feal::DatagramGeneric::close_sock(void)
 {
     shutdown(sockfd, FEAL_SHUT_RDWR);
-    close(sockfd);
+    CLOSESOCKET(sockfd);
     sockfd = FEAL_INVALID_SOCKET;
 #if defined (_WIN32)
     for (int j=0; j < max_events; j++)
