@@ -1,43 +1,16 @@
-#ifndef _FEAL_BASESTREAM_KQUEUE_H
-#define _FEAL_BASESTREAM_KQUEUE_H
+#include "feal.h"
 
-#ifndef _FEAL_H
-#error "Please include feal.h and not the other internal Feal header files, to avoid include errors."
-#endif
+int  feal::BaseStream::accept_new_conn(void){return FEAL_SOCKET_ERROR;}
+void feal::BaseStream::client_read_avail(socket_t client_sockfd){(void)(client_sockfd);}
+void feal::BaseStream::client_write_avail(socket_t client_sockfd){(void)(client_sockfd);}
+void feal::BaseStream::client_shutdown(socket_t client_sockfd){(void)(client_sockfd);}
+void feal::BaseStream::server_shutdown(void){}
+void feal::BaseStream::connected_to_server(socket_t fd){(void)(fd);}
+void feal::BaseStream::connection_read_avail(void){}
+void feal::BaseStream::connection_write_avail(void){}
+void feal::BaseStream::connection_shutdown(void){}
 
-#include <unistd.h>
-#include <sys/event.h>
-#include <cstring>
-
-namespace feal
-{
-
-template<typename Y>
-class BaseStream : public Tool
-{
-public:
-BaseStream() = default;
-BaseStream( const BaseStream & ) = default;
-BaseStream& operator= ( const BaseStream & ) = default;
-~BaseStream() = default;
-
-protected:
-
-socket_t sockfd = -1;
-int kq = -1;
-bool waitingforconn = false;
-
-virtual int  accept_new_conn(void){return -1;}
-virtual void client_read_avail(socket_t client_sockfd){(void)(client_sockfd);}
-virtual void client_write_avail(socket_t client_sockfd){(void)(client_sockfd);}
-virtual void client_shutdown(socket_t client_sockfd){(void)(client_sockfd);}
-virtual void server_shutdown(void){}
-virtual void connected_to_server(socket_t fd){(void)(fd);}
-virtual void connection_read_avail(void){}
-virtual void connection_write_avail(void){}
-virtual void connection_shutdown(void){}
-
-void serverLoop(void)
+void feal::BaseStream::serverLoop(void)
 {
     int nevts = 0;
     struct timespec tims;
@@ -93,7 +66,7 @@ void serverLoop(void)
     }
 }
 
-int do_client_read_start(socket_t client_sockfd)
+int feal::BaseStream::do_client_read_start(feal::socket_t client_sockfd)
 {
     struct kevent change_event[2];
     memset(&change_event, 0, sizeof(change_event));
@@ -101,14 +74,14 @@ int do_client_read_start(socket_t client_sockfd)
     return kevent(kq, (const struct kevent	*) change_event, 1, nullptr, 0, nullptr);
 }
 
-int do_client_shutdown(socket_t client_sockfd)
+int feal::BaseStream::do_client_shutdown(feal::socket_t client_sockfd)
 {
     int rc = shutdown(client_sockfd, SHUT_RDWR);
     close(client_sockfd);
     return rc;
 }
 
-int do_full_shutdown(void)
+int feal::BaseStream::do_full_shutdown(void)
 {
     int res = 0;
     if (sockfd != -1) res = shutdown(sockfd, SHUT_RDWR);
@@ -120,7 +93,7 @@ int do_full_shutdown(void)
     return res;
 }
 
-void do_connect_in_progress(void)
+void feal::BaseStream::do_connect_in_progress(void)
 {
     struct kevent change_event[2];
     memset(&change_event, 0, sizeof(change_event));
@@ -132,7 +105,7 @@ void do_connect_in_progress(void)
     kevent(kq, (const struct kevent	*) change_event, 1, nullptr, 0, nullptr);
 }
 
-void do_connect_ok(void)
+void feal::BaseStream::do_connect_ok(void)
 {
     struct kevent change_event[2];
     memset(&change_event, 0, sizeof(change_event));
@@ -146,7 +119,7 @@ void do_connect_ok(void)
     else connected_to_server(sockfd);
 }
 
-void do_send_avail_notify(int fd)
+void feal::BaseStream::do_send_avail_notify(feal::socket_t fd)
 {
     struct kevent change_event[2];
     memset(&change_event, 0, sizeof(change_event));
@@ -154,7 +127,7 @@ void do_send_avail_notify(int fd)
     kevent(kq, (const struct kevent	*) change_event, 1, nullptr, 0, nullptr);
 }
 
-void connectLoop(void)
+void feal::BaseStream::connectLoop(void)
 {
     int nevts = 0;
     struct timespec tims;
@@ -199,17 +172,3 @@ void connectLoop(void)
         }
     }
 }
-
-private:
-
-const unsigned int max_events = 64;
-
-};
-
-
-
-} // namespace feal
-
-
-
-#endif // _FEAL_BASESTREAM_KQUEUE_H

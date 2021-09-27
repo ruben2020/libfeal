@@ -1,41 +1,16 @@
-#ifndef _FEAL_BASESTREAM_EPOLL_H
-#define _FEAL_BASESTREAM_EPOLL_H
+#include "feal.h"
 
-#ifndef _FEAL_H
-#error "Please include feal.h and not the other internal Feal header files, to avoid include errors."
-#endif
+int  feal::BaseStream::accept_new_conn(void){return FEAL_SOCKET_ERROR;}
+void feal::BaseStream::client_read_avail(socket_t client_sockfd){(void)(client_sockfd);}
+void feal::BaseStream::client_write_avail(socket_t client_sockfd){(void)(client_sockfd);}
+void feal::BaseStream::client_shutdown(socket_t client_sockfd){(void)(client_sockfd);}
+void feal::BaseStream::server_shutdown(void){}
+void feal::BaseStream::connected_to_server(socket_t fd){(void)(fd);}
+void feal::BaseStream::connection_read_avail(void){}
+void feal::BaseStream::connection_write_avail(void){}
+void feal::BaseStream::connection_shutdown(void){}
 
-#include <sys/epoll.h>
-
-namespace feal
-{
-
-template<typename Y>
-class BaseStream : public Tool
-{
-public:
-BaseStream() = default;
-BaseStream( const BaseStream & ) = default;
-BaseStream& operator= ( const BaseStream & ) = default;
-~BaseStream() = default;
-
-protected:
-
-socket_t sockfd = -1;
-int epfd = -1;
-bool waitingforconn = false;
-
-virtual int  accept_new_conn(void){return -1;}
-virtual void client_read_avail(socket_t client_sockfd){(void)(client_sockfd);}
-virtual void client_write_avail(socket_t client_sockfd){(void)(client_sockfd);}
-virtual void client_shutdown(socket_t client_sockfd){(void)(client_sockfd);}
-virtual void server_shutdown(void){}
-virtual void connected_to_server(socket_t fd){(void)(fd);}
-virtual void connection_read_avail(void){}
-virtual void connection_write_avail(void){}
-virtual void connection_shutdown(void){}
-
-void serverLoop(void)
+void feal::BaseStream::serverLoop(void)
 {
     int nfds = 0;
     struct epoll_event events[max_events];
@@ -88,19 +63,19 @@ void serverLoop(void)
     }
 }
 
-int do_client_read_start(socket_t client_sockfd)
+int feal::BaseStream::do_client_read_start(feal::socket_t client_sockfd)
 {
     return epoll_ctl_add(epfd, client_sockfd, 
         (EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP));
 }
 
-int do_client_shutdown(socket_t client_sockfd)
+int feal::BaseStream::do_client_shutdown(feal::socket_t client_sockfd)
 {
     epoll_ctl(epfd, EPOLL_CTL_DEL, client_sockfd, NULL);
     return shutdown(client_sockfd, SHUT_RDWR);
 }
 
-int do_full_shutdown(void)
+int feal::BaseStream::do_full_shutdown(void)
 {
     int res = 0;
     if (epfd != -1)
@@ -115,7 +90,7 @@ int do_full_shutdown(void)
     return res;
 }
 
-void do_connect_in_progress(void)
+void feal::BaseStream::do_connect_in_progress(void)
 {
     epfd = epoll_create(1);
     waitingforconn = true;
@@ -127,7 +102,7 @@ void do_connect_in_progress(void)
     }
 }
 
-void do_connect_ok(void)
+void feal::BaseStream::do_connect_ok(void)
 {
     epfd = epoll_create(1);
     waitingforconn = false;
@@ -140,7 +115,7 @@ void do_connect_ok(void)
     connected_to_server(sockfd);
 }
 
-void do_send_avail_notify(int fd)
+void feal::BaseStream::do_send_avail_notify(feal::socket_t fd)
 {
     if (epoll_ctl_mod(epfd, fd, 
         (EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP | EPOLLOUT)) == -1)
@@ -150,7 +125,7 @@ void do_send_avail_notify(int fd)
     }
 }
 
-void connectLoop(void)
+void feal::BaseStream::connectLoop(void)
 {
     int nfds = 0;
     struct epoll_event events[max_events];
@@ -194,11 +169,8 @@ void connectLoop(void)
     }
 }
 
-private:
-
-const unsigned int max_events = 64;
-
-static int epoll_ctl_add(int epfd, socket_t fd, uint32_t events)
+#if defined (__linux__)
+int feal::BaseStream::epoll_ctl_add(int epfd, socket_t fd, uint32_t events)
 {
     struct epoll_event ev;
     ev.events = events;
@@ -206,21 +178,11 @@ static int epoll_ctl_add(int epfd, socket_t fd, uint32_t events)
     return epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &ev);
 }
 
-static int epoll_ctl_mod(int epfd, socket_t fd, uint32_t events)
+int feal::BaseStream::epoll_ctl_mod(int epfd, socket_t fd, uint32_t events)
 {
     struct epoll_event ev;
     ev.events = events;
     ev.data.fd = fd;
     return epoll_ctl(epfd, EPOLL_CTL_MOD, fd, &ev);
 }
-
-
-};
-
-
-
-} // namespace feal
-
-
-
-#endif // _FEAL_BASESTREAM_EPOLL_H
+#endif

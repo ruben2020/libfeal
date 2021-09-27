@@ -21,7 +21,7 @@ namespace feal
 
 
 template<typename Y>
-class Stream : public BaseStream<Y>
+class Stream : public BaseStream
 {
 public:
 Stream() = default;
@@ -56,8 +56,8 @@ errenum create_and_bind(feal::ipaddr* fa)
         res = static_cast<errenum>(errno);
         return  res;
     }
-    BaseStream<Y>::sockfd = socket(fa->family, SOCK_STREAM, 0);
-    if (BaseStream<Y>::sockfd == -1)
+    sockfd = socket(fa->family, SOCK_STREAM, 0);
+    if (sockfd == -1)
     {
         res = static_cast<errenum>(errno);
         return res;
@@ -65,11 +65,11 @@ errenum create_and_bind(feal::ipaddr* fa)
     socklen_t length = sizeof(su.in);
     if (fa->family == feal::ipaddr::INET6)
     {
-        setipv6only(BaseStream<Y>::sockfd);
+        setipv6only(sockfd);
         length = sizeof(su.in6);
     }
-    setnonblocking(BaseStream<Y>::sockfd);
-    ret = bind(BaseStream<Y>::sockfd, &(su.sa), length);
+    setnonblocking(sockfd);
+    ret = bind(sockfd, &(su.sa), length);
     if (ret == -1)
     {
         res = static_cast<errenum>(errno);
@@ -83,15 +83,15 @@ errenum create_and_bind(struct sockaddr_un* su)
     errenum res = FEAL_OK;
     int ret;
     if (su == nullptr) return res;
-    BaseStream<Y>::sockfd = socket(su->sun_family, SOCK_STREAM, 0);
-    if (BaseStream<Y>::sockfd == -1)
+    sockfd = socket(su->sun_family, SOCK_STREAM, 0);
+    if (sockfd == -1)
     {
         res = static_cast<errenum>(errno);
         return res;
     }
-    setnonblocking(BaseStream<Y>::sockfd);
+    setnonblocking(sockfd);
     socklen_t length = sizeof(su->sun_family) + strlen(su->sun_path) + 1;
-    ret = bind(BaseStream<Y>::sockfd, (const struct sockaddr*) su, length);
+    ret = bind(sockfd, (const struct sockaddr*) su, length);
     if (ret == -1)
     {
         res = static_cast<errenum>(errno);
@@ -113,19 +113,19 @@ errenum create_and_connect(feal::ipaddr* fa)
         res = static_cast<errenum>(errno);
         return  res;
     }
-    BaseStream<Y>::sockfd = socket(fa->family, SOCK_STREAM, 0);
-    if (BaseStream<Y>::sockfd == -1)
+    sockfd = socket(fa->family, SOCK_STREAM, 0);
+    if (sockfd == -1)
     {
         res = static_cast<errenum>(errno);
         return res;
     }
-    setnonblocking(BaseStream<Y>::sockfd);
+    setnonblocking(sockfd);
     socklen_t length = sizeof(su.in);
     if (fa->family == feal::ipaddr::INET6)
     {
         length = sizeof(su.in6);
     }
-    ret = connect(BaseStream<Y>::sockfd, &(su.sa), length);
+    ret = connect(sockfd, &(su.sa), length);
     if ((ret == -1) && (errno != EINPROGRESS))
     {
         res = static_cast<errenum>(errno);
@@ -134,12 +134,12 @@ errenum create_and_connect(feal::ipaddr* fa)
     else if ((ret == -1) && (errno == EINPROGRESS))
     {
         FEALDEBUGLOG("do_connect_in_progress");
-        BaseStream<Y>::do_connect_in_progress();
+        do_connect_in_progress();
     }
     else if (ret == 0)
     {
         FEALDEBUGLOG("do_connect_ok");
-        BaseStream<Y>::do_connect_ok();
+        do_connect_ok();
     }
     EvtConnectedToServer ects;
     EvtDataReadAvail edra;
@@ -158,15 +158,15 @@ errenum create_and_connect(struct sockaddr_un* su)
     errenum res = FEAL_OK;
     int ret;
     if (su == nullptr) return res;
-    BaseStream<Y>::sockfd = socket(su->sun_family, SOCK_STREAM, 0);
-    if (BaseStream<Y>::sockfd == -1)
+    sockfd = socket(su->sun_family, SOCK_STREAM, 0);
+    if (sockfd == -1)
     {
         res = static_cast<errenum>(errno);
         return res;
     }
-    setnonblocking(BaseStream<Y>::sockfd);
+    setnonblocking(sockfd);
     socklen_t length = sizeof(su->sun_family) + strlen(su->sun_path) + 1;
-    ret = connect(BaseStream<Y>::sockfd, (const struct sockaddr*) su, length);
+    ret = connect(sockfd, (const struct sockaddr*) su, length);
     if ((ret == -1) && (errno != EINPROGRESS))
     {
         res = static_cast<errenum>(errno);
@@ -175,12 +175,12 @@ errenum create_and_connect(struct sockaddr_un* su)
     else if ((ret == -1) && (errno == EINPROGRESS))
     {
         FEALDEBUGLOG("do_connect_in_progress");
-        BaseStream<Y>::do_connect_in_progress();
+        do_connect_in_progress();
     }
     else if (ret == 0)
     {
         FEALDEBUGLOG("do_connect_ok");
-        BaseStream<Y>::do_connect_ok();
+        do_connect_ok();
     }
     EvtConnectedToServer ects;
     EvtDataReadAvail edra;
@@ -199,7 +199,7 @@ errenum listen(int backlog = 32)
 {
     errenum res = FEAL_OK;
     if (actorptr == nullptr) return res;
-    if (::listen(BaseStream<Y>::sockfd, backlog) == -1)
+    if (::listen(sockfd, backlog) == -1)
         res = static_cast<errenum>(errno);
     else
     {
@@ -232,7 +232,7 @@ errenum recv_start(T* p, socket_t client_sockfd)
     {
         mapReaders[client_sockfd] = wkact;
         setnonblocking(client_sockfd);
-        if (BaseStream<Y>::do_client_read_start(client_sockfd) == -1)
+        if (do_client_read_start(client_sockfd) == -1)
             res = static_cast<errenum>(errno);
     }
     return res;
@@ -241,7 +241,7 @@ errenum recv_start(T* p, socket_t client_sockfd)
 errenum recv(void *buf, uint32_t len, int32_t* bytes, socket_t fd = -1)
 {
     errenum res = FEAL_OK;
-    if (fd == -1) fd = BaseStream<Y>::sockfd;
+    if (fd == -1) fd = sockfd;
     ssize_t numbytes = ::recv(fd, buf, (size_t) len, MSG_DONTWAIT);
     if (numbytes == -1)
     {
@@ -255,13 +255,13 @@ errenum recv(void *buf, uint32_t len, int32_t* bytes, socket_t fd = -1)
 errenum send(void *buf, uint32_t len, int32_t* bytes, socket_t fd = -1)
 {
     errenum res = FEAL_OK;
-    if (fd == -1) fd = BaseStream<Y>::sockfd;
+    if (fd == -1) fd = sockfd;
     ssize_t numbytes = ::send(fd, buf, (size_t) len, MSG_DONTWAIT);
     if (numbytes == -1)
     {
         if ((errno == EAGAIN)||(errno == EWOULDBLOCK))
         {
-            BaseStream<Y>::do_send_avail_notify(fd);
+            do_send_avail_notify(fd);
         }
         res = static_cast<errenum>(errno);
         return res;
@@ -274,7 +274,7 @@ errenum disconnect_client(socket_t client_sockfd)
 {
     errenum res = FEAL_OK;
     mapReaders.erase(client_sockfd);
-    if (BaseStream<Y>::do_client_shutdown(client_sockfd) == -1)
+    if (do_client_shutdown(client_sockfd) == -1)
         res = static_cast<errenum>(errno);
     return res;
 }
@@ -282,10 +282,10 @@ errenum disconnect_client(socket_t client_sockfd)
 errenum disconnect_and_reset(void)
 {
     for (auto it=mapReaders.begin(); it!=mapReaders.end(); ++it)
-        BaseStream<Y>::do_client_shutdown(it->first);
+        do_client_shutdown(it->first);
     mapReaders.clear();
     errenum res = FEAL_OK;
-    if (BaseStream<Y>::do_full_shutdown() == -1)
+    if (do_full_shutdown() == -1)
         res = static_cast<errenum>(errno);
     if (serverThread.joinable()) serverThread.join();
     if (connectThread.joinable()) connectThread.join();
@@ -295,7 +295,7 @@ errenum disconnect_and_reset(void)
 errenum getpeername(feal::ipaddr* fa, socket_t fd = -1)
 {
     errenum res = FEAL_OK;
-    if (fd == -1) fd = BaseStream<Y>::sockfd;
+    if (fd == -1) fd = sockfd;
     sockaddr_ip su;
     memset(&su, 0, sizeof(su));
     socklen_t length = sizeof(su);
@@ -313,7 +313,7 @@ errenum getpeername(struct sockaddr_un* su, socket_t fd = -1)
 {
     errenum res = FEAL_OK;
     struct sockaddr_un an;
-    if (fd == -1) fd = BaseStream<Y>::sockfd;
+    if (fd == -1) fd = sockfd;
     socklen_t length = sizeof(an);
     int ret = ::getpeername(fd, (struct sockaddr*) su, &length);
     if (ret == -1)
@@ -326,7 +326,7 @@ errenum getpeername(struct sockaddr_un* su, socket_t fd = -1)
 
 errenum getpeereid(uid_t* euid, gid_t* egid)
 {
-    return getpeerid(BaseStream<Y>::sockfd, euid, egid);
+    return Stream::getpeerid(BaseStream::sockfd, euid, egid);
 }
 
 static errenum getpeereid(socket_t fd, uid_t* euid, gid_t* egid)
@@ -376,7 +376,7 @@ int accept_new_conn(void)
     sockaddr_ip su;
     memset(&su, 0, sizeof(su));
     socklen_t socklength = sizeof(su);
-    socket_t sock_conn_fd = accept(BaseStream<Y>::sockfd, &(su.sa), &socklength);
+    socket_t sock_conn_fd = accept(sockfd, &(su.sa), &socklength);
     std::shared_ptr<EvtIncomingConn> incomingevt = std::make_shared<EvtIncomingConn>();
     incomingevt.get()->client_sockfd = sock_conn_fd;
     if (sock_conn_fd == -1)
@@ -460,8 +460,8 @@ void connection_read_avail(void)
 {
     if (actorptr == nullptr) return;
     std::shared_ptr<EvtDataReadAvail> evt = std::make_shared<EvtDataReadAvail>();
-    evt.get()->sockfd = BaseStream<Y>::sockfd;
-    evt.get()->datalen = datareadavaillen(BaseStream<Y>::sockfd);
+    evt.get()->sockfd = sockfd;
+    evt.get()->datalen = datareadavaillen(sockfd);
     actorptr->receiveEvent(evt);
 }
 
@@ -469,7 +469,7 @@ void connection_write_avail(void)
 {
     if (actorptr == nullptr) return;
     std::shared_ptr<EvtDataWriteAvail> evt = std::make_shared<EvtDataWriteAvail>();
-    evt.get()->sockfd = BaseStream<Y>::sockfd;
+    evt.get()->sockfd = sockfd;
     actorptr->receiveEvent(evt);
 }
 

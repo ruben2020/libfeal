@@ -1,40 +1,16 @@
-#ifndef _FEAL_BASESTREAM_WIN_H
-#define _FEAL_BASESTREAM_WIN_H
+#include "feal.h"
 
-#ifndef _FEAL_H
-#error "Please include feal.h and not the other internal Feal header files, to avoid include errors."
-#endif
+int  feal::BaseStream::accept_new_conn(void){return FEAL_SOCKET_ERROR;}
+void feal::BaseStream::client_read_avail(socket_t client_sockfd){(void)(client_sockfd);}
+void feal::BaseStream::client_write_avail(socket_t client_sockfd){(void)(client_sockfd);}
+void feal::BaseStream::client_shutdown(socket_t client_sockfd){(void)(client_sockfd);}
+void feal::BaseStream::server_shutdown(void){}
+void feal::BaseStream::connected_to_server(socket_t fd){(void)(fd);}
+void feal::BaseStream::connection_read_avail(void){}
+void feal::BaseStream::connection_write_avail(void){}
+void feal::BaseStream::connection_shutdown(void){}
 
-#include <atomic>
-
-namespace feal
-{
-
-template<typename Y>
-class BaseStream : public Tool
-{
-public:
-BaseStream() = default;
-BaseStream( const BaseStream & ) = default;
-BaseStream& operator= ( const BaseStream & ) = default;
-~BaseStream() = default;
-
-protected:
-
-socket_t sockfd = INVALID_SOCKET;
-bool waitingforconn = false;
-
-virtual int  accept_new_conn(void){return SOCKET_ERROR;}
-virtual void client_read_avail(socket_t client_sockfd){(void)(client_sockfd);}
-virtual void client_write_avail(socket_t client_sockfd){(void)(client_sockfd);}
-virtual void client_shutdown(socket_t client_sockfd){(void)(client_sockfd);}
-virtual void server_shutdown(void){}
-virtual void connected_to_server(socket_t fd){(void)(fd);}
-virtual void connection_read_avail(void){}
-virtual void connection_write_avail(void){}
-virtual void connection_shutdown(void){}
-
-void serverLoop(void)
+void feal::BaseStream::serverLoop(void)
 {
     int nfds = 0;
     socket_t tempsockfd;
@@ -113,7 +89,7 @@ void serverLoop(void)
     }
 }
 
-int do_client_read_start(socket_t client_sockfd)
+int feal::BaseStream::do_client_read_start(feal::socket_t client_sockfd)
 {
     //printf("do_client_read_start %ld\n", (long int) client_sockfd);
     for (int i=1; i < max_events; i++)
@@ -128,7 +104,7 @@ int do_client_read_start(socket_t client_sockfd)
     return 0;
 }
 
-int do_client_shutdown(socket_t client_sockfd)
+int feal::BaseStream::do_client_shutdown(feal::socket_t client_sockfd)
 {
     //printf("do_client_shutdown %ld\n", (long int) client_sockfd);
     for (int i=1; i < max_events; i++)
@@ -144,7 +120,7 @@ int do_client_shutdown(socket_t client_sockfd)
     return ret;
 }
 
-int do_full_shutdown(void)
+int feal::BaseStream::do_full_shutdown(void)
 {
     int ret = 0;
     for (int j=1; j < max_events; j++)
@@ -168,7 +144,7 @@ int do_full_shutdown(void)
     return ret;
 }
 
-void do_connect_in_progress(void)
+void feal::BaseStream::do_connect_in_progress(void)
 {
     for (int j=0; j < max_events; j++)
     {
@@ -182,7 +158,7 @@ void do_connect_in_progress(void)
     sockexcpt[0] = sockfd;
 }
 
-void do_connect_ok(void)
+void feal::BaseStream::do_connect_ok(void)
 {
     for (int j=0; j < max_events; j++)
     {
@@ -196,7 +172,7 @@ void do_connect_ok(void)
     connected_to_server(sockfd);
 }
 
-void do_send_avail_notify(socket_t fd)
+void feal::BaseStream::do_send_avail_notify(feal::socket_t fd)
 {
     printf("do_send_avail_notify %ld\n", (long int) fd);
     for (int i=1; i < max_events; i++)
@@ -209,7 +185,7 @@ void do_send_avail_notify(socket_t fd)
     }
 }
 
-void connectLoop(void)
+void feal::BaseStream::connectLoop(void)
 {
     int nfds = 0;
     int ret;
@@ -292,19 +268,3 @@ void connectLoop(void)
         }
     }
 }
-
-private:
-
-#define FEALBASESTREAM_MAXEVENTS       (FD_SETSIZE > 64 ? 64 : FD_SETSIZE)
-const int max_events = FEALBASESTREAM_MAXEVENTS;
-socket_t sockread[FEALBASESTREAM_MAXEVENTS];
-socket_t sockwrite[FEALBASESTREAM_MAXEVENTS];
-socket_t sockexcpt[FEALBASESTREAM_MAXEVENTS];
-
-};
-
-
-} // namespace feal
-
-
-#endif // _FEAL_BASESTREAM_WIN_H
