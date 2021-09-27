@@ -1,77 +1,26 @@
-#ifndef _FEAL_DATAGRAM_POSIX_H
-#define _FEAL_DATAGRAM_POSIX_H
+#include "feal.h"
 
-#ifndef _FEAL_H
-#error "Please include feal.h and not the other internal Feal header files, to avoid include errors."
-#endif
-
-#include <cstring>
-#include <sys/ioctl.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/un.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#include <errno.h>
-
-#if defined (__linux__)
-#include <sys/epoll.h>
-#else
-#include <sys/event.h>
-
-#ifndef MSG_CONFIRM
-#define MSG_CONFIRM 0
-#endif
-
-#endif
-
-namespace feal
+feal::EventId_t feal::EvtDgramReadAvail::getId(void)
 {
-
-template<typename Y>
-class Datagram : public Tool
-{
-public:
-Datagram() = default;
-Datagram( const Datagram & ) = default;
-Datagram& operator= ( const Datagram & ) = default;
-~Datagram() = default;
-
-std::thread datagramThread;
-
-void init(Y* p)
-{
-    actorptr = p;
-    p->addTool(this);
+    return getIdOfType<EvtDgramReadAvail>();
 }
 
-void shutdownTool(void)
+feal::EventId_t feal::EvtDgramWriteAvail::getId(void)
+{
+    return getIdOfType<EvtDgramWriteAvail>();
+}
+
+feal::EventId_t feal::EvtSockErr::getId(void)
+{
+    return getIdOfType<EvtSockErr>();
+}
+
+void feal::DatagramGeneric::shutdownTool(void)
 {
     close_and_reset();
 }
 
-errenum create_sock(family_t fam)
-{
-    errenum res = FEAL_OK;
-    sockfd = socket((int) fam, SOCK_DGRAM, 0);
-    if (sockfd == -1)
-    {
-        res = static_cast<errenum>(errno);
-        return res;
-    }
-    setnonblocking(sockfd);
-    EvtSockErr ese;
-    EvtDgramReadAvail edra;
-    EvtDgramWriteAvail edwa;
-    actorptr->addEvent(actorptr, ese);
-    actorptr->addEvent(actorptr, edra);
-    actorptr->addEvent(actorptr, edwa);
-    datagramThread = std::thread(&dgramLoopLauncher, this);
-    return res;
-}
-
-errenum bind_sock(feal::ipaddr* fa)
+feal::errenum feal::DatagramGeneric::bind_sock(feal::ipaddr* fa)
 {
     errenum res = FEAL_OK;
     int ret;
@@ -79,9 +28,9 @@ errenum bind_sock(feal::ipaddr* fa)
     sockaddr_ip su;
     memset(&su, 0, sizeof(su));
     ret = ipaddr_feal2posix(fa, &su);
-    if (ret != 1)
+    if (ret == FEAL_SOCKET_ERROR)
     {
-        res = static_cast<errenum>(errno);
+        res = static_cast<errenum>(FEAL_GETSOCKETERRNO);
         return  res;
     }
     socklen_t length = sizeof(su.in);
@@ -91,7 +40,7 @@ errenum bind_sock(feal::ipaddr* fa)
         length = sizeof(su.in6);
     }
     ret = bind(sockfd, &(su.sa), length);
-    if (ret == -1)
+    if (ret == FEAL_SOCKET_ERROR)
     {
         res = static_cast<errenum>(errno);
         return res;
@@ -99,22 +48,25 @@ errenum bind_sock(feal::ipaddr* fa)
     return res;
 }
 
-errenum bind_sock(struct sockaddr_un* su)
+#if defined(unix) || defined(__unix__) || defined(__unix)
+feal::errenum feal::DatagramGeneric::bind_sock(struct sockaddr_un* su)
 {
     errenum res = FEAL_OK;
     int ret;
     if (su == nullptr) return res;
     socklen_t length = sizeof(su->sun_family) + strlen(su->sun_path) + 1;
     ret = bind(sockfd, (const struct sockaddr*) su, length);
-    if (ret == -1)
+    if (ret == FEAL_SOCKET_ERROR)
     {
-        res = static_cast<errenum>(errno);
+        res = static_cast<errenum>(FEAL_GETSOCKETERRNO);
         return res;
     }
     return res;
 }
+#endif
 
-errenum recv_from(void *buf, uint32_t len, int32_t* bytes, feal::ipaddr* src)
+feal::errenum feal::DatagramGeneric::recv_from(void *buf, 
+    uint32_t len, int32_t* bytes, feal::ipaddr* src)
 {
     errenum res = FEAL_OK;
     sockaddr_ip su;
@@ -122,9 +74,12 @@ errenum recv_from(void *buf, uint32_t len, int32_t* bytes, feal::ipaddr* src)
     memset(&su, 0, sizeof(su));
     ssize_t numbytes = recvfrom(sockfd, buf, (size_t) len, 
                 MSG_DONTWAIT, &(su.sa), &addrlen);
-    if (numbytes == -1)
+#if defined (_WIN32)
+    sockread[0] = sockfd;
+#endif
+    if (numbytes == FEAL_SOCKET_ERROR)
     {
-        res = static_cast<errenum>(errno);
+        res = static_cast<errenum>(FEAL_GETSOCKETERRNO);
         return res;
     }
     if (bytes) *bytes = (int32_t) numbytes;
@@ -132,23 +87,27 @@ errenum recv_from(void *buf, uint32_t len, int32_t* bytes, feal::ipaddr* src)
     return res;
 }
 
-errenum recv_from(void *buf, uint32_t len, int32_t* bytes,
+#if defined(unix) || defined(__unix__) || defined(__unix)
+feal::errenum feal::DatagramGeneric::recv_from(void *buf, 
+    uint32_t len, int32_t* bytes,
     struct sockaddr_un* src, socklen_t *srcaddrlen)
 {
     errenum res = FEAL_OK;
     ssize_t numbytes = recvfrom(sockfd, buf, (size_t) len, 
                 MSG_DONTWAIT, (struct sockaddr *) src, srcaddrlen);
-    if (numbytes == -1)
+    if (numbytes == FEAL_SOCKET_ERROR)
     {
-        res = static_cast<errenum>(errno);
+        res = static_cast<errenum>(FEAL_GETSOCKETERRNO);
         return res;
     }
     if (bytes) *bytes = (int32_t) numbytes;
     return res;
 }
+#endif
 
-errenum send_to(void *buf, uint32_t len, int32_t* bytes, 
-    feal::ipaddr* dest, bool confirm = false)
+feal::errenum feal::DatagramGeneric::send_to(void *buf,
+    uint32_t len, int32_t* bytes, 
+    feal::ipaddr* dest, bool confirm)
 {
     errenum res = FEAL_OK;
     int ret;
@@ -156,9 +115,9 @@ errenum send_to(void *buf, uint32_t len, int32_t* bytes,
     sockaddr_ip su;
     memset(&su, 0, sizeof(su));
     ret = ipaddr_feal2posix(dest, &su);
-    if (ret != 1)
+    if (ret == FEAL_SOCKET_ERROR)
     {
-        res = static_cast<errenum>(errno);
+        res = static_cast<errenum>(FEAL_GETSOCKETERRNO);
         return  res;
     }
     socklen_t length = sizeof(su.in);
@@ -166,52 +125,71 @@ errenum send_to(void *buf, uint32_t len, int32_t* bytes,
     {
         length = sizeof(su.in6);
     }
+#if defined (_WIN32)
+    (void)confirm;
+    int flags = 0;
+#else
     int flags = ((confirm ? MSG_CONFIRM : 0) | MSG_DONTWAIT);
+#endif
     ssize_t numbytes = sendto(sockfd, buf, (size_t) len,
             flags, &(su.sa), length);
-    if (numbytes == -1)
+    if (numbytes == FEAL_SOCKET_ERROR)
     {
+#if defined (_WIN32)
+        if (WSAGetLastError() == WSAEWOULDBLOCK)
+#else
         if ((errno == EAGAIN)||(errno == EWOULDBLOCK))
+#endif
         {
             do_send_avail_notify();
         }
-        res = static_cast<errenum>(errno);
+        res = static_cast<errenum>(FEAL_GETSOCKETERRNO);
         return res;
     }
     if (bytes) *bytes = (int32_t) numbytes;
     return res;
 }
 
-errenum send_to(void *buf, uint32_t len, int32_t* bytes,
+#if defined(unix) || defined(__unix__) || defined(__unix)
+feal::errenum feal::DatagramGeneric::send_to(void *buf, 
+    uint32_t len, int32_t* bytes,
     struct sockaddr_un* dest, socklen_t destaddrlen,
-    bool confirm = false)
+    bool confirm)
 {
     errenum res = FEAL_OK;
     if ((dest == nullptr)||(destaddrlen <= 0)) return res;
     int flags = ((confirm ? MSG_CONFIRM : 0) | MSG_DONTWAIT);
     ssize_t numbytes = sendto(sockfd, buf, (size_t) len,
             flags, (const struct sockaddr *) dest, destaddrlen);
-    if (numbytes == -1)
+    if (numbytes == FEAL_SOCKET_ERROR)
     {
         if ((errno == EAGAIN)||(errno == EWOULDBLOCK))
         {
             do_send_avail_notify();
         }
-        res = static_cast<errenum>(errno);
+        res = static_cast<errenum>(FEAL_GETSOCKETERRNO);
         return res;
     }
     if (bytes) *bytes = (int32_t) numbytes;
     return res;
 }
+#endif
 
-errenum close_and_reset(void)
+feal::errenum feal::DatagramGeneric::close_and_reset(void)
 {
     errenum res = FEAL_OK;
-    if ((sockfd != -1)&&(shutdown(sockfd, SHUT_RDWR) == -1))
-        res = static_cast<errenum>(errno);
+    if ((sockfd != FEAL_SOCKET_ERROR)&&
+        (shutdown(sockfd, FEAL_SHUT_RDWR) == FEAL_SOCKET_ERROR))
+        res = static_cast<errenum>(FEAL_GETSOCKETERRNO);
     close(sockfd);
-    sockfd = -1;
-#if defined (__linux__)
+    sockfd = FEAL_INVALID_SOCKET;
+#if defined (_WIN32)
+    for (int j=0; j < max_events; j++)
+    {
+        sockread[j]  = INVALID_SOCKET;
+        sockwrite[j] = INVALID_SOCKET;
+    }
+#elif defined (__linux__)
     close(epfd);
     epfd = -1;
 #else
@@ -222,25 +200,87 @@ errenum close_and_reset(void)
     return res;
 }
 
-private:
+void feal::DatagramGeneric::start_thread(void)
+{
+    datagramThread = std::thread(&dgramLoopLauncher, this);
+}
 
-Y* actorptr = nullptr;
-socket_t sockfd = -1;
-const unsigned int max_events = 64;
-#if defined (__linux__)
-int epfd = -1;
-#else
-int kq = -1;
-#endif
-
-static void dgramLoopLauncher(Datagram *p)
+void feal::DatagramGeneric::dgramLoopLauncher(feal::DatagramGeneric *p)
 {
     if (p) p->dgramLoop();
 }
 
-void dgramLoop(void)
+void feal::DatagramGeneric::dgramLoop(void)
 {
-#if defined (__linux__)
+#if defined (_WIN32)
+    int nfds = 0;
+    ssize_t numbytes;
+    int wsaerr;
+    struct timeval tv;
+    char buf[100];
+    tv.tv_sec = 0;
+    tv.tv_usec = 500000; // 500ms
+    FD_SET ReadSet;
+    FD_SET WriteSet;
+    for (int j=0; j < max_events; j++)
+    {
+        sockread[j]  = INVALID_SOCKET;
+        sockwrite[j] = INVALID_SOCKET;
+    }
+    sockread[0] = sockfd;
+    for (;;)
+    {
+        if (sockfd == INVALID_SOCKET) break;
+        FD_ZERO(&ReadSet);
+        FD_ZERO(&WriteSet);
+        for (int j=0; j < max_events; j++)
+        {
+            if (sockread[j]  != INVALID_SOCKET) FD_SET(sockread[j],  &ReadSet);
+            if (sockwrite[j] != INVALID_SOCKET) FD_SET(sockwrite[j], &WriteSet);
+        }
+        nfds = select(0, &ReadSet, &WriteSet, nullptr, &tv);
+        //printf("select dgramLoop nfds=%d\n", nfds);
+        if (nfds == 0) continue; // timeout
+        if (nfds == SOCKET_ERROR)
+        {
+            wsaerr = WSAGetLastError();
+            if (wsaerr == WSAEINVAL)
+            {
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                continue;
+            }
+            printf("select dgramLoop nfds=%d, err=%d\n", nfds, wsaerr);
+            break;
+        }
+        for (int i = 0; i < max_events; i++)
+        {
+            if (nfds <= 0) break;
+            if (FD_ISSET(sockread[i], &ReadSet))
+            {
+                nfds--;
+                numbytes = recvfrom(sockfd, buf, sizeof(buf), 
+                    MSG_PEEK, nullptr, nullptr);
+                if ((numbytes == SOCKET_ERROR)&&(WSAGetLastError() != WSAEWOULDBLOCK))
+                {
+                    close_sock();
+                    sock_error();
+                    break;
+                }
+                sockread[0] = INVALID_SOCKET;
+                sock_read_avail();
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                continue;
+            }
+            else if (FD_ISSET(sockwrite[i], &WriteSet))
+            {
+                nfds--;
+                sockwrite[0] = INVALID_SOCKET;
+                sock_write_avail();
+                continue;
+            }
+        }
+    }
+#elif defined (__linux__)
     int nfds = 0;
     struct epoll_event events[max_events];
     epfd = epoll_create(1);
@@ -326,12 +366,18 @@ void dgramLoop(void)
 #endif
 }
 
-void close_sock(void)
+void feal::DatagramGeneric::close_sock(void)
 {
-    shutdown(sockfd, SHUT_RDWR);
+    shutdown(sockfd, FEAL_SHUT_RDWR);
     close(sockfd);
-    sockfd = -1;
-#if defined (__linux__)
+    sockfd = FEAL_INVALID_SOCKET;
+#if defined (_WIN32)
+    for (int j=0; j < max_events; j++)
+    {
+        sockread[j]  = INVALID_SOCKET;
+        sockwrite[j] = INVALID_SOCKET;
+    }
+#elif defined (__linux__)
     close(epfd);
     epfd = -1;
 #else
@@ -340,33 +386,11 @@ void close_sock(void)
 #endif
 }
 
-void sock_error(void)
+void feal::DatagramGeneric::do_send_avail_notify(void)
 {
-    if (actorptr == nullptr) return;
-    std::shared_ptr<EvtSockErr> evt = std::make_shared<EvtSockErr>();
-    actorptr->receiveEvent(evt);
-}
-
-void sock_read_avail(void)
-{
-    if (actorptr == nullptr) return;
-    std::shared_ptr<EvtDgramReadAvail> evt = std::make_shared<EvtDgramReadAvail>();
-    evt.get()->sockfd = sockfd;
-    evt.get()->datalen = datareadavaillen(sockfd);
-    actorptr->receiveEvent(evt);
-}
-
-void sock_write_avail(void)
-{
-    if (actorptr == nullptr) return;
-    std::shared_ptr<EvtDgramWriteAvail> evt = std::make_shared<EvtDgramWriteAvail>();
-    evt.get()->sockfd = sockfd;
-    actorptr->receiveEvent(evt);
-}
-
-void do_send_avail_notify(void)
-{
-#if defined (__linux__)
+#if defined (_WIN32)
+    sockwrite[0] = sockfd;
+#elif defined (__linux__)
     if (epoll_ctl_mod(epfd, sockfd, 
         (EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP | EPOLLOUT)) == -1)
     {
@@ -382,7 +406,7 @@ void do_send_avail_notify(void)
 }
 
 #if defined (__linux__)
-static int epoll_ctl_add(int epfd, socket_t fd, uint32_t events)
+int feal::DatagramGeneric::epoll_ctl_add(int epfd, socket_t fd, uint32_t events)
 {
     struct epoll_event ev;
     ev.events = events;
@@ -390,7 +414,7 @@ static int epoll_ctl_add(int epfd, socket_t fd, uint32_t events)
     return epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &ev);
 }
 
-static int epoll_ctl_mod(int epfd, socket_t fd, uint32_t events)
+int feal::DatagramGeneric::epoll_ctl_mod(int epfd, socket_t fd, uint32_t events)
 {
     struct epoll_event ev;
     ev.events = events;
@@ -399,10 +423,6 @@ static int epoll_ctl_mod(int epfd, socket_t fd, uint32_t events)
 }
 #endif
 
-};
-
-
-} // namespace feal
-
-
-#endif // _FEAL_DATAGRAM_POSIX_H
+void feal::DatagramGeneric::sock_error(void){}
+void feal::DatagramGeneric::sock_read_avail(void){}
+void feal::DatagramGeneric::sock_write_avail(void){}

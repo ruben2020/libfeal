@@ -12,6 +12,20 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <errno.h>
+#include <cstring>
+#include <sys/ioctl.h>
+#include <sys/un.h>
+
+#if defined (__linux__)
+#include <sys/epoll.h>
+#else
+#include <sys/event.h>
+
+#ifndef MSG_CONFIRM
+#define MSG_CONFIRM 0
+#endif
+
+#endif
 
 #define SOCK_STARTUP()
 
@@ -158,8 +172,10 @@ typedef enum
 
 
 typedef int socket_t;
-#define FEAL_INVALID_SOCKET (-1)
-#define FEAL_SOCKET_ERROR (-1)
+#define FEAL_INVALID_SOCKET    (-1)
+#define FEAL_SOCKET_ERROR      (-1)
+#define FEAL_GETSOCKETERRNO    errno
+#define FEAL_SHUT_RDWR         SHUT_RDWR
 
 typedef union sockaddr_ip {
     struct sockaddr sa;

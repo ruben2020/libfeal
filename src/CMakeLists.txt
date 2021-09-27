@@ -15,6 +15,7 @@ set( FEAL_LIB_SRCS
      FealActorVector.cpp
      FealBaseSignal.cpp
      FealSignal.cpp
+     FealDatagram.cpp
   )
 
 add_library( feal_lib STATIC ${FEAL_LIB_SRCS} )
