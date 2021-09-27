@@ -326,7 +326,7 @@ errenum getpeername(struct sockaddr_un* su, socket_t fd = -1)
 
 errenum getpeereid(uid_t* euid, gid_t* egid)
 {
-    return Stream::getpeerid(BaseStream::sockfd, euid, egid);
+    return getpeereid(sockfd, euid, egid);
 }
 
 static errenum getpeereid(socket_t fd, uid_t* euid, gid_t* egid)
