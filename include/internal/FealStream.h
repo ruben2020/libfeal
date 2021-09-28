@@ -5,6 +5,11 @@
 #error "Please include feal.h and not the other internal Feal header files, to avoid include errors."
 #endif
 
+#if defined (_WIN32)
+#define FEAL_STREAM_EINPROGRESS WSAEWOULDBLOCK
+#else
+#define FEAL_STREAM_EINPROGRESS EINPROGRESS
+#endif
 
 namespace feal
 {
@@ -107,11 +112,11 @@ static errenum getpeereid(socket_t fd, uid_t* euid, gid_t* egid);
 #endif
 
 errenum create_and_bind(feal::ipaddr* fa);
-errenum recv(void *buf, uint32_t len, int32_t* bytes, socket_t fd = -1);
-errenum send(void *buf, uint32_t len, int32_t* bytes, socket_t fd = -1);
+errenum recv(void *buf, uint32_t len, int32_t* bytes, socket_t fd = FEAL_INVALID_SOCKET);
+errenum send(void *buf, uint32_t len, int32_t* bytes, socket_t fd = FEAL_INVALID_SOCKET);
 errenum disconnect_client(socket_t client_sockfd);
 errenum disconnect_and_reset(void);
-errenum getpeername(feal::ipaddr* fa, socket_t fd = -1);
+errenum getpeername(feal::ipaddr* fa, socket_t fd = FEAL_INVALID_SOCKET);
 
 protected:
 
@@ -179,13 +184,13 @@ errenum create_and_connect(feal::ipaddr* fa)
     }
     ret = connect(sockfd, &(su.sa), length);
     if ((ret == FEAL_SOCKET_ERROR) &&
-        (FEAL_GETSOCKETERRNO != FEAL_EINPROGRESS))
+        (FEAL_GETSOCKETERRNO != FEAL_STREAM_EINPROGRESS))
     {
         res = static_cast<errenum>(FEAL_GETSOCKETERRNO);
         return res;
     }
     else if ((ret == FEAL_SOCKET_ERROR) &&
-        (FEAL_GETSOCKETERRNO == FEAL_EINPROGRESS))
+        (FEAL_GETSOCKETERRNO == FEAL_STREAM_EINPROGRESS))
     {
         FEALDEBUGLOG("do_connect_in_progress");
         do_connect_in_progress();
@@ -223,13 +228,13 @@ errenum create_and_connect(struct sockaddr_un* su)
     socklen_t length = sizeof(su->sun_family) + strlen(su->sun_path) + 1;
     ret = connect(sockfd, (const struct sockaddr*) su, length);
     if ((ret == FEAL_SOCKET_ERROR) &&
-        (FEAL_GETSOCKETERRNO != FEAL_EINPROGRESS))
+        (FEAL_GETSOCKETERRNO != FEAL_STREAM_EINPROGRESS))
     {
         res = static_cast<errenum>(FEAL_GETSOCKETERRNO);
         return res;
     }
     else if ((ret == FEAL_SOCKET_ERROR) &&
-        (FEAL_GETSOCKETERRNO == FEAL_EINPROGRESS))
+        (FEAL_GETSOCKETERRNO == FEAL_STREAM_EINPROGRESS))
     {
         FEALDEBUGLOG("do_connect_in_progress");
         do_connect_in_progress();

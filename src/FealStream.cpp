@@ -1,11 +1,12 @@
 #include "feal.h"
 
 #if defined (_WIN32)
-#define FEAL_EINPROGRESS WSAEWOULDBLOCK
-#define MSG_DONTWAIT 0
+#define BUFCAST(x) (char *) x
+#define CLOSESOCKET(x) closesocket(x)
 
 #else
-#define FEAL_EINPROGRESS EINPROGRESS
+#define BUFCAST(x) (void *) x
+#define CLOSESOCKET(x) close(x)
 
 #endif
 
@@ -114,8 +115,11 @@ feal::errenum feal::StreamGeneric::recv(void *buf,
     uint32_t len, int32_t* bytes, feal::socket_t fd)
 {
     errenum res = FEAL_OK;
-    if (fd == -1) fd = sockfd;
-    ssize_t numbytes = ::recv(fd, buf, (size_t) len, MSG_DONTWAIT);
+    if (fd == FEAL_INVALID_SOCKET) fd = sockfd;
+    ssize_t numbytes = ::recv(fd, BUFCAST(buf), (size_t) len, MSG_DONTWAIT);
+#if defined (_WIN32)
+    do_client_read_start(fd);
+#endif
     if (numbytes == FEAL_SOCKET_ERROR)
     {
         res = static_cast<errenum>(FEAL_GETSOCKETERRNO);
@@ -129,8 +133,8 @@ feal::errenum feal::StreamGeneric::send(void *buf,
     uint32_t len, int32_t* bytes, feal::socket_t fd)
 {
     errenum res = FEAL_OK;
-    if (fd == -1) fd = sockfd;
-    ssize_t numbytes = ::send(fd, buf, (size_t) len, MSG_DONTWAIT);
+    if (fd == FEAL_INVALID_SOCKET) fd = sockfd;
+    ssize_t numbytes = ::send(fd, BUFCAST(buf), (size_t) len, MSG_DONTWAIT);
     if (numbytes == FEAL_SOCKET_ERROR)
     {
         if ((FEAL_GETSOCKETERRNO == EAGAIN)||(FEAL_GETSOCKETERRNO == EWOULDBLOCK))
@@ -169,7 +173,7 @@ feal::errenum feal::StreamGeneric::disconnect_and_reset(void)
 feal::errenum feal::StreamGeneric::getpeername(feal::ipaddr* fa, feal::socket_t fd)
 {
     errenum res = FEAL_OK;
-    if (fd == -1) fd = sockfd;
+    if (fd == FEAL_INVALID_SOCKET) fd = sockfd;
     sockaddr_ip su;
     memset(&su, 0, sizeof(su));
     socklen_t length = sizeof(su);
