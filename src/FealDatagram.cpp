@@ -28,6 +28,21 @@ void feal::DatagramGeneric::shutdownTool(void)
     close_and_reset();
 }
 
+feal::errenum feal::DatagramGeneric::create_sock(feal::family_t fam)
+{
+    errenum res = FEAL_OK;
+    sockfd = socket((int) fam, SOCK_DGRAM, 0);
+    if (sockfd == FEAL_INVALID_SOCKET)
+    {
+        res = static_cast<errenum>(FEAL_GETSOCKETERRNO);
+        return res;
+    }
+    setnonblocking(sockfd);
+    add_events();
+    datagramThread = std::thread(&dgramLoopLauncher, this);
+    return res;
+}
+
 feal::errenum feal::DatagramGeneric::bind_sock(feal::ipaddr* fa)
 {
     errenum res = FEAL_OK;
@@ -50,7 +65,7 @@ feal::errenum feal::DatagramGeneric::bind_sock(feal::ipaddr* fa)
     ret = bind(sockfd, &(su.sa), length);
     if (ret == FEAL_SOCKET_ERROR)
     {
-        res = static_cast<errenum>(errno);
+        res = static_cast<errenum>(FEAL_GETSOCKETERRNO);
         return res;
     }
     return res;
@@ -206,11 +221,6 @@ feal::errenum feal::DatagramGeneric::close_and_reset(void)
 #endif
     if (datagramThread.joinable()) datagramThread.join();
     return res;
-}
-
-void feal::DatagramGeneric::start_thread(void)
-{
-    datagramThread = std::thread(&dgramLoopLauncher, this);
 }
 
 void feal::DatagramGeneric::dgramLoopLauncher(feal::DatagramGeneric *p)
@@ -431,6 +441,27 @@ int feal::DatagramGeneric::epoll_ctl_mod(int epfd, socket_t fd, uint32_t events)
 }
 #endif
 
-void feal::DatagramGeneric::sock_error(void){}
-void feal::DatagramGeneric::sock_read_avail(void){}
-void feal::DatagramGeneric::sock_write_avail(void){}
+void feal::DatagramGeneric::sock_error(void)
+{
+    std::shared_ptr<EvtSockErr> evt = std::make_shared<EvtSockErr>();
+    receiveEvent(evt);
+}
+
+void feal::DatagramGeneric::sock_read_avail(void)
+{
+    std::shared_ptr<EvtDgramReadAvail> evt = std::make_shared<EvtDgramReadAvail>();
+    evt.get()->sockfd = sockfd;
+    evt.get()->datalen = datareadavaillen(sockfd);
+    receiveEvent(evt);
+}
+
+void feal::DatagramGeneric::sock_write_avail(void)
+{
+    std::shared_ptr<EvtDgramWriteAvail> evt = std::make_shared<EvtDgramWriteAvail>();
+    evt.get()->sockfd = sockfd;
+    receiveEvent(evt);
+}
+
+void feal::DatagramGeneric::add_events(void){}
+void feal::DatagramGeneric::receiveEvent(std::shared_ptr<Event> pevt){(void)pevt;}
+

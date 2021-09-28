@@ -41,12 +41,10 @@ errenum create_and_bind(feal::ipaddr* fa)
     ret = ipaddr_feal2posix(fa, &su);
     if (ret == SOCKET_ERROR)
     {
-        //printf("feal2posix fd %ld, err %d\n", (long int) sockfd, WSAGetLastError());
         res = static_cast<errenum>(WSAGetLastError());
         return  res;
     }
     sockfd = socket(fa->family, SOCK_STREAM, 0);
-    //printf("socket fd %ld, err %d\n", (long int) sockfd, WSAGetLastError());
     if (sockfd == INVALID_SOCKET)
     {
         res = static_cast<errenum>(WSAGetLastError());
@@ -60,7 +58,6 @@ errenum create_and_bind(feal::ipaddr* fa)
     }
     setnonblocking(sockfd);
     ret = ::bind(sockfd, &(su.sa), length);
-    //printf("bind fd %ld, ret %d, err %d\n", (long int) sockfd, ret, WSAGetLastError());
     if (ret == SOCKET_ERROR)
     {
         res = static_cast<errenum>(WSAGetLastError());

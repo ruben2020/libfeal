@@ -52,6 +52,7 @@ DatagramGeneric& operator= ( const DatagramGeneric & ) = default;
 
 void shutdownTool(void);
 
+errenum create_sock(family_t fam);
 errenum bind_sock(feal::ipaddr* fa);
 errenum recv_from(void *buf, 
     uint32_t len, int32_t* bytes, feal::ipaddr* src);
@@ -90,10 +91,8 @@ const unsigned int max_events = 64;
 int kq = -1;
 #endif
 
-void start_thread(void);
-virtual void sock_error(void);
-virtual void sock_read_avail(void);
-virtual void sock_write_avail(void);
+virtual void add_events(void);
+virtual void receiveEvent(std::shared_ptr<Event> pevt);
 
 private:
 
@@ -101,6 +100,9 @@ static void dgramLoopLauncher(DatagramGeneric *p);
 void dgramLoop(void);
 void do_send_avail_notify(void);
 void close_sock(void);
+void sock_error(void);
+void sock_read_avail(void);
+void sock_write_avail(void);
 #if defined (__linux__)
 static int epoll_ctl_add(int epfd, socket_t fd, uint32_t events);
 static int epoll_ctl_mod(int epfd, socket_t fd, uint32_t events);
@@ -125,53 +127,27 @@ void init(Y* p)
     p->addTool(this);
 }
 
-errenum create_sock(family_t fam)
+protected:
+
+void receiveEvent(std::shared_ptr<Event> pevt)
 {
-    errenum res = FEAL_OK;
-    sockfd = socket((int) fam, SOCK_DGRAM, 0);
-    if (sockfd == FEAL_INVALID_SOCKET)
-    {
-        res = static_cast<errenum>(FEAL_GETSOCKETERRNO);
-        return res;
-    }
-    setnonblocking(sockfd);
+    if (actorptr) actorptr->receiveEvent(pevt);
+}
+
+void add_events(void)
+{
+    if (actorptr == nullptr) return;
     EvtSockErr ese;
     EvtDgramReadAvail edra;
     EvtDgramWriteAvail edwa;
     actorptr->addEvent(actorptr, ese);
     actorptr->addEvent(actorptr, edra);
     actorptr->addEvent(actorptr, edwa);
-    start_thread();
-    return res;
 }
 
 private:
 
 Y* actorptr = nullptr;
-
-void sock_error(void)
-{
-    if (actorptr == nullptr) return;
-    std::shared_ptr<EvtSockErr> evt = std::make_shared<EvtSockErr>();
-    actorptr->receiveEvent(evt);
-}
-
-void sock_read_avail(void)
-{
-    if (actorptr == nullptr) return;
-    std::shared_ptr<EvtDgramReadAvail> evt = std::make_shared<EvtDgramReadAvail>();
-    evt.get()->sockfd = sockfd;
-    evt.get()->datalen = datareadavaillen(sockfd);
-    actorptr->receiveEvent(evt);
-}
-
-void sock_write_avail(void)
-{
-    if (actorptr == nullptr) return;
-    std::shared_ptr<EvtDgramWriteAvail> evt = std::make_shared<EvtDgramWriteAvail>();
-    evt.get()->sockfd = sockfd;
-    actorptr->receiveEvent(evt);
-}
 
 };
 

@@ -16,6 +16,7 @@ set( FEAL_LIB_SRCS
      FealBaseSignal.cpp
      FealSignal.cpp
      FealBaseStream.cpp
+     FealStream.cpp
      FealDatagram.cpp
   )
 
