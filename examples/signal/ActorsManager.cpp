@@ -19,6 +19,7 @@ void ActorsManager::initActor(void)
     timers.init(this);
     signal.init(this);
     signal.registersignal<EvtSigInt>(SIGINT);
+    signal.registersignal<EvtSigInt>(SIGTERM);
     actors.push_back(std::make_shared<ActorA>());
     feal::initAll(actors);
 }
@@ -27,7 +28,7 @@ void ActorsManager::startActor(void)
 {
     printf("ActorsManager startActor\n");
     feal::startAll(actors);
-    timers.startTimer<EventTimerShutdown>(std::chrono::seconds(180));
+    timers.startTimer<EventTimerShutdown>(std::chrono::seconds(360));
 }
 
 void ActorsManager::pauseActor(void)
@@ -57,6 +58,19 @@ void ActorsManager::handleEvent(std::shared_ptr<EvtSigInt> pevt)
     if (!pevt ) return;
     printf("ActorsManager::EvtSigInt (signum=%d, sicode=%d)\n", 
         pevt.get()->signo, pevt.get()->sicode);
+    switch(pevt.get()->signo)
+    {
+        case SIGINT:
+            printf("Received SIGINT\n");
+            break;
+
+        case SIGTERM:
+            printf("Received SIGTERM\n");
+            break;
+
+        default:
+            break;
+    }
     timers.stopTimer<EventTimerShutdown>();
     shutdown();
 }
