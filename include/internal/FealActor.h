@@ -15,6 +15,7 @@
 #include <functional>
 #include <map>
 #include <vector>
+#include <future>
 
 namespace feal
 {
@@ -88,6 +89,17 @@ void subscribeEvent(Y* p, T& k)
             );
     }
     EventBus::getInstance().subscribeEvent(id, shared_from_this());
+}
+
+template<typename T, typename Y>
+void subscribePromise(Y* p, std::shared_future<std::shared_ptr<T>> fut)
+{
+    subscribeEvent<T>(p);
+    std::thread t1([&, fut](){
+        std::shared_ptr<T> sp = fut.get();
+        EventBus::getInstance().publishEvent(sp);
+    });
+    t1.detach();
 }
 
 template<typename T>
