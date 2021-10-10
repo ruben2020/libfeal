@@ -38,7 +38,7 @@ void feal::Timer::timerLoop(void)
                     mtxTimerVar.unlock();
                 }
                 else timerActive = false;
-                timerEvent.get()->replyEvent(timerEvent);
+                timerEvent.get()->replyEvent(EventBus::getInstance().cloneEvent(timerEvent));
             }
         }
         else if (timerValid)

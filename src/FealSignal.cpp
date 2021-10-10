@@ -18,9 +18,10 @@ void feal::SignalGeneric::sighandler(int signum, int sicode)
         vec_evtsig_ptr_t ves = it->second;
         for (auto itv = ves.begin(); itv != ves.end(); ++itv)
         {
-            (*itv).get()->signo = signum;
-            (*itv).get()->sicode = sicode;
-            EventBus::getInstance().publishEvent(*itv);
+            auto itw = std::dynamic_pointer_cast<EventSignal>(EventBus::getInstance().cloneEvent(*itv));
+            itw.get()->signo = signum;
+            itw.get()->sicode = sicode;
+            EventBus::getInstance().publishEvent(itw);
         }
     }
 }

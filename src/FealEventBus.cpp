@@ -79,6 +79,21 @@ void feal::EventBus::publishEvent(std::shared_ptr<Event> pevt)
     }
 }
 
+std::shared_ptr<feal::Event> feal::EventBus::cloneEvent(std::shared_ptr<feal::Event> p)
+{
+    const std::lock_guard<std::mutex> lock(mtxEventBus);
+    auto it = mapEventCloners.find(p.get()->getId());
+    if (it != mapEventCloners.end())
+    {
+        return it->second();
+    }
+    else
+    {
+        printf("Unable to clone event\n");
+        return p;
+    }
+}
+
 void feal::EventBus::stopBus(void)
 {
     eventBusOff = true;
@@ -91,5 +106,6 @@ void feal::EventBus::resetBus(void)
         it->second.clear();
     }
     mapEventSubscribers.clear();
+    mapEventCloners.clear();
 }
 

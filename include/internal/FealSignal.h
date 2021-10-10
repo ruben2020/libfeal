@@ -139,6 +139,7 @@ template<typename T>
 errenum registersignal(int signum)
 {
     T k;
+    EventBus::getInstance().registerEventCloner<T>();
     actorptr->subscribeEvent(actorptr, k);
     return SignalGeneric::registersignal<T>(signum);
 }

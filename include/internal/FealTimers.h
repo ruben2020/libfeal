@@ -150,6 +150,7 @@ void createTimer(void)
     if (it == mapTimers.end())
     {
         std::shared_ptr<Event> spevt = std::make_shared<T>();
+        EventBus::getInstance().registerEventCloner<T>();
         std::weak_ptr<Actor> wkact = actorptr->shared_from_this();
         spevt.get()->setSender(wkact);
         Timer *timi = new Timer();

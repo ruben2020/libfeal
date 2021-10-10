@@ -10,6 +10,7 @@
 #include <vector>
 #include <mutex>
 #include <atomic>
+#include <functional>
 
 namespace feal
 {
@@ -38,11 +39,30 @@ void publishEvent(std::shared_ptr<Event> pevt);
 void stopBus(void);
 void resetBus(void);
 
+template<typename T>
+void registerEventCloner()
+{
+    const std::lock_guard<std::mutex> lock(mtxEventBus);
+    EventId_t id = Event::getIdOfType<T>();
+    auto it = mapEventCloners.find(id);
+    if (it == mapEventCloners.end())
+    {
+        mapEventCloners.insert(std::make_pair(id,
+                []() -> std::shared_ptr<Event>
+                    { return std::make_shared<T>(); }
+                )
+            );
+    }
+}
+
+std::shared_ptr<Event> cloneEvent(std::shared_ptr<Event> p);
+
 private:
 
 EventBus() = default;
 static EventBus* inst;
 map_evt_subsc_t mapEventSubscribers;
+std::map<EventId_t, std::function<std::shared_ptr<Event>()>> mapEventCloners;
 std::mutex mtxEventBus;
 std::atomic_bool eventBusOff {false};
 
