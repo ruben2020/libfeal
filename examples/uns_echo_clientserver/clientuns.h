@@ -1,3 +1,6 @@
+// Please see the "examples/LICENSE" file for
+// the copyright notice and license text.
+
 #ifndef _CLIENTUNS_H
 #define _CLIENTUNS_H
 

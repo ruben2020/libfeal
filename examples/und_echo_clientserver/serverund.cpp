@@ -1,3 +1,6 @@
+// Please see the "examples/LICENSE" file for
+// the copyright notice and license text.
+
 #include <cstdio>
 #include <cstring>
 #include "serverund.h"

@@ -1,3 +1,6 @@
+// Please see the "examples/LICENSE" file for
+// the copyright notice and license text.
+
 #ifndef _CLIENTHANDLER_H
 #define _CLIENTHANDLER_H
 

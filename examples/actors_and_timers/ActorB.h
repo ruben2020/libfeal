@@ -1,3 +1,6 @@
+// Please see the "examples/LICENSE" file for
+// the copyright notice and license text.
+
 #ifndef _FEAL_ACTOR_B_H
 #define _FEAL_ACTOR_B_H
 
