@@ -42,7 +42,8 @@ void feal::BaseSignal::win_sighandler(int sig)
     if (recvsig_fp) recvsig_fp(sig, 0);
 }
 
-#elif defined(unix) || defined(__unix__) || defined(__unix)
+#elif defined (__APPLE__)   || defined (__FreeBSD__)   || defined (__NetBSD__) || \
+      defined (__OpenBSD__) || defined (__DragonFly__) || defined (__linux__)
 
 int feal::BaseSignal::do_registersignal(int signum)
 {
