@@ -81,7 +81,7 @@ jobs:
         if: startsWith(matrix.config.name, 'Windows MinGW')
         uses: seanmiddleditch/gha-setup-ninja@master
 
-     - name: Configure CMake and Build with Clang
+      - name: Configure CMake and Build with Clang
         if: contains(matrix.config.name, 'Clang')
         run: |
           mkdir -p build
@@ -91,7 +91,7 @@ jobs:
           cmake -G Ninja ..
           ninja
      
-     - name: Configure CMake and Build with GCC
+      - name: Configure CMake and Build with GCC
         if: ${{ !contains(matrix.config.name, 'Clang') }}
         run: |
           mkdir -p build
