@@ -34,13 +34,13 @@ jobs:
             cc: "clang",
             cxx: "clang++"
           }
-        - {
-            name: "macOS Clang",
-            os: macos-latest,
-            build_type: "Debug",
-            cc: "clang",
-            cxx: "clang++"
-          }
+#        - {
+#            name: "macOS Clang",
+#            os: macos-latest,
+#            build_type: "Debug",
+#            cc: "clang",
+#            cxx: "clang++"
+#          }
         - {
             name: "Windows MinGW",
             os: windows-latest,
