@@ -79,7 +79,7 @@ jobs:
       - name: Install dependencies on macOS
         if: startsWith(matrix.config.name, 'macOS Clang')
         run: |
-          brew install cmake ninja
+          brew install cmake
           clang -v
           cmake --version
           ninja --version
@@ -110,8 +110,8 @@ jobs:
           cd build
           export CC=clang
           export CXX=clang++
-          cmake -G Ninja ..
-          ninja
+          cmake -G "Unix Makefiles" ..
+          make
      
       - name: Configure CMake and Build with GCC
         if: ${{ !contains(matrix.config.name, 'Clang') }}
