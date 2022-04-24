@@ -35,18 +35,25 @@ jobs:
             cxx: "clang++"
           }
         - {
-            name: "macOS Clang",
-            os: macos-latest,
-            build_type: "Debug",
-            cc: "clang",
-            cxx: "clang++"
-          }
-        - {
             name: "Windows MinGW",
             os: windows-latest,
             build_type: "Debug",
             cc: "gcc",
             cxx: "g++"
+          }
+#        - {
+#            name: "macOS Clang",
+#            os: macos-latest,
+#            build_type: "Debug",
+#            cc: "clang",
+#            cxx: "clang++"
+#          }
+        - {
+            name: "FreeBSD Clang",
+            os: macos-10.15,
+            build_type: "Debug",
+            cc: "clang",
+            cxx: "clang++"
           }
 
     steps:
@@ -69,7 +76,7 @@ jobs:
           clang -v && clang++ -v
           cmake --version && ninja --version
 
-      - name: Install dependencies on macOS Clang
+      - name: Install dependencies on macOS
         if: startsWith(matrix.config.name, 'macOS Clang')
         run: |
           brew install cmake ninja
@@ -80,6 +87,21 @@ jobs:
       - name: Install ninja on Windows
         if: startsWith(matrix.config.name, 'Windows MinGW')
         uses: seanmiddleditch/gha-setup-ninja@master
+
+      - name: Install dependencies on FreeBSD
+        if: contains(matrix.config.name, 'FreeBSD')
+        uses: vmactions/freebsd-vm@v0.1.5
+        with:
+          usesh: true
+          prepare: pkg install -y ninja cmake clang
+          run: |
+            pwd
+            ls -lah
+            whoami
+            env
+            freebsd-version
+            clang -v && clang++ -v
+            cmake --version && ninja --version
 
       - name: Configure CMake and Build with Clang
         if: contains(matrix.config.name, 'Clang')
@@ -98,4 +120,5 @@ jobs:
           cd build
           cmake -G Ninja ..
           ninja
+
 
