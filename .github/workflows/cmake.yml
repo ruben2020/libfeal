@@ -93,7 +93,7 @@ jobs:
         uses: vmactions/freebsd-vm@v0.1.5
         with:
           usesh: true
-          prepare: pkg install -y ninja cmake clang
+          prepare: pkg install -y ninja cmake llvm
           run: |
             pwd
             ls -lah
