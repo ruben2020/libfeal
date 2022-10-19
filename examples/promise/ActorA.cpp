@@ -9,6 +9,13 @@
 #include "ActorsManager.h"
 #include "ActorA.h"
 
+#if defined (_WIN32)
+#define CMDSTR "dir c:\\"
+#else
+#define CMDSTR "ls -al /"
+#endif
+
+
 feal::EventId_t EvtAccPromiseComplete::getId(void)
 {
     return getIdOfType<EvtAccPromiseComplete>();
@@ -35,11 +42,7 @@ void ActorA::startActor(void)
         this, std::move(numbers), std::move(accumulate_promise));
     subscribePromise(this, fut_acc);
 
-#if defined (_WIN32)
-    std::string str {"dir/b/a/s C:\\"};
-#else
-    std::string str {"ls -al /"};
-#endif
+    std::string str {CMDSTR};
     std::promise<std::shared_ptr<EvtPopenPromiseComplete>> popen_promise;
     fut_popen = popen_promise.get_future().share();
     popen_work_thread = std::thread(&popenThreadLauncher,
