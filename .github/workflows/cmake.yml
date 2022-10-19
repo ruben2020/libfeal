@@ -124,6 +124,7 @@ jobs:
       - name: Run some examples
         if: startsWith(matrix.config.name, 'Windows MinGW')
         run: |
+          cd
           cd examples
           cd promise
           fealpromise.exe
@@ -131,6 +132,7 @@ jobs:
       - name: Run some examples
         if: ${{ !startsWith(matrix.config.name, 'Windows MinGW') }}
         run: |
+          pwd
           cd examples
           cd promise
           ./fealpromise
