@@ -8,17 +8,28 @@
 
 #include "feal.h"
 
-
-class EvtPromiseComplete : public feal::Event
+class EvtAccPromiseComplete : public feal::Event
 {
 public:
-EvtPromiseComplete() = default;
-EvtPromiseComplete( const EvtPromiseComplete & ) = default;
-EvtPromiseComplete& operator= ( const EvtPromiseComplete & ) = default;
-~EvtPromiseComplete() = default;
+EvtAccPromiseComplete() = default;
+EvtAccPromiseComplete( const EvtAccPromiseComplete & ) = default;
+EvtAccPromiseComplete& operator= ( const EvtAccPromiseComplete & ) = default;
+~EvtAccPromiseComplete() = default;
 feal::EventId_t getId(void);
 int total = 0;
 };
+
+class EvtPopenPromiseComplete : public feal::Event
+{
+public:
+EvtPopenPromiseComplete() = default;
+EvtPopenPromiseComplete( const EvtPopenPromiseComplete & ) = default;
+EvtPopenPromiseComplete& operator= ( const EvtPopenPromiseComplete & ) = default;
+~EvtPopenPromiseComplete() = default;
+feal::EventId_t getId(void);
+std::string str;
+};
+
 
 class ActorA : public feal::Actor
 {
@@ -34,17 +45,27 @@ void startActor(void);
 void pauseActor(void);
 void shutdownActor(void);
 
-void handleEvent(std::shared_ptr<EvtPromiseComplete> pevt);
+void handleEvent(std::shared_ptr<EvtAccPromiseComplete> pevt);
+void handleEvent(std::shared_ptr<EvtPopenPromiseComplete> pevt);
 
 private:
 feal::Timers<ActorA> timers;
-std::thread work_thread;
-std::shared_future<std::shared_ptr<EvtPromiseComplete>> fut_acc;
+std::atomic_uint count {0};
+std::thread acc_work_thread;
+std::thread popen_work_thread;
+std::shared_future<std::shared_ptr<EvtAccPromiseComplete>> fut_acc;
+std::shared_future<std::shared_ptr<EvtPopenPromiseComplete>> fut_popen;
 
 static void accThreadLauncher(ActorA* ptr, std::vector<int> vec, 
-    std::promise<std::shared_ptr<EvtPromiseComplete>> prom);
+    std::promise<std::shared_ptr<EvtAccPromiseComplete>> prom);
 void accumulator(std::vector<int> vec,
-    std::promise<std::shared_ptr<EvtPromiseComplete>> prom);
+    std::promise<std::shared_ptr<EvtAccPromiseComplete>> prom);
+
+static void popenThreadLauncher(ActorA* ptr, std::string cmdstr, 
+    std::promise<std::shared_ptr<EvtPopenPromiseComplete>> prom);
+void externalcommand(std::string cmdstr,
+    std::promise<std::shared_ptr<EvtPopenPromiseComplete>> prom);
+
 
 };
 
