@@ -121,18 +121,12 @@ jobs:
           cmake -G Ninja ..
           ninja
 
-      - name: Run some examples on Windows
-        if: startsWith(matrix.config.name, 'Windows MinGW')
+      - name: Run some examples
         run: |
           cd build
           cd examples
-          cd promise
-          fealpromise.exe
-
-      - name: Run some examples on Linux/ Unix/ MacOS
-        if: ${{ !startsWith(matrix.config.name, 'Windows MinGW') }}
-        run: |
-          cd build
-          cd examples
+          cd actors_and_timers
+          ./fealactorstimers
+          cd ..
           cd promise
           ./fealpromise
