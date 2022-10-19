@@ -126,9 +126,9 @@ jobs:
         shell: cmd
         run: |
           echo Running fealactorstimers ...
-          build\examples\actors_and_timers\fealactorstimers.exe
+          D:\a\feal\feal\build\examples\actors_and_timers\fealactorstimers.exe
           echo Running promise ...
-          build\examples\promise\fealpromise.exe
+          D:\a\feal\feal\build\examples\promise\fealpromise.exe
           
       - name: Run some examples on Linux, MacOS and Unix
         if: ${{ !startsWith(matrix.config.name, 'Windows MinGW') }}
