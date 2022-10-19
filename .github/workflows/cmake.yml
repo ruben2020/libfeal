@@ -125,16 +125,12 @@ jobs:
         if: startsWith(matrix.config.name, 'Windows MinGW')
         run: |
           cd examples
-          cd actors_and_timers
-          fealactorstimers.exe
-          cd ..
           cd promise
           fealpromise.exe
 
       - name: Run some examples
         if: ${{ !startsWith(matrix.config.name, 'Windows MinGW') }}
         run: |
-          cd examples/actors_and_timers
-          ./fealactorstimers
-          cd ../promise
+          cd examples
+          cd promise
           ./fealpromise
