@@ -35,7 +35,11 @@ void ActorA::startActor(void)
         this, std::move(numbers), std::move(accumulate_promise));
     subscribePromise(this, fut_acc);
 
+#if defined (_WIN32)
+    std::string str {"dir/b/a/s C:\\"};
+#else
     std::string str {"ls -al /"};
+#endif
     std::promise<std::shared_ptr<EvtPopenPromiseComplete>> popen_promise;
     fut_popen = popen_promise.get_future().share();
     popen_work_thread = std::thread(&popenThreadLauncher,
