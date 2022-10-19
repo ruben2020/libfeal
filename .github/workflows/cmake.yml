@@ -123,12 +123,12 @@ jobs:
 
       - name: Run some examples on Windows
         if: startsWith(matrix.config.name, 'Windows MinGW')
+        shell: cmd
         run: |
-          pwd
           echo Running fealactorstimers ...
-          build/examples/actors_and_timers/fealactorstimers
+          build\examples\actors_and_timers\fealactorstimers
           echo Running promise ...
-          build/examples/promise/fealpromise
+          build\examples\promise\fealpromise
 
       - name: Run some examples on Linux, MacOS and Unix
         if: ${{ !startsWith(matrix.config.name, 'Windows MinGW') }}
