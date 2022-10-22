@@ -34,7 +34,8 @@ int feal::BaseSignal::do_registersignal(int signum)
     struct sigaction sa;
     sa.sa_sigaction = &posix_sighandler;
     sigemptyset(&(sa.sa_mask));
-    sa.sa_flags = (SA_RESTART | SA_SIGINFO);
+    sa.sa_flags = (SA_RESTART | SA_SIGINFO |
+    (signum == SIGCHLD ? SA_NOCLDSTOP : 0));
     return sigaction(signum, &sa, nullptr);
 }
 
