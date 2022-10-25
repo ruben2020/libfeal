@@ -32,7 +32,7 @@
 #include "internal/FealSignal.h"
 #ifndef _WIN32
 #include "internal/FealReader.h"
-#include "internal/FealPipeReader.h"
+#include "internal/FealFifoReader.h"
 #endif
 
 #endif // _FEAL_H

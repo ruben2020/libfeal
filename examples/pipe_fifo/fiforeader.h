@@ -59,7 +59,7 @@ void handleEvent(std::shared_ptr<EvtFifoRead> pevt);
 private:
 void open_for_reading(void);
 feal::Timers<Fiforeader> timers;
-feal::PipeReader<Fiforeader> reader;
+feal::FifoReader<Fiforeader> reader;
 
 };
 

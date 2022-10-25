@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: MIT
 //
  
-#ifndef _FEAL_PIPEREADER_H
-#define _FEAL_PIPEREADER_H
+#ifndef _FEAL_FIFOREADER_H
+#define _FEAL_FIFOREADER_H
 
 #ifndef _FEAL_H
 #error "Please include feal.h and not the other internal Feal header files, to avoid include errors."
@@ -14,13 +14,13 @@ namespace feal
 {
 
 template<typename Y>
-class PipeReader : public ReaderGeneric
+class FifoReader : public ReaderGeneric
 {
 public:
-PipeReader() = default;
-PipeReader( const PipeReader & ) = default;
-PipeReader& operator= ( const PipeReader & ) = default;
-~PipeReader() = default;
+FifoReader() = default;
+FifoReader( const FifoReader & ) = default;
+FifoReader& operator= ( const FifoReader & ) = default;
+~FifoReader() = default;
 
 void init(Y* p)
 {
@@ -61,4 +61,4 @@ std::shared_ptr<EvtReader> myevt;
 
 } // namespace feal
 
-#endif // _FEAL_PIPEREADER_H
+#endif // _FEAL_FIFOREADER_H
