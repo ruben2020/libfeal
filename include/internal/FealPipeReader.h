@@ -29,7 +29,7 @@ void init(Y* p)
 }
 
 template<typename T>
-errenum open_pipe_for_reading(const char *pathname)
+errenum subscribe_and_open(const char *pathname)
 {
     handle_t fd;
     close_and_reset();

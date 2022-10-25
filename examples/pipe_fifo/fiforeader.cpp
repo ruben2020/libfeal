@@ -55,7 +55,7 @@ void Fiforeader::shutdownActor(void)
 void Fiforeader::open_for_reading(void)
 {
     feal::errenum res = feal::FEAL_OK;
-    res = reader.open_pipe_for_reading<EvtFifoRead>(FIFOPATH);
+    res = reader.subscribe_and_open<EvtFifoRead>(FIFOPATH);
     if (res != feal::FEAL_OK)
     {
         printf("Error opening file for reading with errno %d\n", errno);
