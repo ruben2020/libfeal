@@ -24,9 +24,9 @@ void ActorA::initActor(void)
 {
     printf("ActorA initActor\n");
     signal.init(this);
-    signal.registersignal<EvtSigInt>(SIGINT);
-    signal.registersignal<EvtSigInt>(SIGTERM);
-    signal.registersignal<EvtSigChld>(SIGCHLD);
+    signal.registerSignal<EvtSigInt>(SIGINT);
+    signal.registerSignal<EvtSigInt>(SIGTERM);
+    signal.registerSignal<EvtSigChld>(SIGCHLD);
 }
 
 void ActorA::startActor(void)

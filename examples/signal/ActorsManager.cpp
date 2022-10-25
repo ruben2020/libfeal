@@ -23,8 +23,8 @@ void ActorsManager::initActor(void)
     printf("ActorsManager initActor\n");
     timers.init(this);
     signal.init(this);
-    signal.registersignal<EvtSigInt>(SIGINT);
-    signal.registersignal<EvtSigInt>(SIGTERM);
+    signal.registerSignal<EvtSigInt>(SIGINT);
+    signal.registerSignal<EvtSigInt>(SIGTERM);
     actors.push_back(std::make_shared<ActorA>());
     feal::initAll(actors);
 }

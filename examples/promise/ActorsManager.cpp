@@ -29,7 +29,7 @@ void ActorsManager::initActor(void)
     timers.init(this);
     signal.init(this);
     subscribeEvent<EvtWorkDone>(this);
-    signal.registersignal<EvtSigInt>(SIGINT);
+    signal.registerSignal<EvtSigInt>(SIGINT);
     actors.push_back(std::make_shared<ActorA>());
     feal::initAll(actors);
 }

@@ -177,9 +177,13 @@ typedef enum
 
 
 typedef int socket_t;
+typedef int handle_t;
 #define FEAL_INVALID_SOCKET    (-1)
+#define FEAL_INVALID_HANDLE    (-1)
 #define FEAL_SOCKET_ERROR      (-1)
+#define FEAL_HANDLE_ERROR      (-1)
 #define FEAL_GETSOCKETERRNO    errno
+#define FEAL_GETHANDLEERRNO    errno
 #define FEAL_SHUT_RDWR         SHUT_RDWR
 
 typedef union sockaddr_ip {

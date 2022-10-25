@@ -32,7 +32,7 @@ void Server::initActor(void)
     stream.init(this);
     signal.init(this);
     subscribeEvent<EvtClientDisconnected>(this);
-    signal.registersignal<EvtSigInt>(SIGINT);
+    signal.registerSignal<EvtSigInt>(SIGINT);
 }
 
 void Server::startActor(void)

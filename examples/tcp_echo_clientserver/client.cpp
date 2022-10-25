@@ -35,7 +35,7 @@ void Client::initActor(void)
     timers.init(this);
     stream.init(this);
     signal.init(this);
-    signal.registersignal<EvtSigInt>(SIGINT);
+    signal.registerSignal<EvtSigInt>(SIGINT);
 }
 
 void Client::startActor(void)

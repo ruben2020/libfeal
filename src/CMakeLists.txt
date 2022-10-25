@@ -24,10 +24,14 @@ set( FEAL_LIB_SRCS
      FealDatagram.cpp
   )
 
-add_library( feal_lib STATIC ${FEAL_LIB_SRCS} )
+set( FEAL_LIB_UNIX_SRCS 
+     FealReader.cpp
+  )
 
 if(WIN32)
+add_library( feal_lib STATIC ${FEAL_LIB_SRCS} )
 target_link_libraries( feal_lib Threads::Threads ws2_32 )
 else(WIN32)
+add_library( feal_lib STATIC ${FEAL_LIB_SRCS} ${FEAL_LIB_UNIX_SRCS})
 target_link_libraries( feal_lib Threads::Threads )
 endif(WIN32)

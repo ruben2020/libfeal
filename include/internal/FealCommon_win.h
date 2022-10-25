@@ -118,9 +118,13 @@ typedef enum
 
 
 typedef SOCKET socket_t;
+typedef SOCKET handle_t;
 #define FEAL_INVALID_SOCKET    (INVALID_SOCKET)
+#define FEAL_INVALID_HANDLE    (INVALID_SOCKET)
 #define FEAL_SOCKET_ERROR      (SOCKET_ERROR)
+#define FEAL_HANDLE_ERROR      (SOCKET_ERROR)
 #define FEAL_GETSOCKETERRNO    WSAGetLastError()
+#define FEAL_GETHANDLEERRNO    WSAGetLastError()
 #define FEAL_SHUT_RDWR         SD_BOTH
 
 #ifndef MSG_DONTWAIT

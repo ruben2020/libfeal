@@ -141,7 +141,7 @@ void init(Y* p)
 }
 
 template<typename T>
-errenum registersignal(int signum)
+errenum registerSignal(int signum)
 {
     T k;
     EventBus::getInstance().registerEventCloner<T>();
@@ -150,7 +150,7 @@ errenum registersignal(int signum)
 }
 
 template<typename T>
-errenum deregistersignal(int signum)
+errenum deregisterSignal(int signum)
 {
     T k;
     actorptr->unsubscribeEvent(k);
