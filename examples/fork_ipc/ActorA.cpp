@@ -50,20 +50,31 @@ void ActorA::initActor(void)
 void ActorA::startActor(void)
 {
     printf("ActorA startActor\n");
-    forkPipeChild();
-    forkSockStreamChild();
-    forkSockDatagramChild();
+    forkChild(1, "pipe");
+    forkChild(2, "sock stream");
+    forkChild(3, "sock datagram");
 }
 
-void ActorA::forkPipeChild(void)
+void ActorA::forkChild(int childnum, const char* medium)
 {
     pid_t p;
-    feal::handle_t fd[2];
-    if (pipe2(fd, O_NONBLOCK) == -1)
+    feal::handle_t fd[2]; // handle_t and socket_t are the same
+    int ret;
+    switch(childnum)
     {
-        fprintf(stderr, "Pipe Failed");
-        return;
+        case 1:
+            ret = pipe2(fd, O_NONBLOCK);
+            break;
+        case 2:
+            ret = socketpair(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0, fd);
+            break;
+        case 3:
+            ret = socketpair(AF_UNIX, SOCK_DGRAM | SOCK_NONBLOCK, 0, fd);
+            break;
+        default:
+            break;
     }
+    if (ret == -1) printf("Error creating socket/ pipe\n");
     p = fork();
     if (p < 0)
     {
@@ -74,107 +85,39 @@ void ActorA::forkPipeChild(void)
     {
         char buf[30];
         close(fd[0]);
-        printf("Child 1: Starting child process\n");
+        printf("Child %d: Starting child process\n", childnum);
         for(int i=0; i<20; i++)
         {
-            sprintf(buf, "Child 1, hello %d", i);
-            printf("Child 1: Sending \"%s\" to parent using pipe\n", buf);
+            sprintf(buf, "Child %d, hello %d", childnum, i);
+            printf("Child %d: Sending \"%s\" to parent using %s\n", childnum, buf, medium);
             write(fd[1], buf, strlen(buf) + 1);
             std::this_thread::sleep_for(std::chrono::seconds(2));            
         }
-        printf("Child 1: Terminating child process\n");
+        printf("Child %d: Terminating child process\n", childnum);
         close(fd[1]);
         exit(0);
     }
     else // Parent process
     {
-        close(fd[1]);
-        readerPipe.subscribeReader<EvtPipeRead>(fd[0]);
+    close(fd[1]);
+    switch(childnum)
+    {
+        case 1:
+            readerPipe.subscribeReader<EvtPipeRead>(fd[0]);
+            break;
+        case 2:
+            readerSockStream.subscribeReader<EvtSockStreamRead>(fd[0]);
+            break;
+        case 3:
+            readerSockDatagram.subscribeReader<EvtSockDatagramRead>(fd[0]);
+            break;
+        default:
+            break;
+    }
         printf("Child process pid %d forked\n", p);
         pidvec.push_back(p);
     }
 }
-
-void ActorA::forkSockStreamChild(void)
-{
-    pid_t p;
-    feal::socket_t fd[2];
-    if (socketpair(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0, fd) == -1)
-    {
-        fprintf(stderr, "Socket Failed");
-        return;
-    }
-    p = fork();
-    if (p < 0)
-    {
-        printf("Fork error occurred!\n");
-        return;
-    }
-    if (p == 0) // Child process
-    {
-        char buf[30];
-        close(fd[0]);
-        printf("Child 2: Starting child process\n");
-        for(int i=0; i<20; i++)
-        {
-            sprintf(buf, "Child 2, hello %d", i);
-            printf("Child 2: Sending \"%s\" to parent using sock stream\n", buf);
-            write(fd[1], buf, strlen(buf) + 1);
-            std::this_thread::sleep_for(std::chrono::seconds(2));            
-        }
-        printf("Child 2: Terminating child process\n");
-        close(fd[1]);
-        exit(0);
-    }
-    else // Parent process
-    {
-        close(fd[1]);
-        readerSockStream.subscribeReader<EvtSockStreamRead>(fd[0]);
-        printf("Child process pid %d forked\n", p);
-        pidvec.push_back(p);
-    }
-}
-
-void ActorA::forkSockDatagramChild(void)
-{
-    pid_t p;
-    feal::socket_t fd[2];
-    if (socketpair(AF_UNIX, SOCK_DGRAM | SOCK_NONBLOCK, 0, fd) == -1)
-    {
-        fprintf(stderr, "Socket Failed");
-        return;
-    }
-    p = fork();
-    if (p < 0)
-    {
-        printf("Fork error occurred!\n");
-        return;
-    }
-    if (p == 0) // Child process
-    {
-        char buf[30];
-        close(fd[0]);
-        printf("Child 3: Starting child process\n");
-        for(int i=0; i<20; i++)
-        {
-            sprintf(buf, "Child 3, hello %d", i);
-            printf("Child 3: Sending \"%s\" to parent using sock datagram\n", buf);
-            write(fd[1], buf, strlen(buf) + 1);
-            std::this_thread::sleep_for(std::chrono::seconds(2));            
-        }
-        printf("Child 3: Terminating child process\n");
-        close(fd[1]);
-        exit(0);
-    }
-    else // Parent process
-    {
-        close(fd[1]);
-        readerSockDatagram.subscribeReader<EvtSockDatagramRead>(fd[0]);
-        printf("Child process pid %d forked\n", p);
-        pidvec.push_back(p);
-    }
-}
-
 
 void ActorA::pauseActor(void)
 {

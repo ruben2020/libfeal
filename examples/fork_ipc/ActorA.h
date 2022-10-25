@@ -81,9 +81,7 @@ void handleEvent(std::shared_ptr<EvtSockStreamRead> pevt);
 void handleEvent(std::shared_ptr<EvtSockDatagramRead> pevt);
 
 private:
-void forkPipeChild(void);
-void forkSockStreamChild(void);
-void forkSockDatagramChild(void);
+void forkChild(int childnum, const char* medium);
 
 feal::Signal<ActorA> signal;
 feal::Reader<ActorA> readerPipe;
