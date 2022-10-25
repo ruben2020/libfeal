@@ -6,6 +6,10 @@
 cmake_minimum_required(VERSION 3.2.2)
 project(feal)
 
+option(CURL_EX "libCurl example" OFF)
+
+MESSAGE("-- libCurl = " ${CURL_EX})
+
 # C++14 required
 SET( CMAKE_CXX_STANDARD 14 )
 SET( CMAKE_CXX_STANDARD_REQUIRED ON )
