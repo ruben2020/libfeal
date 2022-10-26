@@ -69,7 +69,7 @@ jobs:
         if: startsWith(matrix.config.name, 'Ubuntu-latest')
         run: |
           sudo apt-get update
-          sudo apt-get install build-essential g++ clang git cmake ninja-build libcurl4
+          sudo apt-get install build-essential g++ clang git cmake ninja-build libcurl4 libcurl4-dev
           uname -a
           lsb_release -a
           gcc -v && g++ -v
