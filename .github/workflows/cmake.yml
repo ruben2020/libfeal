@@ -110,7 +110,7 @@ jobs:
           cd build
           export CC=clang
           export CXX=clang++
-          cmake -G "Unix Makefiles" ..
+          cmake -G "Unix Makefiles" -DCURL_EX=ON ..
           make
      
       - name: Configure CMake and Build with GCC on Linux
@@ -118,7 +118,7 @@ jobs:
         run: |
           mkdir -p build
           cd build
-          cmake -G Ninja ..
+          cmake -G Ninja -DCURL_EX=ON ..
           ninja
 
       - name: Configure CMake and Build with GCC on Windows
