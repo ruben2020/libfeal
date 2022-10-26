@@ -69,7 +69,7 @@ jobs:
         if: startsWith(matrix.config.name, 'Ubuntu-latest')
         run: |
           sudo apt-get update
-          sudo apt-get install build-essential g++ clang git cmake ninja-build
+          sudo apt-get install build-essential g++ clang git cmake ninja-build libcurl4
           uname -a
           lsb_release -a
           gcc -v && g++ -v
@@ -93,7 +93,7 @@ jobs:
         uses: vmactions/freebsd-vm@v0.1.5
         with:
           usesh: true
-          prepare: pkg install -y ninja cmake llvm
+          prepare: pkg install -y ninja cmake llvm curl
           run: |
             pwd
             ls -lah
@@ -138,3 +138,9 @@ jobs:
           ./build/examples/actors_and_timers/fealactorstimers
           echo Running promise ...
           ./build/examples/promise/fealpromise
+          echo Running sigchld fork ...
+          ./build/examples/sigchld_fork/fealfork
+          echo Running fork ipc ...
+          ./build/examples/fork_ipc/fealforkipc
+          echo Running promise curl ...
+          ./build/examples/promise_curl/fealpromisecurl
