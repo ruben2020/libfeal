@@ -5,12 +5,12 @@
  
 #include "feal.h"
 
-int  feal::BaseStream::accept_new_conn(void){return FEAL_SOCKET_ERROR;}
-void feal::BaseStream::client_read_avail(socket_t client_sockfd){(void)(client_sockfd);}
-void feal::BaseStream::client_write_avail(socket_t client_sockfd){(void)(client_sockfd);}
-void feal::BaseStream::client_shutdown(socket_t client_sockfd){(void)(client_sockfd);}
+int  feal::BaseStream::accept_new_conn(void){return FEAL_HANDLE_ERROR;}
+void feal::BaseStream::client_read_avail(handle_t client_sockfd){(void)(client_sockfd);}
+void feal::BaseStream::client_write_avail(handle_t client_sockfd){(void)(client_sockfd);}
+void feal::BaseStream::client_shutdown(handle_t client_sockfd){(void)(client_sockfd);}
 void feal::BaseStream::server_shutdown(void){}
-void feal::BaseStream::connected_to_server(socket_t fd){(void)(fd);}
+void feal::BaseStream::connected_to_server(handle_t fd){(void)(fd);}
 void feal::BaseStream::connection_read_avail(void){}
 void feal::BaseStream::connection_write_avail(void){}
 void feal::BaseStream::connection_shutdown(void){}
@@ -68,13 +68,13 @@ void feal::BaseStream::serverLoop(void)
     }
 }
 
-int feal::BaseStream::do_client_read_start(feal::socket_t client_sockfd)
+int feal::BaseStream::do_client_read_start(feal::handle_t client_sockfd)
 {
     return epoll_ctl_add(epfd, client_sockfd, 
         (EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP));
 }
 
-int feal::BaseStream::do_client_shutdown(feal::socket_t client_sockfd)
+int feal::BaseStream::do_client_shutdown(feal::handle_t client_sockfd)
 {
     epoll_ctl(epfd, EPOLL_CTL_DEL, client_sockfd, NULL);
     return shutdown(client_sockfd, SHUT_RDWR);
@@ -120,7 +120,7 @@ void feal::BaseStream::do_connect_ok(void)
     connected_to_server(sockfd);
 }
 
-void feal::BaseStream::do_send_avail_notify(feal::socket_t fd)
+void feal::BaseStream::do_send_avail_notify(feal::handle_t fd)
 {
     if (epoll_ctl_mod(epfd, fd, 
         (EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP | EPOLLOUT)) == -1)
@@ -175,7 +175,7 @@ void feal::BaseStream::connectLoop(void)
 }
 
 #if defined (__linux__)
-int feal::BaseStream::epoll_ctl_add(int epfd, socket_t fd, uint32_t events)
+int feal::BaseStream::epoll_ctl_add(int epfd, handle_t fd, uint32_t events)
 {
     struct epoll_event ev;
     ev.events = events;
@@ -183,7 +183,7 @@ int feal::BaseStream::epoll_ctl_add(int epfd, socket_t fd, uint32_t events)
     return epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &ev);
 }
 
-int feal::BaseStream::epoll_ctl_mod(int epfd, socket_t fd, uint32_t events)
+int feal::BaseStream::epoll_ctl_mod(int epfd, handle_t fd, uint32_t events)
 {
     struct epoll_event ev;
     ev.events = events;

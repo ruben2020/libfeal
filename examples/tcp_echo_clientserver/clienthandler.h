@@ -21,7 +21,7 @@ EvtClientDisconnected& operator= ( const EvtClientDisconnected & ) = default;
 ~EvtClientDisconnected() = default;
 feal::EventId_t getId(void);
 
-feal::socket_t client_sockfd = -1;
+feal::handle_t client_sockfd = -1;
 
 private:
 
@@ -35,7 +35,7 @@ public:
 
 ClientHandler()=default;
 ~ClientHandler() = default;
-void setParam(feal::Stream<Server>* p, feal::socket_t fd, char *s);
+void setParam(feal::Stream<Server>* p, feal::handle_t fd, char *s);
 
 void initActor(void);
 void startActor(void);
@@ -48,7 +48,7 @@ void handleEvent(std::shared_ptr<feal::EvtClientShutdown> pevt);
 
 private:
 feal::Stream<Server>* stream = nullptr;
-feal::socket_t sockfd = -1;
+feal::handle_t sockfd = -1;
 std::string addrstr;
 
 };

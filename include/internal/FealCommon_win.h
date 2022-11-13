@@ -117,13 +117,9 @@ typedef enum
 } errenum;
 
 
-typedef SOCKET socket_t;
 typedef SOCKET handle_t;
-#define FEAL_INVALID_SOCKET    (INVALID_SOCKET)
 #define FEAL_INVALID_HANDLE    (INVALID_SOCKET)
-#define FEAL_SOCKET_ERROR      (SOCKET_ERROR)
 #define FEAL_HANDLE_ERROR      (SOCKET_ERROR)
-#define FEAL_GETSOCKETERRNO    WSAGetLastError()
 #define FEAL_GETHANDLEERRNO    WSAGetLastError()
 #define FEAL_SHUT_RDWR         SD_BOTH
 
@@ -156,9 +152,9 @@ int inet_pton(int af, const char *src, void *dst);
 const char * inet_ntop(int af, const void *src, char *dst, socklen_t size);
 void ipaddr_posix2feal(sockaddr_ip* su, ipaddr* fa);
 int  ipaddr_feal2posix(ipaddr* fa, sockaddr_ip* su);
-int  setnonblocking(socket_t fd);
-int  setipv6only(socket_t fd);
-int  datareadavaillen(socket_t fd);
+int  setnonblocking(handle_t fd);
+int  setipv6only(handle_t fd);
+int  datareadavaillen(handle_t fd);
 
 }
 

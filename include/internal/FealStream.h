@@ -19,85 +19,6 @@
 namespace feal
 {
 
-class EvtIncomingConn : public Event
-{
-public:
-EvtIncomingConn() = default;
-EvtIncomingConn( const EvtIncomingConn & ) = default;
-EvtIncomingConn& operator= ( const EvtIncomingConn & ) = default;
-~EvtIncomingConn() = default;
-EventId_t getId(void);
-errenum errnum = FEAL_OK;
-socket_t client_sockfd = FEAL_INVALID_SOCKET;
-};
-
-class EvtDataReadAvail : public Event
-{
-public:
-EvtDataReadAvail() = default;
-EvtDataReadAvail( const EvtDataReadAvail & ) = default;
-EvtDataReadAvail& operator= ( const EvtDataReadAvail & ) = default;
-~EvtDataReadAvail() = default;
-EventId_t getId(void);
-socket_t sockfd = FEAL_INVALID_SOCKET;
-int datalen = -1;
-};
-
-class EvtDataWriteAvail : public Event
-{
-public:
-EvtDataWriteAvail() = default;
-EvtDataWriteAvail( const EvtDataWriteAvail & ) = default;
-EvtDataWriteAvail& operator= ( const EvtDataWriteAvail & ) = default;
-~EvtDataWriteAvail() = default;
-EventId_t getId(void);
-socket_t sockfd = FEAL_INVALID_SOCKET;
-};
-
-
-class EvtClientShutdown : public Event
-{
-public:
-EvtClientShutdown() = default;
-EvtClientShutdown( const EvtClientShutdown & ) = default;
-EvtClientShutdown& operator= ( const EvtClientShutdown & ) = default;
-~EvtClientShutdown() = default;
-EventId_t getId(void);
-socket_t client_sockfd = FEAL_INVALID_SOCKET;
-};
-
-class EvtServerShutdown : public Event
-{
-public:
-EvtServerShutdown() = default;
-EvtServerShutdown( const EvtServerShutdown & ) = default;
-EvtServerShutdown& operator= ( const EvtServerShutdown & ) = default;
-~EvtServerShutdown() = default;
-EventId_t getId(void);
-};
-
-class EvtConnectedToServer : public Event
-{
-public:
-EvtConnectedToServer() = default;
-EvtConnectedToServer( const EvtConnectedToServer & ) = default;
-EvtConnectedToServer& operator= ( const EvtConnectedToServer & ) = default;
-~EvtConnectedToServer() = default;
-EventId_t getId(void);
-errenum errnum = FEAL_OK;
-socket_t server_sockfd = FEAL_INVALID_SOCKET;
-};
-
-class EvtConnectionShutdown : public Event
-{
-public:
-EvtConnectionShutdown() = default;
-EvtConnectionShutdown( const EvtConnectionShutdown & ) = default;
-EvtConnectionShutdown& operator= ( const EvtConnectionShutdown & ) = default;
-~EvtConnectionShutdown() = default;
-EventId_t getId(void);
-};
-
 
 class StreamGeneric : public BaseStream
 {
@@ -111,17 +32,17 @@ void shutdownTool(void);
 
 #if defined(unix) || defined(__unix__) || defined(__unix)
 errenum create_and_bind(struct sockaddr_un* su);
-errenum getpeername(struct sockaddr_un* su, socket_t fd = -1);
+errenum getpeername(struct sockaddr_un* su, handle_t fd = -1);
 errenum getpeereid(uid_t* euid, gid_t* egid);
-static errenum getpeereid(socket_t fd, uid_t* euid, gid_t* egid);
+static errenum getpeereid(handle_t fd, uid_t* euid, gid_t* egid);
 #endif
 
 errenum create_and_bind(feal::ipaddr* fa);
-errenum recv(void *buf, uint32_t len, int32_t* bytes, socket_t fd = FEAL_INVALID_SOCKET);
-errenum send(void *buf, uint32_t len, int32_t* bytes, socket_t fd = FEAL_INVALID_SOCKET);
-errenum disconnect_client(socket_t client_sockfd);
+errenum recv(void *buf, uint32_t len, int32_t* bytes, handle_t fd = FEAL_INVALID_HANDLE);
+errenum send(void *buf, uint32_t len, int32_t* bytes, handle_t fd = FEAL_INVALID_HANDLE);
+errenum disconnect_client(handle_t client_sockfd);
 errenum disconnect_and_reset(void);
-errenum getpeername(feal::ipaddr* fa, socket_t fd = FEAL_INVALID_SOCKET);
+errenum getpeername(feal::ipaddr* fa, handle_t fd = FEAL_INVALID_HANDLE);
 
 protected:
 
@@ -131,17 +52,25 @@ std::map<int, std::weak_ptr<Actor>> mapReaders;
 
 static void serverLoopLauncher(StreamGeneric *p);
 static void connectLoopLauncher(StreamGeneric *p);
-virtual void receiveEvent(std::shared_ptr<Event> pevt);
 
 int  accept_new_conn(void);
-void client_read_avail(socket_t client_sockfd);
-void client_write_avail(socket_t client_sockfd);
-void client_shutdown(socket_t client_sockfd);
+void client_read_avail(handle_t client_sockfd);
+void client_write_avail(handle_t client_sockfd);
+void client_shutdown(handle_t client_sockfd);
 void server_shutdown(void);
-void connected_to_server(socket_t fd);
+void connected_to_server(handle_t fd);
 void connection_read_avail(void);
 void connection_write_avail(void);
 void connection_shutdown(void);
+
+virtual void receiveEventIncomingConn(errenum errnum, handle_t fd, int datalen);
+virtual void receiveEventReadAvail(errenum errnum, handle_t fd, int datalen);
+virtual void receiveEventWriteAvail(errenum errnum, handle_t fd, int datalen);
+virtual void receiveEventClientShutdown(errenum errnum, handle_t fd, int datalen);
+virtual void receiveEventServerShutdown(errenum errnum, handle_t fd, int datalen);
+virtual void receiveEventConnectedToServer(errenum errnum, handle_t fd, int datalen);
+virtual void receiveEventConnectionShutdown(errenum errnum, handle_t fd, int datalen);
+
 
 };
 
@@ -162,6 +91,69 @@ void init(Y* p)
     p->addTool(this);
 }
 
+template<typename T>
+void subscribeIncomingConn()
+{
+    T inst;
+    actorptr->addEvent(actorptr, inst);
+    evtincomingconn = std::make_shared<T>();
+    EventBus::getInstance().registerEventCloner<T>();
+}
+
+template<typename T>
+void subscribeReadAvail()
+{
+    T inst;
+    actorptr->addEvent(actorptr, inst);
+    evtreadavail = std::make_shared<T>();
+    EventBus::getInstance().registerEventCloner<T>();
+}
+
+template<typename T>
+void subscribeWriteAvail()
+{
+    T inst;
+    actorptr->addEvent(actorptr, inst);
+    evtwriteavail = std::make_shared<T>();
+    EventBus::getInstance().registerEventCloner<T>();
+}
+
+template<typename T>
+void subscribeClientShutdown()
+{
+    T inst;
+    actorptr->addEvent(actorptr, inst);
+    evtclientshutdown = std::make_shared<T>();
+    EventBus::getInstance().registerEventCloner<T>();
+}
+
+template<typename T>
+void subscribeServerShutdown()
+{
+    T inst;
+    actorptr->addEvent(actorptr, inst);
+    evtservershutdown = std::make_shared<T>();
+    EventBus::getInstance().registerEventCloner<T>();
+}
+
+template<typename T>
+void subscribeConnectedToServer()
+{
+    T inst;
+    actorptr->addEvent(actorptr, inst);
+    evtconnectedtoserver = std::make_shared<T>();
+    EventBus::getInstance().registerEventCloner<T>();
+}
+
+template<typename T>
+void subscribeConnectionShutdown()
+{
+    T inst;
+    actorptr->addEvent(actorptr, inst);
+    evtconnshutdown = std::make_shared<T>();
+    EventBus::getInstance().registerEventCloner<T>();
+}
+
 errenum create_and_connect(feal::ipaddr* fa)
 {
     errenum res = FEAL_OK;
@@ -170,15 +162,15 @@ errenum create_and_connect(feal::ipaddr* fa)
     sockaddr_ip su;
     memset(&su, 0, sizeof(su));
     ret = ipaddr_feal2posix(fa, &su);
-    if (ret == FEAL_SOCKET_ERROR)
+    if (ret == FEAL_HANDLE_ERROR)
     {
-        res = static_cast<errenum>(FEAL_GETSOCKETERRNO);
+        res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
         return  res;
     }
     sockfd = socket(fa->family, SOCK_STREAM, 0);
-    if (sockfd == FEAL_INVALID_SOCKET)
+    if (sockfd == FEAL_INVALID_HANDLE)
     {
-        res = static_cast<errenum>(FEAL_GETSOCKETERRNO);
+        res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
         return res;
     }
     setnonblocking(sockfd);
@@ -188,14 +180,14 @@ errenum create_and_connect(feal::ipaddr* fa)
         length = sizeof(su.in6);
     }
     ret = connect(sockfd, &(su.sa), length);
-    if ((ret == FEAL_SOCKET_ERROR) &&
-        (FEAL_GETSOCKETERRNO != FEAL_STREAM_EINPROGRESS))
+    if ((ret == FEAL_HANDLE_ERROR) &&
+        (FEAL_GETHANDLEERRNO != FEAL_STREAM_EINPROGRESS))
     {
-        res = static_cast<errenum>(FEAL_GETSOCKETERRNO);
+        res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
         return res;
     }
-    else if ((ret == FEAL_SOCKET_ERROR) &&
-        (FEAL_GETSOCKETERRNO == FEAL_STREAM_EINPROGRESS))
+    else if ((ret == FEAL_HANDLE_ERROR) &&
+        (FEAL_GETHANDLEERRNO == FEAL_STREAM_EINPROGRESS))
     {
         FEALDEBUGLOG("do_connect_in_progress");
         do_connect_in_progress();
@@ -205,14 +197,6 @@ errenum create_and_connect(feal::ipaddr* fa)
         FEALDEBUGLOG("do_connect_ok");
         do_connect_ok();
     }
-    EvtConnectedToServer ects;
-    EvtDataReadAvail edra;
-    EvtDataWriteAvail edwa;
-    EvtConnectionShutdown ecs;
-    actorptr->addEvent(actorptr, ects);
-    actorptr->addEvent(actorptr, edra);
-    actorptr->addEvent(actorptr, edwa);
-    actorptr->addEvent(actorptr, ecs);
     connectThread = std::thread(&connectLoopLauncher, this);
     return res;
 }
@@ -224,22 +208,22 @@ errenum create_and_connect(struct sockaddr_un* su)
     int ret;
     if (su == nullptr) return res;
     sockfd = socket(su->sun_family, SOCK_STREAM, 0);
-    if (sockfd == FEAL_INVALID_SOCKET)
+    if (sockfd == FEAL_INVALID_HANDLE)
     {
-        res = static_cast<errenum>(FEAL_GETSOCKETERRNO);
+        res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
         return res;
     }
     setnonblocking(sockfd);
     socklen_t length = sizeof(su->sun_family) + strlen(su->sun_path) + 1;
     ret = connect(sockfd, (const struct sockaddr*) su, length);
-    if ((ret == FEAL_SOCKET_ERROR) &&
-        (FEAL_GETSOCKETERRNO != FEAL_STREAM_EINPROGRESS))
+    if ((ret == FEAL_HANDLE_ERROR) &&
+        (FEAL_GETHANDLEERRNO != FEAL_STREAM_EINPROGRESS))
     {
-        res = static_cast<errenum>(FEAL_GETSOCKETERRNO);
+        res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
         return res;
     }
-    else if ((ret == FEAL_SOCKET_ERROR) &&
-        (FEAL_GETSOCKETERRNO == FEAL_STREAM_EINPROGRESS))
+    else if ((ret == FEAL_HANDLE_ERROR) &&
+        (FEAL_GETHANDLEERRNO == FEAL_STREAM_EINPROGRESS))
     {
         FEALDEBUGLOG("do_connect_in_progress");
         do_connect_in_progress();
@@ -249,14 +233,6 @@ errenum create_and_connect(struct sockaddr_un* su)
         FEALDEBUGLOG("do_connect_ok");
         do_connect_ok();
     }
-    EvtConnectedToServer ects;
-    EvtDataReadAvail edra;
-    EvtDataWriteAvail edwa;
-    EvtConnectionShutdown ecs;
-    actorptr->addEvent(actorptr, ects);
-    actorptr->addEvent(actorptr, edra);
-    actorptr->addEvent(actorptr, edwa);
-    actorptr->addEvent(actorptr, ecs);
     connectThread = std::thread(&connectLoopLauncher, this);
     return res;
 }
@@ -265,33 +241,23 @@ errenum create_and_connect(struct sockaddr_un* su)
 errenum listen(int backlog = 32)
 {
     errenum res = FEAL_OK;
-    if (::listen(sockfd, backlog) == FEAL_SOCKET_ERROR)
-        res = static_cast<errenum>(FEAL_GETSOCKETERRNO);
+    if (::listen(sockfd, backlog) == FEAL_HANDLE_ERROR)
+        res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
     else
     {
-        EvtIncomingConn eic;
-        EvtServerShutdown ess;
-        actorptr->addEvent(actorptr, eic);
-        actorptr->addEvent(actorptr, ess);
         serverThread = std::thread(&serverLoopLauncher, this);
     }
     return res;
 }
 
 template<class T>
-errenum recv_start(T* p, socket_t client_sockfd)
+errenum recv_start(T* p, handle_t client_sockfd)
 {
     errenum res = FEAL_OK;
     std::weak_ptr<Actor> wkact;
     if (p)
     {
         wkact = p->shared_from_this();
-        EvtDataReadAvail edra;
-        EvtDataWriteAvail edwa;
-        EvtClientShutdown ecsd;
-        p->addEvent(p, edra);
-        p->addEvent(p, edwa);
-        p->addEvent(p, ecsd);
     }
     auto it = mapReaders.find(client_sockfd);
     if (it == mapReaders.end())
@@ -299,21 +265,87 @@ errenum recv_start(T* p, socket_t client_sockfd)
         mapReaders[client_sockfd] = wkact;
         setnonblocking(client_sockfd);
         if (do_client_read_start(client_sockfd) == -1)
-            res = static_cast<errenum>(FEAL_GETSOCKETERRNO);
+            res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
     }
     return res;
 }
 
 protected:
 
-void receiveEvent(std::shared_ptr<Event> pevt)
+void receiveEventIncomingConn(errenum errnum, handle_t fd, int datalen)
 {
-    if (actorptr) actorptr->receiveEvent(pevt);
+    auto itw = std::dynamic_pointer_cast<EvtReader>(EventBus::getInstance().cloneEvent(evtincomingconn));
+    itw.get()->errnum = errnum;
+    itw.get()->fd = fd;
+    itw.get()->datalen = datalen;
+    if (actorptr) actorptr->receiveEvent(itw);
 }
+
+
+void receiveEventReadAvail(errenum errnum, handle_t fd, int datalen)
+{
+    auto itw = std::dynamic_pointer_cast<EvtReader>(EventBus::getInstance().cloneEvent(evtreadavail));
+    itw.get()->errnum = errnum;
+    itw.get()->fd = fd;
+    itw.get()->datalen = datalen;
+    if (actorptr) actorptr->receiveEvent(itw);
+}
+
+void receiveEventWriteAvail(errenum errnum, handle_t fd, int datalen)
+{
+    auto itw = std::dynamic_pointer_cast<EvtReader>(EventBus::getInstance().cloneEvent(evtwriteavail));
+    itw.get()->errnum = errnum;
+    itw.get()->fd = fd;
+    itw.get()->datalen = datalen;
+    if (actorptr) actorptr->receiveEvent(itw);
+}
+
+void receiveEventClientShutdown(errenum errnum, handle_t fd, int datalen)
+{
+    auto itw = std::dynamic_pointer_cast<EvtReader>(EventBus::getInstance().cloneEvent(evtclientshutdown));
+    itw.get()->errnum = errnum;
+    itw.get()->fd = fd;
+    itw.get()->datalen = datalen;
+    if (actorptr) actorptr->receiveEvent(itw);
+}
+
+void receiveEventServerShutdown(errenum errnum, handle_t fd, int datalen)
+{
+    auto itw = std::dynamic_pointer_cast<EvtReader>(EventBus::getInstance().cloneEvent(evtservershutdown));
+    itw.get()->errnum = errnum;
+    itw.get()->fd = fd;
+    itw.get()->datalen = datalen;
+    if (actorptr) actorptr->receiveEvent(itw);
+}
+
+void receiveEventConnectedToServer(errenum errnum, handle_t fd, int datalen)
+{
+    auto itw = std::dynamic_pointer_cast<EvtReader>(EventBus::getInstance().cloneEvent(evtconnectedtoserver));
+    itw.get()->errnum = errnum;
+    itw.get()->fd = fd;
+    itw.get()->datalen = datalen;
+    if (actorptr) actorptr->receiveEvent(itw);
+}
+
+void receiveEventConnectionShutdown(errenum errnum, handle_t fd, int datalen)
+{
+    auto itw = std::dynamic_pointer_cast<EvtReader>(EventBus::getInstance().cloneEvent(evtconnshutdown));
+    itw.get()->errnum = errnum;
+    itw.get()->fd = fd;
+    itw.get()->datalen = datalen;
+    if (actorptr) actorptr->receiveEvent(itw);
+}
+
 
 private:
 Y* actorptr = nullptr;
-
+std::shared_ptr<EventComm> evtincomingconn;
+std::shared_ptr<EventComm> evtreadavail;
+std::shared_ptr<EventComm> evtwriteavail;
+std::shared_ptr<EventComm> evtclientshutdown;
+std::shared_ptr<EventComm> evtservershutdown;
+std::shared_ptr<EventComm> evtconnectedtoserver;
+std::shared_ptr<EventComm> evtconnshutdown;
 
 };
 

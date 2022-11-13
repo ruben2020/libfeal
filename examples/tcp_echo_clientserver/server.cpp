@@ -121,7 +121,7 @@ void Server::handleEvent(std::shared_ptr<feal::EvtIncomingConn> pevt)
     }
 }
 
-void Server::print_client_address(feal::socket_t fd)
+void Server::print_client_address(feal::handle_t fd)
 {
     feal::errenum se = feal::FEAL_OK;
     feal::ipaddr fa;
@@ -137,7 +137,7 @@ void Server::print_client_address(feal::socket_t fd)
     }
 }
 
-void Server::get_client_address(feal::socket_t fd, char* addr)
+void Server::get_client_address(feal::handle_t fd, char* addr)
 {
     feal::errenum se = feal::FEAL_OK;
     feal::ipaddr fa;

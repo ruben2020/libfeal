@@ -28,34 +28,58 @@ void init(Y* p)
     p->addTool(this);
 }
 
+
 template<typename T>
-errenum subscribe_and_open(const char *pathname)
+void subscribeReadAvail()
+{
+    T inst;
+    actorptr->addEvent(actorptr, inst);
+    evtread = std::make_shared<T>();
+    EventBus::getInstance().registerEventCloner<T>();
+}
+
+template<typename T>
+void subscribeSockErr()
+{
+    T inst;
+    actorptr->addEvent(actorptr, inst);
+    evterrsock = std::make_shared<T>();
+    EventBus::getInstance().registerEventCloner<T>();
+}
+
+errenum open(const char *pathname)
 {
     handle_t fd;
     close_and_reset();
     fd = open(pathname, O_RDONLY | O_NONBLOCK);
     if (fd == -1) return static_cast<errenum>(errno);
-    T inst;
-    actorptr->addEvent(actorptr, inst);
-    myevt = std::make_shared<T>();
-    EventBus::getInstance().registerEventCloner<T>();
     return ReaderGeneric::registerhandle(fd);
 }
 
 protected:
 
-void receiveEvent(handle_t fd, bool error, int datalen)
+void receiveEventReadAvail(errenum errnum, handle_t fd, int datalen)
 {
-    auto itw = std::dynamic_pointer_cast<EvtReader>(EventBus::getInstance().cloneEvent(myevt));
-    itw.get()->readerfd = fd;
-    itw.get()->error = error;
+    auto itw = std::dynamic_pointer_cast<EvtReader>(EventBus::getInstance().cloneEvent(evtread));
+    itw.get()->errnum = errnum;
+    itw.get()->fd = fd;
+    itw.get()->datalen = datalen;
+    if (actorptr) actorptr->receiveEvent(itw);
+}
+
+void receiveEventSockErr(errenum errnum, handle_t fd, int datalen)
+{
+    auto itw = std::dynamic_pointer_cast<EvtReader>(EventBus::getInstance().cloneEvent(evterrsock));
+    itw.get()->errnum = errnum;
+    itw.get()->fd = fd;
     itw.get()->datalen = datalen;
     if (actorptr) actorptr->receiveEvent(itw);
 }
 
 private:
 Y* actorptr = nullptr;
-std::shared_ptr<EvtReader> myevt;
+std::shared_ptr<EventComm> evtread;
+std::shared_ptr<EventComm> evterrsock;
 
 };
 

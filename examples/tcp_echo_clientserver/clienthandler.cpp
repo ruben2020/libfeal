@@ -16,7 +16,7 @@ feal::EventId_t EvtClientDisconnected::getId(void)
 }
 
 
-void ClientHandler::setParam(feal::Stream<Server>* p, feal::socket_t fd, char *s)
+void ClientHandler::setParam(feal::Stream<Server>* p, feal::handle_t fd, char *s)
 {
     stream = p;
     sockfd = fd;

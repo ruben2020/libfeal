@@ -22,4 +22,20 @@
 #endif
 
 
+class Event;
+
+class EventComm : public Event
+{
+public:
+EventComm() = default;
+EventComm( const EventComm & ) = default;
+EventComm& operator= ( const EventComm & ) = default;
+~EventComm() = default;
+EventId_t getId(void);
+errenum errnum = FEAL_OK;
+handle_t fd = FEAL_INVALID_HANDLE;
+int datalen = -1;
+};
+
+
 #endif // _FEAL_COMMON_H

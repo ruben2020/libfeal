@@ -5,12 +5,12 @@
  
 #include "feal.h"
 
-int  feal::BaseStream::accept_new_conn(void){return FEAL_SOCKET_ERROR;}
-void feal::BaseStream::client_read_avail(socket_t client_sockfd){(void)(client_sockfd);}
-void feal::BaseStream::client_write_avail(socket_t client_sockfd){(void)(client_sockfd);}
-void feal::BaseStream::client_shutdown(socket_t client_sockfd){(void)(client_sockfd);}
+int  feal::BaseStream::accept_new_conn(void){return FEAL_HANDLE_ERROR;}
+void feal::BaseStream::client_read_avail(handle_t client_sockfd){(void)(client_sockfd);}
+void feal::BaseStream::client_write_avail(handle_t client_sockfd){(void)(client_sockfd);}
+void feal::BaseStream::client_shutdown(handle_t client_sockfd){(void)(client_sockfd);}
 void feal::BaseStream::server_shutdown(void){}
-void feal::BaseStream::connected_to_server(socket_t fd){(void)(fd);}
+void feal::BaseStream::connected_to_server(handle_t fd){(void)(fd);}
 void feal::BaseStream::connection_read_avail(void){}
 void feal::BaseStream::connection_write_avail(void){}
 void feal::BaseStream::connection_shutdown(void){}
@@ -18,7 +18,7 @@ void feal::BaseStream::connection_shutdown(void){}
 void feal::BaseStream::serverLoop(void)
 {
     int nfds = 0;
-    socket_t tempsockfd;
+    handle_t tempsockfd;
     int ret;
     struct timeval tv;
     char buf[100];
@@ -94,7 +94,7 @@ void feal::BaseStream::serverLoop(void)
     }
 }
 
-int feal::BaseStream::do_client_read_start(feal::socket_t client_sockfd)
+int feal::BaseStream::do_client_read_start(feal::handle_t client_sockfd)
 {
     //printf("do_client_read_start %ld\n", (long int) client_sockfd);
     for (int i=1; i < max_events; i++)
@@ -109,7 +109,7 @@ int feal::BaseStream::do_client_read_start(feal::socket_t client_sockfd)
     return 0;
 }
 
-int feal::BaseStream::do_client_shutdown(feal::socket_t client_sockfd)
+int feal::BaseStream::do_client_shutdown(feal::handle_t client_sockfd)
 {
     //printf("do_client_shutdown %ld\n", (long int) client_sockfd);
     for (int i=1; i < max_events; i++)
@@ -177,7 +177,7 @@ void feal::BaseStream::do_connect_ok(void)
     connected_to_server(sockfd);
 }
 
-void feal::BaseStream::do_send_avail_notify(feal::socket_t fd)
+void feal::BaseStream::do_send_avail_notify(feal::handle_t fd)
 {
     printf("do_send_avail_notify %ld\n", (long int) fd);
     for (int i=1; i < max_events; i++)

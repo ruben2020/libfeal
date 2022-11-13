@@ -176,13 +176,9 @@ typedef enum
 } errenum;
 
 
-typedef int socket_t;
 typedef int handle_t;
-#define FEAL_INVALID_SOCKET    (-1)
 #define FEAL_INVALID_HANDLE    (-1)
-#define FEAL_SOCKET_ERROR      (-1)
 #define FEAL_HANDLE_ERROR      (-1)
-#define FEAL_GETSOCKETERRNO    errno
 #define FEAL_GETHANDLEERRNO    errno
 #define FEAL_SHUT_RDWR         SHUT_RDWR
 
@@ -205,9 +201,9 @@ typedef union sockaddr_ip {
 
 void ipaddr_posix2feal(sockaddr_ip* su, ipaddr* fa);
 int  ipaddr_feal2posix(ipaddr* fa, sockaddr_ip* su);
-int  setnonblocking(socket_t fd);
-int  setipv6only(socket_t fd);
-int  datareadavaillen(socket_t fd);
+int  setnonblocking(handle_t fd);
+int  setipv6only(handle_t fd);
+int  datareadavaillen(handle_t fd);
 
 }
 

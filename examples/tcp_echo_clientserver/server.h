@@ -69,11 +69,11 @@ feal::Timers<Server> timers;
 feal::Stream<Server> stream;
 feal::Signal<Server> signal;
 virtual void start_server(void);
-virtual void print_client_address(feal::socket_t fd);
-virtual void get_client_address(feal::socket_t fd, char* addr);
+virtual void print_client_address(feal::handle_t fd);
+virtual void get_client_address(feal::handle_t fd, char* addr);
 
 private:
-std::map<feal::socket_t, std::shared_ptr<ClientHandler>> mapch;
+std::map<feal::handle_t, std::shared_ptr<ClientHandler>> mapch;
 
 };
 
