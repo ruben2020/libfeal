@@ -1,13 +1,12 @@
 
 Copyright (c) 2022 ruben2020 https://github.com/ruben2020
 
-Dual-licensed under the Apache License v2.0 and 
-the GNU LGPL v2.1+, this software may be used,
-modified and/or distributed only in compliance
-with either one of these licenses, at your option.
+This software is dual-licensed. You may use,
+modify and/or distribute this software only in
+compliance with EITHER the Apache License v2.0, 
+OR the GNU LGPL v2.1+, at your option.
 
 Copies of these licenses can be found in the
 LICENSE.APACHE2 and LICENSE.LGPL21 files.
 
 SPDX-License-Identifier: Apache-2.0 OR LGPL-2.1-or-later
-
