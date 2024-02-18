@@ -219,65 +219,65 @@ int feal::StreamGeneric::accept_new_conn(void)
     memset(&su, 0, sizeof(su));
     socklen_t socklength = sizeof(su);
     handle_t sock_conn_fd = accept(sockfd, &(su.sa), &socklength);
-    std::shared_ptr<EvtIncomingConn> incomingevt = std::make_shared<EvtIncomingConn>();
-    incomingevt.get()->client_sockfd = sock_conn_fd;
+    errenum errnum = FEAL_OK;
     if (sock_conn_fd == FEAL_INVALID_HANDLE)
     {
-        incomingevt.get()->errnum = static_cast<errenum>(FEAL_GETHANDLEERRNO);
+        errnum = static_cast<errenum>(FEAL_GETHANDLEERRNO);
     }
-    else
-    {
-        incomingevt.get()->errnum = FEAL_OK;
-    }
-    receiveEvent(incomingevt);
+    receiveEventIncomingConn(errnum, sock_conn_fd, -1);
     return sock_conn_fd;
 }
 
 void feal::StreamGeneric::client_read_avail(feal::handle_t client_sockfd)
 {
-    std::shared_ptr<EvtDataReadAvail> evt = std::make_shared<EvtDataReadAvail>();
-    evt.get()->sockfd = client_sockfd;
-    evt.get()->datalen = datareadavaillen(client_sockfd);
     auto it = mapReaders.find(client_sockfd);
     if (it != mapReaders.end())
     {
-        std::weak_ptr<Actor> wkact = it->second;
-        if (wkact.expired() == false)
+        clientst cst = it->second;
+        if (cst.wkact.expired() == false)
         {
-            std::shared_ptr<Actor> act = wkact.lock();
-            act.get()->receiveEvent(evt);
+            std::shared_ptr<Actor> act = cst.wkact.lock();
+            auto itw = std::dynamic_pointer_cast<EventComm>(EventBus::getInstance().cloneEvent(cst.evtclientreadavail));
+            itw.get()->errnum = FEAL_OK;
+            itw.get()->fd = client_sockfd;
+            itw.get()->datalen = datareadavaillen(client_sockfd);
+            act.get()->receiveEvent(itw);
         }
     }
 }
 
 void feal::StreamGeneric::client_write_avail(feal::handle_t client_sockfd)
 {
-    std::shared_ptr<EvtDataWriteAvail> evt = std::make_shared<EvtDataWriteAvail>();
-    evt.get()->sockfd = client_sockfd;
     auto it = mapReaders.find(client_sockfd);
     if (it != mapReaders.end())
     {
-        std::weak_ptr<Actor> wkact = it->second;
-        if (wkact.expired() == false)
+        clientst cst = it->second;
+        if (cst.wkact.expired() == false)
         {
-            std::shared_ptr<Actor> act = wkact.lock();
-            act.get()->receiveEvent(evt);
+            std::shared_ptr<Actor> act = cst.wkact.lock();
+            auto itw = std::dynamic_pointer_cast<EventComm>(EventBus::getInstance().cloneEvent(cst.evtclientwriteavail));
+            itw.get()->errnum = FEAL_OK;
+            itw.get()->fd = client_sockfd;
+            itw.get()->datalen = -1;
+            act.get()->receiveEvent(itw);
         }
     }
 }
 
 void feal::StreamGeneric::client_shutdown(feal::handle_t client_sockfd)
 {
-    std::shared_ptr<EvtClientShutdown> evtclshutdown = std::make_shared<EvtClientShutdown>();
-    evtclshutdown.get()->client_sockfd = client_sockfd;
     auto it = mapReaders.find(client_sockfd);
     if (it != mapReaders.end())
     {
-        std::weak_ptr<Actor> wkact = it->second;
-        if (wkact.expired() == false)
+        clientst cst = it->second;
+        if (cst.wkact.expired() == false)
         {
-            std::shared_ptr<Actor> act = wkact.lock();
-            act.get()->receiveEvent(evtclshutdown);
+            std::shared_ptr<Actor> act = cst.wkact.lock();
+            auto itw = std::dynamic_pointer_cast<EventComm>(EventBus::getInstance().cloneEvent(cst.evtclientshutdown));
+            itw.get()->errnum = FEAL_OK;
+            itw.get()->fd = client_sockfd;
+            itw.get()->datalen = -1;
+            act.get()->receiveEvent(itw);
         }
     }
     mapReaders.erase(client_sockfd);
@@ -285,81 +285,72 @@ void feal::StreamGeneric::client_shutdown(feal::handle_t client_sockfd)
 
 void feal::StreamGeneric::server_shutdown(void)
 {
-    std::shared_ptr<EvtServerShutdown> evt = std::make_shared<EvtServerShutdown>();
-    receiveEvent(evt);
+    receiveEventServerShutdown(FEAL_OK, FEAL_INVALID_HANDLE, -1);
 }
 
 void feal::StreamGeneric::connected_to_server(feal::handle_t fd)
 {
-    std::shared_ptr<EvtConnectedToServer> evt = std::make_shared<EvtConnectedToServer>();
-    evt.get()->server_sockfd = fd;
-    receiveEvent(evt);
+    receiveEventConnectedToServer(FEAL_OK, fd, -1);
 }
 
 void feal::StreamGeneric::connection_read_avail(void)
 {
-    std::shared_ptr<EvtDataReadAvail> evt = std::make_shared<EvtDataReadAvail>();
-    evt.get()->sockfd = sockfd;
-    evt.get()->datalen = datareadavaillen(sockfd);
-    receiveEvent(evt);
+    receiveEventReadAvail(FEAL_OK, sockfd, datareadavaillen(sockfd));
 }
 
 void feal::StreamGeneric::connection_write_avail(void)
 {
-    std::shared_ptr<EvtDataWriteAvail> evt = std::make_shared<EvtDataWriteAvail>();
-    evt.get()->sockfd = sockfd;
-    receiveEvent(evt);
+    receiveEventWriteAvail(FEAL_OK, sockfd, -1);
 }
 
 void feal::StreamGeneric::connection_shutdown(void)
 {
-    std::shared_ptr<EvtConnectionShutdown> evt = std::make_shared<EvtConnectionShutdown>();
-    receiveEvent(evt);
+    receiveEventConnectionShutdown(FEAL_OK, FEAL_INVALID_HANDLE, -1);
 }
 
-void feal::StreamGeneric:receiveEventIncomingConn(errenum errnum, handle_t fd, int datalen)
+void feal::StreamGeneric::receiveEventIncomingConn(errenum errnum, handle_t fd, int datalen)
 {
     (void) errnum;
     (void) fd;
     (void) datalen;
 }
 
-void feal::StreamGeneric:receiveEventReadAvail(errenum errnum, handle_t fd, int datalen)
+void feal::StreamGeneric::receiveEventReadAvail(errenum errnum, handle_t fd, int datalen)
 {
     (void) errnum;
     (void) fd;
     (void) datalen;
 }
 
-void feal::StreamGeneric:receiveEventWriteAvail(errenum errnum, handle_t fd, int datalen)
+void feal::StreamGeneric::receiveEventWriteAvail(errenum errnum, handle_t fd, int datalen)
 {
     (void) errnum;
     (void) fd;
     (void) datalen;
 }
 
-void feal::StreamGeneric:receiveEventClientShutdown(errenum errnum, handle_t fd, int datalen)
+void feal::StreamGeneric::receiveEventClientShutdown(errenum errnum, handle_t fd, int datalen)
 {
     (void) errnum;
     (void) fd;
     (void) datalen;
 }
 
-void feal::StreamGeneric:receiveEventServerShutdown(errenum errnum, handle_t fd, int datalen)
+void feal::StreamGeneric::receiveEventServerShutdown(errenum errnum, handle_t fd, int datalen)
 {
     (void) errnum;
     (void) fd;
     (void) datalen;
 }
 
-void feal::StreamGeneric:receiveEventConnectedToServer(errenum errnum, handle_t fd, int datalen)
+void feal::StreamGeneric::receiveEventConnectedToServer(errenum errnum, handle_t fd, int datalen)
 {
     (void) errnum;
     (void) fd;
     (void) datalen;
 }
 
-void feal::StreamGeneric:receiveEventConnectionShutdown(errenum errnum, handle_t fd, int datalen)
+void feal::StreamGeneric::receiveEventConnectionShutdown(errenum errnum, handle_t fd, int datalen)
 {
     (void) errnum;
     (void) fd;

@@ -19,6 +19,13 @@
 namespace feal
 {
 
+typedef struct {
+    std::weak_ptr<Actor> wkact;
+    std::shared_ptr<EventComm> evtclientreadavail;
+    std::shared_ptr<EventComm> evtclientwriteavail;
+    std::shared_ptr<EventComm> evtclientshutdown;
+} clientst;
+
 
 class StreamGeneric : public BaseStream
 {
@@ -48,7 +55,7 @@ protected:
 
 std::thread serverThread;
 std::thread connectThread;
-std::map<int, std::weak_ptr<Actor>> mapReaders;
+std::map<handle_t, clientst> mapReaders;
 
 static void serverLoopLauncher(StreamGeneric *p);
 static void connectLoopLauncher(StreamGeneric *p);
@@ -115,15 +122,6 @@ void subscribeWriteAvail()
     T inst;
     actorptr->addEvent(actorptr, inst);
     evtwriteavail = std::make_shared<T>();
-    EventBus::getInstance().registerEventCloner<T>();
-}
-
-template<typename T>
-void subscribeClientShutdown()
-{
-    T inst;
-    actorptr->addEvent(actorptr, inst);
-    evtclientshutdown = std::make_shared<T>();
     EventBus::getInstance().registerEventCloner<T>();
 }
 
@@ -250,19 +248,31 @@ errenum listen(int backlog = 32)
     return res;
 }
 
-template<class T>
-errenum recv_start(T* p, handle_t client_sockfd)
+template<class T, typename CRead, typename CWrite, typename CShutdown>
+errenum registerClient(T* p, handle_t client_sockfd)
 {
     errenum res = FEAL_OK;
-    std::weak_ptr<Actor> wkact;
+    clientst cst;
+    CRead instcr;
+    CWrite instcw;
+    CShutdown instcs;
     if (p)
     {
-        wkact = p->shared_from_this();
+        cst.wkact = p->shared_from_this();
+        p->addEvent(actorptr, instcr);
+        cst.evtclientreadavail = std::make_shared<CRead>();
+        EventBus::getInstance().registerEventCloner<CRead>();
+        p->addEvent(actorptr, instcw);
+        cst.evtclientwriteavail = std::make_shared<CWrite>();
+        EventBus::getInstance().registerEventCloner<CWrite>();
+        p->addEvent(actorptr, instcs);
+        cst.evtclientshutdown = std::make_shared<CShutdown>();
+        EventBus::getInstance().registerEventCloner<CShutdown>();
     }
     auto it = mapReaders.find(client_sockfd);
     if (it == mapReaders.end())
     {
-        mapReaders[client_sockfd] = wkact;
+        mapReaders[client_sockfd] = cst;
         setnonblocking(client_sockfd);
         if (do_client_read_start(client_sockfd) == -1)
             res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
@@ -274,17 +284,16 @@ protected:
 
 void receiveEventIncomingConn(errenum errnum, handle_t fd, int datalen)
 {
-    auto itw = std::dynamic_pointer_cast<EvtReader>(EventBus::getInstance().cloneEvent(evtincomingconn));
+    auto itw = std::dynamic_pointer_cast<EventComm>(EventBus::getInstance().cloneEvent(evtincomingconn));
     itw.get()->errnum = errnum;
     itw.get()->fd = fd;
     itw.get()->datalen = datalen;
     if (actorptr) actorptr->receiveEvent(itw);
 }
 
-
 void receiveEventReadAvail(errenum errnum, handle_t fd, int datalen)
 {
-    auto itw = std::dynamic_pointer_cast<EvtReader>(EventBus::getInstance().cloneEvent(evtreadavail));
+    auto itw = std::dynamic_pointer_cast<EventComm>(EventBus::getInstance().cloneEvent(evtreadavail));
     itw.get()->errnum = errnum;
     itw.get()->fd = fd;
     itw.get()->datalen = datalen;
@@ -293,16 +302,7 @@ void receiveEventReadAvail(errenum errnum, handle_t fd, int datalen)
 
 void receiveEventWriteAvail(errenum errnum, handle_t fd, int datalen)
 {
-    auto itw = std::dynamic_pointer_cast<EvtReader>(EventBus::getInstance().cloneEvent(evtwriteavail));
-    itw.get()->errnum = errnum;
-    itw.get()->fd = fd;
-    itw.get()->datalen = datalen;
-    if (actorptr) actorptr->receiveEvent(itw);
-}
-
-void receiveEventClientShutdown(errenum errnum, handle_t fd, int datalen)
-{
-    auto itw = std::dynamic_pointer_cast<EvtReader>(EventBus::getInstance().cloneEvent(evtclientshutdown));
+    auto itw = std::dynamic_pointer_cast<EventComm>(EventBus::getInstance().cloneEvent(evtwriteavail));
     itw.get()->errnum = errnum;
     itw.get()->fd = fd;
     itw.get()->datalen = datalen;
@@ -311,7 +311,7 @@ void receiveEventClientShutdown(errenum errnum, handle_t fd, int datalen)
 
 void receiveEventServerShutdown(errenum errnum, handle_t fd, int datalen)
 {
-    auto itw = std::dynamic_pointer_cast<EvtReader>(EventBus::getInstance().cloneEvent(evtservershutdown));
+    auto itw = std::dynamic_pointer_cast<EventComm>(EventBus::getInstance().cloneEvent(evtservershutdown));
     itw.get()->errnum = errnum;
     itw.get()->fd = fd;
     itw.get()->datalen = datalen;
@@ -320,7 +320,7 @@ void receiveEventServerShutdown(errenum errnum, handle_t fd, int datalen)
 
 void receiveEventConnectedToServer(errenum errnum, handle_t fd, int datalen)
 {
-    auto itw = std::dynamic_pointer_cast<EvtReader>(EventBus::getInstance().cloneEvent(evtconnectedtoserver));
+    auto itw = std::dynamic_pointer_cast<EventComm>(EventBus::getInstance().cloneEvent(evtconnectedtoserver));
     itw.get()->errnum = errnum;
     itw.get()->fd = fd;
     itw.get()->datalen = datalen;
@@ -329,7 +329,7 @@ void receiveEventConnectedToServer(errenum errnum, handle_t fd, int datalen)
 
 void receiveEventConnectionShutdown(errenum errnum, handle_t fd, int datalen)
 {
-    auto itw = std::dynamic_pointer_cast<EvtReader>(EventBus::getInstance().cloneEvent(evtconnshutdown));
+    auto itw = std::dynamic_pointer_cast<EventComm>(EventBus::getInstance().cloneEvent(evtconnshutdown));
     itw.get()->errnum = errnum;
     itw.get()->fd = fd;
     itw.get()->datalen = datalen;
@@ -342,7 +342,6 @@ Y* actorptr = nullptr;
 std::shared_ptr<EventComm> evtincomingconn;
 std::shared_ptr<EventComm> evtreadavail;
 std::shared_ptr<EventComm> evtwriteavail;
-std::shared_ptr<EventComm> evtclientshutdown;
 std::shared_ptr<EventComm> evtservershutdown;
 std::shared_ptr<EventComm> evtconnectedtoserver;
 std::shared_ptr<EventComm> evtconnshutdown;

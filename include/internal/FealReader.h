@@ -100,7 +100,7 @@ protected:
 
 void receiveEventReadAvail(errenum errnum, handle_t fd, int datalen)
 {
-    auto itw = std::dynamic_pointer_cast<EvtReader>(EventBus::getInstance().cloneEvent(evtread));
+    auto itw = std::dynamic_pointer_cast<EventComm>(EventBus::getInstance().cloneEvent(evtread));
     itw.get()->errnum = errnum;
     itw.get()->fd = fd;
     itw.get()->datalen = datalen;
@@ -109,7 +109,7 @@ void receiveEventReadAvail(errenum errnum, handle_t fd, int datalen)
 
 void receiveEventSockErr(errenum errnum, handle_t fd, int datalen)
 {
-    auto itw = std::dynamic_pointer_cast<EvtReader>(EventBus::getInstance().cloneEvent(evterrsock));
+    auto itw = std::dynamic_pointer_cast<EventComm>(EventBus::getInstance().cloneEvent(evterrsock));
     itw.get()->errnum = errnum;
     itw.get()->fd = fd;
     itw.get()->datalen = datalen;

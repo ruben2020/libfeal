@@ -29,7 +29,6 @@ feal::errenum feal::DatagramGeneric::create_sock(feal::family_t fam)
         return res;
     }
     setnonblocking(sockfd);
-    add_events();
     datagramThread = std::thread(&dgramLoopLauncher, this);
     return res;
 }

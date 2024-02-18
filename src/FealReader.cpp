@@ -161,7 +161,7 @@ void feal::ReaderGeneric::handle_error(void)
 
 void feal::ReaderGeneric::handle_read_avail(void)
 {
-    receiveEventReadAvail(FEAL_OK, readerfd, datareadavaillen(sockfd));
+    receiveEventReadAvail(FEAL_OK, readerfd, datareadavaillen(readerfd));
 }
 
 void feal::ReaderGeneric::receiveEventReadAvail(errenum errnum, handle_t fd, int datalen)
