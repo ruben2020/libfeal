@@ -28,7 +28,7 @@ EvtRetryTimer& operator= ( const EvtRetryTimer & ) = default;
 feal::EventId_t getId(void);
 };
 
-class EvtFifoRead : public feal::EvtReader
+class EvtFifoRead : public feal::EventComm
 {
 public:
 EvtFifoRead() = default;

@@ -19,11 +19,30 @@ feal::EventId_t EvtDelayTimer::getId(void)
     return getIdOfType<EvtDelayTimer>();
 }
 
+feal::EventId_t EvtDgramReadAvail::getId(void)
+{
+    return getIdOfType<EvtDgramReadAvail>();
+}
+
+feal::EventId_t EvtDgramWriteAvail::getId(void)
+{
+    return getIdOfType<EvtDgramWriteAvail>();
+}
+
+feal::EventId_t EvtSockErr::getId(void)
+{
+    return getIdOfType<EvtSockErr>();
+}
+
+
 void Client::initActor(void)
 {
     printf("Client::initActor\n");
     timers.init(this);
     dgram.init(this);
+    dgram.subscribeReadAvail<EvtDgramReadAvail>();
+    dgram.subscribeWriteAvail<EvtDgramWriteAvail>();
+    dgram.subscribeSockErr<EvtSockErr>();
 }
 
 void Client::startActor(void)
@@ -84,7 +103,7 @@ void Client::handleEvent(std::shared_ptr<EvtDelayTimer> pevt)
     timers.startTimer<EvtDelayTimer>(std::chrono::seconds(2));
 }
 
-void Client::handleEvent(std::shared_ptr<feal::EvtDgramReadAvail> pevt)
+void Client::handleEvent(std::shared_ptr<EvtDgramReadAvail> pevt)
 {
     if (!pevt) return;
     printf("Client::EvtDgramReadAvail\n");
@@ -97,14 +116,14 @@ void Client::handleEvent(std::shared_ptr<feal::EvtDgramReadAvail> pevt)
     else printf("Received %d bytes: \"%s\" from %s:%d\n", bytes, buf, recvaddr.addr, recvaddr.port);
 }
 
-void Client::handleEvent(std::shared_ptr<feal::EvtDgramWriteAvail> pevt)
+void Client::handleEvent(std::shared_ptr<EvtDgramWriteAvail> pevt)
 {
     if (!pevt) return;
     printf("Client::EvtDgramWriteAvail\n");
     send_something();
 }
 
-void Client::handleEvent(std::shared_ptr<feal::EvtSockErr> pevt)
+void Client::handleEvent(std::shared_ptr<EvtSockErr> pevt)
 {
     if (!pevt) return;
     printf("Client::EvtSockErr\n");

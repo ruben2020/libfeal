@@ -37,11 +37,30 @@ feal::EventId_t EvtDelayTimer::getId(void)
     return getIdOfType<EvtDelayTimer>();
 }
 
+feal::EventId_t EvtDgramReadAvail::getId(void)
+{
+    return getIdOfType<EvtDgramReadAvail>();
+}
+
+feal::EventId_t EvtDgramWriteAvail::getId(void)
+{
+    return getIdOfType<EvtDgramWriteAvail>();
+}
+
+feal::EventId_t EvtSockErr::getId(void)
+{
+    return getIdOfType<EvtSockErr>();
+}
+
+
 void Clientund::initActor(void)
 {
     printf("Clientund::initActor\n");
     timers.init(this);
     dgram.init(this);
+    dgram.subscribeReadAvail<EvtDgramReadAvail>();
+    dgram.subscribeWriteAvail<EvtDgramWriteAvail>();
+    dgram.subscribeSockErr<EvtSockErr>();
 }
 
 void Clientund::startActor(void)
@@ -121,7 +140,7 @@ void Clientund::handleEvent(std::shared_ptr<EvtDelayTimer> pevt)
     timers.startTimer<EvtDelayTimer>(std::chrono::seconds(2));
 }
 
-void Clientund::handleEvent(std::shared_ptr<feal::EvtDgramReadAvail> pevt)
+void Clientund::handleEvent(std::shared_ptr<EvtDgramReadAvail> pevt)
 {
     if (!pevt) return;
     printf("Clientund::EvtDgramReadAvail\n");
@@ -136,14 +155,14 @@ void Clientund::handleEvent(std::shared_ptr<feal::EvtDgramReadAvail> pevt)
     else printf("Received %d bytes: \"%s\" from %s\n", bytes, buf, recvaddr.sun_path);
 }
 
-void Clientund::handleEvent(std::shared_ptr<feal::EvtDgramWriteAvail> pevt)
+void Clientund::handleEvent(std::shared_ptr<EvtDgramWriteAvail> pevt)
 {
     if (!pevt) return;
     printf("Clientund::EvtDgramWriteAvail\n");
     send_something();
 }
 
-void Clientund::handleEvent(std::shared_ptr<feal::EvtSockErr> pevt)
+void Clientund::handleEvent(std::shared_ptr<EvtSockErr> pevt)
 {
     if (!pevt) return;
     printf("Clientund::EvtSockErr\n");

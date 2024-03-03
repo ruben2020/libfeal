@@ -15,6 +15,21 @@ feal::EventId_t EvtClientDisconnected::getId(void)
     return getIdOfType<EvtClientDisconnected>();
 }
 
+feal::EventId_t EvtDataReadAvail::getId(void)
+{
+    return getIdOfType<EvtDataReadAvail>();
+}
+
+feal::EventId_t EvtDataWriteAvail::getId(void)
+{
+    return getIdOfType<EvtDataWriteAvail>();
+}
+
+feal::EventId_t EvtClientShutdown::getId(void)
+{
+    return getIdOfType<EvtClientShutdown>();
+}
+
 
 void ClientHandler::setParam(feal::Stream<Server>* p, feal::handle_t fd, char *s)
 {
@@ -32,7 +47,7 @@ void ClientHandler::startActor(void)
 {
     printf("ClientHandler(%ld)::startActor\n", (long int) sockfd);
     feal::errenum se =feal::FEAL_OK;
-    if (stream) se = stream->recv_start(this, sockfd);
+    if (stream) se = stream->registerClient<ClientHandler, EvtDataReadAvail, EvtDataWriteAvail, EvtClientShutdown>(this, sockfd);
     if (se != feal::FEAL_OK)
     {
         printf("Error3 %d\n", se);
@@ -50,7 +65,7 @@ void ClientHandler::shutdownActor(void)
     stream->disconnect_client(sockfd);
 }
 
-void ClientHandler::handleEvent(std::shared_ptr<feal::EvtDataReadAvail> pevt)
+void ClientHandler::handleEvent(std::shared_ptr<EvtDataReadAvail> pevt)
 {
     printf("ClientHandler(%ld)::EvtDataReadAvail\n", (long int) sockfd);
     if ((!pevt)||(!stream)) return;
@@ -68,17 +83,18 @@ void ClientHandler::handleEvent(std::shared_ptr<feal::EvtDataReadAvail> pevt)
     }
 }
 
-void ClientHandler::handleEvent(std::shared_ptr<feal::EvtDataWriteAvail> pevt)
+void ClientHandler::handleEvent(std::shared_ptr<EvtDataWriteAvail> pevt)
 {
     if (!pevt) return;
     printf("ClientHandler(%ld)::EvtDataWriteAvail\n", (long int) sockfd);
 }
-void ClientHandler::handleEvent(std::shared_ptr<feal::EvtClientShutdown> pevt)
+
+void ClientHandler::handleEvent(std::shared_ptr<EvtClientShutdown> pevt)
 {
     if (!pevt) return;
     printf("ClientHandler(%ld)::EvtClientShutdown\n", (long int) sockfd);
     std::shared_ptr<EvtClientDisconnected> pevt2 = std::make_shared<EvtClientDisconnected>();
-    pevt2.get()->client_sockfd = sockfd;
+    pevt2.get()->fd = sockfd;
     publishEvent(pevt2);
 }
 

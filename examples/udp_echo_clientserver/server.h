@@ -28,6 +28,37 @@ EvtRetryTimer& operator= ( const EvtRetryTimer & ) = default;
 feal::EventId_t getId(void);
 };
 
+class EvtDgramReadAvail : public feal::EventComm
+{
+public:
+EvtDgramReadAvail() = default;
+EvtDgramReadAvail( const EvtDgramReadAvail & ) = default;
+EvtDgramReadAvail& operator= ( const EvtDgramReadAvail & ) = default;
+~EvtDgramReadAvail() = default;
+feal::EventId_t getId(void);
+};
+
+class EvtDgramWriteAvail : public feal::EventComm
+{
+public:
+EvtDgramWriteAvail() = default;
+EvtDgramWriteAvail( const EvtDgramWriteAvail & ) = default;
+EvtDgramWriteAvail& operator= ( const EvtDgramWriteAvail & ) = default;
+~EvtDgramWriteAvail() = default;
+feal::EventId_t getId(void);
+};
+
+class EvtSockErr : public feal::EventComm
+{
+public:
+EvtSockErr() = default;
+EvtSockErr( const EvtSockErr & ) = default;
+EvtSockErr& operator= ( const EvtSockErr & ) = default;
+~EvtSockErr() = default;
+feal::EventId_t getId(void);
+};
+
+
 
 class Server : public feal::Actor
 {
@@ -44,9 +75,9 @@ void shutdownActor(void);
 
 void handleEvent(std::shared_ptr<EvtEndTimer> pevt);
 void handleEvent(std::shared_ptr<EvtRetryTimer> pevt);
-void handleEvent(std::shared_ptr<feal::EvtDgramReadAvail> pevt);
-void handleEvent(std::shared_ptr<feal::EvtDgramWriteAvail> pevt);
-void handleEvent(std::shared_ptr<feal::EvtSockErr> pevt);
+void handleEvent(std::shared_ptr<EvtDgramReadAvail> pevt);
+void handleEvent(std::shared_ptr<EvtDgramWriteAvail> pevt);
+void handleEvent(std::shared_ptr<EvtSockErr> pevt);
 
 protected:
 

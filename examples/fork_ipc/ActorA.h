@@ -29,7 +29,7 @@ EvtSigChld& operator= ( const EvtSigChld & ) = default;
 feal::EventId_t getId(void);
 };
 
-class EvtPipeRead : public feal::EvtReader
+class EvtPipeRead : public feal::EventComm
 {
 public:
 EvtPipeRead() = default;
@@ -39,7 +39,7 @@ EvtPipeRead& operator= ( const EvtPipeRead & ) = default;
 feal::EventId_t getId(void);
 };
 
-class EvtSockStreamRead : public feal::EvtReader
+class EvtSockStreamRead : public feal::EventComm
 {
 public:
 EvtSockStreamRead() = default;
@@ -49,7 +49,7 @@ EvtSockStreamRead& operator= ( const EvtSockStreamRead & ) = default;
 feal::EventId_t getId(void);
 };
 
-class EvtSockDatagramRead : public feal::EvtReader
+class EvtSockDatagramRead : public feal::EventComm
 {
 public:
 EvtSockDatagramRead() = default;

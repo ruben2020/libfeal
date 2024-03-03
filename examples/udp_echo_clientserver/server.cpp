@@ -19,11 +19,30 @@ feal::EventId_t EvtRetryTimer::getId(void)
     return getIdOfType<EvtRetryTimer>();
 }
 
+feal::EventId_t EvtDgramReadAvail::getId(void)
+{
+    return getIdOfType<EvtDgramReadAvail>();
+}
+
+feal::EventId_t EvtDgramWriteAvail::getId(void)
+{
+    return getIdOfType<EvtDgramWriteAvail>();
+}
+
+feal::EventId_t EvtSockErr::getId(void)
+{
+    return getIdOfType<EvtSockErr>();
+}
+
+
 void Server::initActor(void)
 {
     printf("Server::initActor\n");
     timers.init(this);
     dgram.init(this);
+    dgram.subscribeReadAvail<EvtDgramReadAvail>();
+    dgram.subscribeWriteAvail<EvtDgramWriteAvail>();
+    dgram.subscribeSockErr<EvtSockErr>();
 }
 
 void Server::startActor(void)
@@ -86,7 +105,7 @@ void Server::handleEvent(std::shared_ptr<EvtRetryTimer> pevt)
     start_listening();
 }
 
-void Server::handleEvent(std::shared_ptr<feal::EvtDgramReadAvail> pevt)
+void Server::handleEvent(std::shared_ptr<EvtDgramReadAvail> pevt)
 {
     if (!pevt) return;
     printf("Server::EvtDgramReadAvail\n");
@@ -102,13 +121,13 @@ void Server::handleEvent(std::shared_ptr<feal::EvtDgramReadAvail> pevt)
     if (se != feal::FEAL_OK) printf("Error sending back \"%s\" to %s:%d\n", buf, recvaddr.addr, recvaddr.port);
 }
 
-void Server::handleEvent(std::shared_ptr<feal::EvtDgramWriteAvail> pevt)
+void Server::handleEvent(std::shared_ptr<EvtDgramWriteAvail> pevt)
 {
     if (!pevt) return;
     printf("Server::EvtDgramWriteAvail\n");
 }
 
-void Server::handleEvent(std::shared_ptr<feal::EvtSockErr> pevt)
+void Server::handleEvent(std::shared_ptr<EvtSockErr> pevt)
 {
     if (!pevt) return;
     printf("Server::EvtSockErr\n");

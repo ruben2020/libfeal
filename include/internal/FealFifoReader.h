@@ -51,7 +51,7 @@ errenum open(const char *pathname)
 {
     handle_t fd;
     close_and_reset();
-    fd = open(pathname, O_RDONLY | O_NONBLOCK);
+    fd = ::open(pathname, O_RDONLY | O_NONBLOCK);
     if (fd == -1) return static_cast<errenum>(errno);
     return ReaderGeneric::registerhandle(fd);
 }

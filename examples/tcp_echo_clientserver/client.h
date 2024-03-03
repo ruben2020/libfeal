@@ -48,6 +48,47 @@ EvtSigInt& operator= ( const EvtSigInt & ) = default;
 feal::EventId_t getId(void);
 };
 
+class EvtConnectedToServer : public feal::EventComm
+{
+public:
+EvtConnectedToServer() = default;
+EvtConnectedToServer( const EvtConnectedToServer & ) = default;
+EvtConnectedToServer& operator= ( const EvtConnectedToServer & ) = default;
+~EvtConnectedToServer() = default;
+feal::EventId_t getId(void);
+};
+
+class EvtDataReadAvail : public feal::EventComm
+{
+public:
+EvtDataReadAvail() = default;
+EvtDataReadAvail( const EvtDataReadAvail & ) = default;
+EvtDataReadAvail& operator= ( const EvtDataReadAvail & ) = default;
+~EvtDataReadAvail() = default;
+feal::EventId_t getId(void);
+};
+
+class EvtDataWriteAvail : public feal::EventComm
+{
+public:
+EvtDataWriteAvail() = default;
+EvtDataWriteAvail( const EvtDataWriteAvail & ) = default;
+EvtDataWriteAvail& operator= ( const EvtDataWriteAvail & ) = default;
+~EvtDataWriteAvail() = default;
+feal::EventId_t getId(void);
+};
+
+class EvtConnectionShutdown : public feal::EventComm
+{
+public:
+EvtConnectionShutdown() = default;
+EvtConnectionShutdown( const EvtConnectionShutdown & ) = default;
+EvtConnectionShutdown& operator= ( const EvtConnectionShutdown & ) = default;
+~EvtConnectionShutdown() = default;
+feal::EventId_t getId(void);
+};
+
+
 class Client : public feal::Actor
 {
 
@@ -64,10 +105,10 @@ void shutdownActor(void);
 void handleEvent(std::shared_ptr<EvtEndTimer> pevt);
 void handleEvent(std::shared_ptr<EvtDelayTimer> pevt);
 void handleEvent(std::shared_ptr<EvtRetryTimer> pevt);
-void handleEvent(std::shared_ptr<feal::EvtConnectedToServer> pevt);
-void handleEvent(std::shared_ptr<feal::EvtDataReadAvail> pevt);
-void handleEvent(std::shared_ptr<feal::EvtDataWriteAvail> pevt);
-void handleEvent(std::shared_ptr<feal::EvtConnectionShutdown> pevt);
+void handleEvent(std::shared_ptr<EvtConnectedToServer> pevt);
+void handleEvent(std::shared_ptr<EvtDataReadAvail> pevt);
+void handleEvent(std::shared_ptr<EvtDataWriteAvail> pevt);
+void handleEvent(std::shared_ptr<EvtConnectionShutdown> pevt);
 void handleEvent(std::shared_ptr<EvtSigInt> pevt);
 
 protected:

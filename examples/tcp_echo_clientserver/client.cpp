@@ -29,11 +29,37 @@ feal::EventId_t EvtSigInt::getId(void)
     return getIdOfType<EvtSigInt>();
 }
 
+feal::EventId_t EvtConnectedToServer::getId(void)
+{
+    return getIdOfType<EvtConnectedToServer>();
+}
+
+feal::EventId_t EvtDataReadAvail::getId(void)
+{
+    return getIdOfType<EvtDataReadAvail>();
+}
+
+feal::EventId_t EvtDataWriteAvail::getId(void)
+{
+    return getIdOfType<EvtDataWriteAvail>();
+}
+
+feal::EventId_t EvtConnectionShutdown::getId(void)
+{
+    return getIdOfType<EvtConnectionShutdown>();
+}
+
+
+
 void Client::initActor(void)
 {
     printf("Client::initActor\n");
     timers.init(this);
     stream.init(this);
+    stream.subscribeConnectedToServer<EvtConnectedToServer>();
+    stream.subscribeReadAvail<EvtDataReadAvail>();
+    stream.subscribeWriteAvail<EvtDataWriteAvail>();
+    stream.subscribeConnectionShutdown<EvtConnectionShutdown>();
     signal.init(this);
     signal.registerSignal<EvtSigInt>(SIGINT);
 }
@@ -105,7 +131,7 @@ void Client::handleEvent(std::shared_ptr<EvtRetryTimer> pevt)
     connect_to_server();
 }
 
-void Client::handleEvent(std::shared_ptr<feal::EvtConnectedToServer> pevt)
+void Client::handleEvent(std::shared_ptr<EvtConnectedToServer> pevt)
 {
     if (!pevt) return;
     printf("Client::EvtConnectedToServer\n");
@@ -117,7 +143,7 @@ void Client::handleEvent(std::shared_ptr<feal::EvtConnectedToServer> pevt)
     if (se != feal::FEAL_OK) printf("Error sending \"Hello! Client here!\": %d\n", se);
 }
 
-void Client::handleEvent(std::shared_ptr<feal::EvtDataReadAvail> pevt)
+void Client::handleEvent(std::shared_ptr<EvtDataReadAvail> pevt)
 {
     if (!pevt) return;
     printf("Client::EvtDataReadAvail\n");
@@ -130,14 +156,14 @@ void Client::handleEvent(std::shared_ptr<feal::EvtDataReadAvail> pevt)
     timers.startTimer<EvtDelayTimer>(std::chrono::seconds(2));
 }
 
-void Client::handleEvent(std::shared_ptr<feal::EvtDataWriteAvail> pevt)
+void Client::handleEvent(std::shared_ptr<EvtDataWriteAvail> pevt)
 {
     if (!pevt) return;
     printf("Client::EvtDataWriteAvail\n");
     send_something();
 }
 
-void Client::handleEvent(std::shared_ptr<feal::EvtConnectionShutdown> pevt)
+void Client::handleEvent(std::shared_ptr<EvtConnectionShutdown> pevt)
 {
     if (!pevt) return;
     printf("Client::EvtConnectionShutdown\n");

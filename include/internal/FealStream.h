@@ -259,13 +259,13 @@ errenum registerClient(T* p, handle_t client_sockfd)
     if (p)
     {
         cst.wkact = p->shared_from_this();
-        p->addEvent(actorptr, instcr);
+        p->addEvent(p, instcr);
         cst.evtclientreadavail = std::make_shared<CRead>();
         EventBus::getInstance().registerEventCloner<CRead>();
-        p->addEvent(actorptr, instcw);
+        p->addEvent(p, instcw);
         cst.evtclientwriteavail = std::make_shared<CWrite>();
         EventBus::getInstance().registerEventCloner<CWrite>();
-        p->addEvent(actorptr, instcs);
+        p->addEvent(p, instcs);
         cst.evtclientshutdown = std::make_shared<CShutdown>();
         EventBus::getInstance().registerEventCloner<CShutdown>();
     }

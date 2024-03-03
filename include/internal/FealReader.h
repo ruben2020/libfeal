@@ -79,12 +79,13 @@ void init(Y* p)
 
 
 template<typename T>
-void subscribeReadAvail()
+errenum subscribeReadAvail(handle_t fd)
 {
     T inst;
     actorptr->addEvent(actorptr, inst);
     evtread = std::make_shared<T>();
     EventBus::getInstance().registerEventCloner<T>();
+    return ReaderGeneric::registerhandle(fd);
 }
 
 template<typename T>

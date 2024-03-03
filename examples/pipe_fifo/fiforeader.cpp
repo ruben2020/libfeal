@@ -31,6 +31,7 @@ void Fiforeader::initActor(void)
     printf("Fiforeader::initActor\n");
     timers.init(this);
     reader.init(this);
+    reader.subscribeReadAvail<EvtFifoRead>();
 }
 
 void Fiforeader::startActor(void)
@@ -55,7 +56,7 @@ void Fiforeader::shutdownActor(void)
 void Fiforeader::open_for_reading(void)
 {
     feal::errenum res = feal::FEAL_OK;
-    res = reader.subscribe_and_open<EvtFifoRead>(FIFOPATH);
+    res = reader.open(FIFOPATH);
     if (res != feal::FEAL_OK)
     {
         printf("Error opening file for reading with errno %d\n", errno);
@@ -84,14 +85,14 @@ void Fiforeader::handleEvent(std::shared_ptr<EvtFifoRead> pevt)
     if (!pevt) return;
     printf("Fiforeader::EvtFifoRead\n");
     printf("handle %d, error %d, data avail %d\n", 
-        pevt.get()->readerfd, pevt.get()->error, pevt.get()->datalen);
-    if (pevt.get()->error)
+        pevt.get()->fd, pevt.get()->errnum, pevt.get()->datalen);
+    if (pevt.get()->errnum != feal::FEAL_OK)
     {
         open_for_reading();
         return;
     }
     printf("Data available for reading: %d\n", pevt.get()->datalen);
     char buf[100];
-    read(pevt.get()->readerfd, buf, sizeof(buf));
+    read(pevt.get()->fd, buf, sizeof(buf));
     printf("Read from fifo: %s\n", buf);
 }

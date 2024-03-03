@@ -41,6 +41,37 @@ EvtSigInt& operator= ( const EvtSigInt & ) = default;
 feal::EventId_t getId(void);
 };
 
+class EvtIncomingConn : public feal::EventComm
+{
+public:
+EvtIncomingConn() = default;
+EvtIncomingConn( const EvtIncomingConn & ) = default;
+EvtIncomingConn& operator= ( const EvtIncomingConn & ) = default;
+~EvtIncomingConn() = default;
+feal::EventId_t getId(void);
+};
+
+class EvtServerShutdown : public feal::EventComm
+{
+public:
+EvtServerShutdown() = default;
+EvtServerShutdown( const EvtServerShutdown & ) = default;
+EvtServerShutdown& operator= ( const EvtServerShutdown & ) = default;
+~EvtServerShutdown() = default;
+feal::EventId_t getId(void);
+};
+
+
+class EvtConnectionShutdown : public feal::EventComm
+{
+public:
+EvtConnectionShutdown() = default;
+EvtConnectionShutdown( const EvtConnectionShutdown & ) = default;
+EvtConnectionShutdown& operator= ( const EvtConnectionShutdown & ) = default;
+~EvtConnectionShutdown() = default;
+feal::EventId_t getId(void);
+};
+
 
 class Server : public feal::Actor
 {
@@ -58,8 +89,8 @@ virtual void shutdownActor(void);
 
 void handleEvent(std::shared_ptr<EvtEndTimer> pevt);
 void handleEvent(std::shared_ptr<EvtRetryTimer> pevt);
-void handleEvent(std::shared_ptr<feal::EvtIncomingConn> pevt);
-void handleEvent(std::shared_ptr<feal::EvtServerShutdown> pevt);
+void handleEvent(std::shared_ptr<EvtIncomingConn> pevt);
+void handleEvent(std::shared_ptr<EvtServerShutdown> pevt);
 void handleEvent(std::shared_ptr<EvtClientDisconnected> pevt);
 void handleEvent(std::shared_ptr<EvtSigInt> pevt);
 

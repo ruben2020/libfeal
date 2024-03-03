@@ -21,11 +21,42 @@ EvtClientDisconnected& operator= ( const EvtClientDisconnected & ) = default;
 ~EvtClientDisconnected() = default;
 feal::EventId_t getId(void);
 
-feal::handle_t client_sockfd = -1;
+feal::handle_t fd = -1;
 
 private:
 
 };
+
+class EvtDataReadAvail : public feal::EventComm
+{
+public:
+EvtDataReadAvail() = default;
+EvtDataReadAvail( const EvtDataReadAvail & ) = default;
+EvtDataReadAvail& operator= ( const EvtDataReadAvail & ) = default;
+~EvtDataReadAvail() = default;
+feal::EventId_t getId(void);
+};
+
+class EvtDataWriteAvail : public feal::EventComm
+{
+public:
+EvtDataWriteAvail() = default;
+EvtDataWriteAvail( const EvtDataWriteAvail & ) = default;
+EvtDataWriteAvail& operator= ( const EvtDataWriteAvail & ) = default;
+~EvtDataWriteAvail() = default;
+feal::EventId_t getId(void);
+};
+
+class EvtClientShutdown : public feal::EventComm
+{
+public:
+EvtClientShutdown() = default;
+EvtClientShutdown( const EvtClientShutdown & ) = default;
+EvtClientShutdown& operator= ( const EvtClientShutdown & ) = default;
+~EvtClientShutdown() = default;
+feal::EventId_t getId(void);
+};
+
 
 
 class ClientHandler : public feal::Actor
@@ -42,9 +73,9 @@ void startActor(void);
 void pauseActor(void);
 void shutdownActor(void);
 
-void handleEvent(std::shared_ptr<feal::EvtDataReadAvail> pevt);
-void handleEvent(std::shared_ptr<feal::EvtDataWriteAvail> pevt);
-void handleEvent(std::shared_ptr<feal::EvtClientShutdown> pevt);
+void handleEvent(std::shared_ptr<EvtDataReadAvail> pevt);
+void handleEvent(std::shared_ptr<EvtDataWriteAvail> pevt);
+void handleEvent(std::shared_ptr<EvtClientShutdown> pevt);
 
 private:
 feal::Stream<Server>* stream = nullptr;

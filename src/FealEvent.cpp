@@ -10,6 +10,11 @@ feal::EventId_t feal::Event::getId(void)
     return 0; // which is invalid
 }
 
+feal::EventId_t feal::EventComm::getId(void)
+{
+    return 0; // which is invalid
+}
+
 feal::EventId_t feal::Event::generateUniqueID(void)
 {
     static EventId_t uid = 0;
