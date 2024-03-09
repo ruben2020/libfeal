@@ -10,6 +10,7 @@
 
 class Server;
 
+
 class EvtClientDisconnected : public feal::Event
 {
 friend class ClientHandler;
@@ -19,7 +20,7 @@ EvtClientDisconnected() = default;
 EvtClientDisconnected( const EvtClientDisconnected & ) = default;
 EvtClientDisconnected& operator= ( const EvtClientDisconnected & ) = default;
 ~EvtClientDisconnected() = default;
-feal::EventId_t getId(void);
+FEAL_EVENT_GETID(EvtClientDisconnected)
 
 feal::handle_t fd = -1;
 
@@ -27,36 +28,9 @@ private:
 
 };
 
-class EvtDataReadAvail : public feal::EventComm
-{
-public:
-EvtDataReadAvail() = default;
-EvtDataReadAvail( const EvtDataReadAvail & ) = default;
-EvtDataReadAvail& operator= ( const EvtDataReadAvail & ) = default;
-~EvtDataReadAvail() = default;
-feal::EventId_t getId(void);
-};
-
-class EvtDataWriteAvail : public feal::EventComm
-{
-public:
-EvtDataWriteAvail() = default;
-EvtDataWriteAvail( const EvtDataWriteAvail & ) = default;
-EvtDataWriteAvail& operator= ( const EvtDataWriteAvail & ) = default;
-~EvtDataWriteAvail() = default;
-feal::EventId_t getId(void);
-};
-
-class EvtClientShutdown : public feal::EventComm
-{
-public:
-EvtClientShutdown() = default;
-EvtClientShutdown( const EvtClientShutdown & ) = default;
-EvtClientShutdown& operator= ( const EvtClientShutdown & ) = default;
-~EvtClientShutdown() = default;
-feal::EventId_t getId(void);
-};
-
+FEAL_EVENT_DEFAULT_DECLARE(EvtDataReadAvail, EventComm)
+FEAL_EVENT_DEFAULT_DECLARE(EvtDataWriteAvail, EventComm)
+FEAL_EVENT_DEFAULT_DECLARE(EvtClientShutdown, EventComm)
 
 
 class ClientHandler : public feal::Actor

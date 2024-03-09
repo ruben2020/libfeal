@@ -11,66 +11,12 @@
 class ClientHandler;
 class EvtClientDisconnected;
 
-class EvtEndTimer : public feal::Event
-{
-public:
-EvtEndTimer() = default;
-EvtEndTimer( const EvtEndTimer & ) = default;
-EvtEndTimer& operator= ( const EvtEndTimer & ) = default;
-~EvtEndTimer() = default;
-feal::EventId_t getId(void);
-};
-
-class EvtRetryTimer : public feal::Event
-{
-public:
-EvtRetryTimer() = default;
-EvtRetryTimer( const EvtRetryTimer & ) = default;
-EvtRetryTimer& operator= ( const EvtRetryTimer & ) = default;
-~EvtRetryTimer() = default;
-feal::EventId_t getId(void);
-};
-
-class EvtSigInt : public feal::EventSignal
-{
-public:
-EvtSigInt() = default;
-EvtSigInt( const EvtSigInt & ) = default;
-EvtSigInt& operator= ( const EvtSigInt & ) = default;
-~EvtSigInt() = default;
-feal::EventId_t getId(void);
-};
-
-class EvtIncomingConn : public feal::EventComm
-{
-public:
-EvtIncomingConn() = default;
-EvtIncomingConn( const EvtIncomingConn & ) = default;
-EvtIncomingConn& operator= ( const EvtIncomingConn & ) = default;
-~EvtIncomingConn() = default;
-feal::EventId_t getId(void);
-};
-
-class EvtServerShutdown : public feal::EventComm
-{
-public:
-EvtServerShutdown() = default;
-EvtServerShutdown( const EvtServerShutdown & ) = default;
-EvtServerShutdown& operator= ( const EvtServerShutdown & ) = default;
-~EvtServerShutdown() = default;
-feal::EventId_t getId(void);
-};
-
-
-class EvtConnectionShutdown : public feal::EventComm
-{
-public:
-EvtConnectionShutdown() = default;
-EvtConnectionShutdown( const EvtConnectionShutdown & ) = default;
-EvtConnectionShutdown& operator= ( const EvtConnectionShutdown & ) = default;
-~EvtConnectionShutdown() = default;
-feal::EventId_t getId(void);
-};
+FEAL_EVENT_DEFAULT_DECLARE(EvtEndTimer, Event)
+FEAL_EVENT_DEFAULT_DECLARE(EvtRetryTimer, Event)
+FEAL_EVENT_DEFAULT_DECLARE(EvtSigInt, EventSignal)
+FEAL_EVENT_DEFAULT_DECLARE(EvtIncomingConn, EventComm)
+FEAL_EVENT_DEFAULT_DECLARE(EvtServerShutdown, EventComm)
+FEAL_EVENT_DEFAULT_DECLARE(EvtConnectionShutdown, EventComm)
 
 
 class Server : public feal::Actor

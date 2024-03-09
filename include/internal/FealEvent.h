@@ -13,6 +13,23 @@
 #include <vector>
 #include <memory>
 
+#define FEAL_EVENT_GETID(X) \
+virtual feal::EventId_t getId(void) override \
+{ return getIdOfType<X>(); }
+
+#define FEAL_EVENT_DEFAULT_DECLARE(X,Y) \
+class X : public feal::Y \
+{ \
+public: \
+X() = default; \
+X( const X & ) = default; \
+X& operator= ( const X & ) = default; \
+~X() = default; \
+virtual feal::EventId_t getId(void) override \
+{ return getIdOfType<X>(); } \
+};
+
+
 namespace feal
 {
 
@@ -60,7 +77,7 @@ EventComm() = default;
 EventComm( const EventComm & ) = default;
 EventComm& operator= ( const EventComm & ) = default;
 ~EventComm() = default;
-virtual EventId_t getId(void);
+virtual EventId_t getId(void) override;
 errenum errnum = FEAL_OK;
 handle_t fd = FEAL_INVALID_HANDLE;
 int datalen = -1;

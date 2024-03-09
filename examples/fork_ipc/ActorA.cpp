@@ -9,31 +9,6 @@
 #include "ActorA.h"
 #include "ActorsManager.h"
 
-feal::EventId_t EvtSigInt::getId(void)
-{
-    return getIdOfType<EvtSigInt>();
-}
-
-feal::EventId_t EvtSigChld::getId(void)
-{
-    return getIdOfType<EvtSigChld>();
-}
-
-feal::EventId_t EvtPipeRead::getId(void)
-{
-    return getIdOfType<EvtPipeRead>();
-}
-
-feal::EventId_t EvtSockStreamRead::getId(void)
-{
-    return getIdOfType<EvtSockStreamRead>();
-}
-
-feal::EventId_t EvtSockDatagramRead::getId(void)
-{
-    return getIdOfType<EvtSockDatagramRead>();
-}
-
 
 void ActorA::initActor(void)
 {

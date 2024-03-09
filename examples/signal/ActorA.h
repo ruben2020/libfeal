@@ -8,16 +8,8 @@
 
 #include "feal.h"
 
+FEAL_EVENT_DEFAULT_DECLARE(EventTimerA1, Event)
 
-class EventTimerA1 : public feal::Event
-{
-public:
-EventTimerA1() = default;
-EventTimerA1( const EventTimerA1 & ) = default;
-EventTimerA1& operator= ( const EventTimerA1 & ) = default;
-~EventTimerA1() = default;
-feal::EventId_t getId(void);
-};
 
 class ActorA : public feal::Actor
 {

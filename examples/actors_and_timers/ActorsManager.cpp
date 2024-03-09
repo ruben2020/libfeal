@@ -8,10 +8,6 @@
 #include "ActorA.h"
 #include "ActorB.h"
 
-feal::EventId_t EventTimerShutdown::getId(void)
-{
-    return getIdOfType<EventTimerShutdown>();
-}
 
 void ActorsManager::initActor(void)
 {

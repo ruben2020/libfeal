@@ -9,47 +9,6 @@
 
 #define MIN(a,b) (a<b ? a : b)
 
-feal::EventId_t EvtEndTimer::getId(void)
-{
-    return getIdOfType<EvtEndTimer>();
-}
-
-feal::EventId_t EvtDelayTimer::getId(void)
-{
-    return getIdOfType<EvtDelayTimer>();
-}
-
-feal::EventId_t EvtRetryTimer::getId(void)
-{
-    return getIdOfType<EvtRetryTimer>();
-}
-
-feal::EventId_t EvtSigInt::getId(void)
-{
-    return getIdOfType<EvtSigInt>();
-}
-
-feal::EventId_t EvtConnectedToServer::getId(void)
-{
-    return getIdOfType<EvtConnectedToServer>();
-}
-
-feal::EventId_t EvtDataReadAvail::getId(void)
-{
-    return getIdOfType<EvtDataReadAvail>();
-}
-
-feal::EventId_t EvtDataWriteAvail::getId(void)
-{
-    return getIdOfType<EvtDataWriteAvail>();
-}
-
-feal::EventId_t EvtConnectionShutdown::getId(void)
-{
-    return getIdOfType<EvtConnectionShutdown>();
-}
-
-
 
 void Client::initActor(void)
 {

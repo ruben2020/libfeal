@@ -8,26 +8,8 @@
 
 #include "feal.h"
 
-
-class EvtSigInt : public feal::EventSignal
-{
-public:
-EvtSigInt() = default;
-EvtSigInt( const EvtSigInt & ) = default;
-EvtSigInt& operator= ( const EvtSigInt & ) = default;
-~EvtSigInt() = default;
-feal::EventId_t getId(void);
-};
-
-class EvtSigChld : public feal::EventSignal
-{
-public:
-EvtSigChld() = default;
-EvtSigChld( const EvtSigChld & ) = default;
-EvtSigChld& operator= ( const EvtSigChld & ) = default;
-~EvtSigChld() = default;
-feal::EventId_t getId(void);
-};
+FEAL_EVENT_DEFAULT_DECLARE(EvtSigInt, EventSignal)
+FEAL_EVENT_DEFAULT_DECLARE(EvtSigChld, EventSignal)
 
 
 class ActorA : public feal::Actor

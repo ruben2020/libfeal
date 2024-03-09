@@ -8,25 +8,8 @@
 
 #include "feal.h"
 
-class EventTimerShutdown : public feal::Event
-{
-public:
-EventTimerShutdown() = default;
-EventTimerShutdown( const EventTimerShutdown & ) = default;
-EventTimerShutdown& operator= ( const EventTimerShutdown & ) = default;
-~EventTimerShutdown() = default;
-feal::EventId_t getId(void);
-};
-
-class EvtSigInt : public feal::EventSignal
-{
-public:
-EvtSigInt() = default;
-EvtSigInt( const EvtSigInt & ) = default;
-EvtSigInt& operator= ( const EvtSigInt & ) = default;
-~EvtSigInt() = default;
-feal::EventId_t getId(void);
-};
+FEAL_EVENT_DEFAULT_DECLARE(EventTimerShutdown, Event)
+FEAL_EVENT_DEFAULT_DECLARE(EvtSigInt, EventSignal)
 
 
 class ActorsManager : public feal::Actor

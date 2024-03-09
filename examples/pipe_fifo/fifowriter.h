@@ -8,25 +8,9 @@
 
 #include "feal.h"
 
-class EvtEndTimer : public feal::Event
-{
-public:
-EvtEndTimer() = default;
-EvtEndTimer( const EvtEndTimer & ) = default;
-EvtEndTimer& operator= ( const EvtEndTimer & ) = default;
-~EvtEndTimer() = default;
-feal::EventId_t getId(void);
-};
+FEAL_EVENT_DEFAULT_DECLARE(EvtEndTimer, Event)
+FEAL_EVENT_DEFAULT_DECLARE(EvtDelayTimer, Event)
 
-class EvtDelayTimer : public feal::Event
-{
-public:
-EvtDelayTimer() = default;
-EvtDelayTimer( const EvtDelayTimer & ) = default;
-EvtDelayTimer& operator= ( const EvtDelayTimer & ) = default;
-~EvtDelayTimer() = default;
-feal::EventId_t getId(void);
-};
 
 class Fifowriter : public feal::Actor
 {

@@ -68,6 +68,7 @@ template<typename T, typename Y>
 void addEvent(Y* p, T& k)
 {
     EventId_t id = k.getId();
+    if (id == 0) printf("WARNING! getId not defined for Event!\n");
     if (id == 0) id = Event::getIdOfType<T>();
     auto it = mapEventHandlers.find(id);
     if (it == mapEventHandlers.end())
@@ -84,6 +85,8 @@ template<typename T, typename Y>
 void subscribeEvent(Y* p, T& k)
 {
     EventId_t id = k.getId();
+    if (id == 0) printf("WARNING! getId not defined for Event!\n");
+    if (id == 0) id = Event::getIdOfType<T>();
     auto it = mapEventHandlers.find(id);
     if (it == mapEventHandlers.end())
     {
@@ -111,6 +114,8 @@ template<typename T>
 void unsubscribeEvent(T& k)
 {
     EventId_t id = k.getId();
+    if (id == 0) printf("WARNING! getId not defined for Event!\n");
+    if (id == 0) id = Event::getIdOfType<T>();
     for (auto it = mapEventHandlers.begin(); it != mapEventHandlers.end(); )
     {
         if (it->first == id) mapEventHandlers.erase(it);

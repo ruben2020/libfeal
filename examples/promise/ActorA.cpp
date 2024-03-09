@@ -16,17 +16,6 @@
 #endif
 
 
-feal::EventId_t EvtAccPromiseComplete::getId(void)
-{
-    return getIdOfType<EvtAccPromiseComplete>();
-}
-
-feal::EventId_t EvtPopenPromiseComplete::getId(void)
-{
-    return getIdOfType<EvtPopenPromiseComplete>();
-}
-
-
 void ActorA::initActor(void)
 {
     printf("ActorA initActor\n");

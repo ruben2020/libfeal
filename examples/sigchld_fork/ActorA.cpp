@@ -9,16 +9,6 @@
 #include "ActorA.h"
 #include "ActorsManager.h"
 
-feal::EventId_t EvtSigInt::getId(void)
-{
-    return getIdOfType<EvtSigInt>();
-}
-
-feal::EventId_t EvtSigChld::getId(void)
-{
-    return getIdOfType<EvtSigChld>();
-}
-
 
 void ActorA::initActor(void)
 {

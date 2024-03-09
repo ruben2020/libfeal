@@ -8,36 +8,6 @@
 #include "clienthandler.h"
 #include "server.h"
 
-feal::EventId_t EvtEndTimer::getId(void)
-{
-    return getIdOfType<EvtEndTimer>();
-}
-
-feal::EventId_t EvtRetryTimer::getId(void)
-{
-    return getIdOfType<EvtRetryTimer>();
-}
-
-feal::EventId_t EvtSigInt::getId(void)
-{
-    return getIdOfType<EvtSigInt>();
-}
-
-feal::EventId_t EvtIncomingConn::getId(void)
-{
-    return getIdOfType<EvtIncomingConn>();
-}
-
-feal::EventId_t EvtServerShutdown::getId(void)
-{
-    return getIdOfType<EvtServerShutdown>();
-}
-
-feal::EventId_t EvtConnectionShutdown::getId(void)
-{
-    return getIdOfType<EvtConnectionShutdown>();
-}
-
 
 void Server::initActor(void)
 {

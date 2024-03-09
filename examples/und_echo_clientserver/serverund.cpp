@@ -10,31 +10,6 @@
 #define MIN(a,b) (a<b ? a : b)
 #define SERVERPATH "/tmp/fealundserver"
 
-feal::EventId_t EvtEndTimer::getId(void)
-{
-    return getIdOfType<EvtEndTimer>();
-}
-
-feal::EventId_t EvtRetryTimer::getId(void)
-{
-    return getIdOfType<EvtRetryTimer>();
-}
-
-feal::EventId_t EvtDgramReadAvail::getId(void)
-{
-    return getIdOfType<EvtDgramReadAvail>();
-}
-
-feal::EventId_t EvtDgramWriteAvail::getId(void)
-{
-    return getIdOfType<EvtDgramWriteAvail>();
-}
-
-feal::EventId_t EvtSockErr::getId(void)
-{
-    return getIdOfType<EvtSockErr>();
-}
-
 
 void Serverund::initActor(void)
 {

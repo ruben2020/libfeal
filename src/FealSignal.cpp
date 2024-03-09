@@ -8,6 +8,11 @@
 feal::map_evtsig_t feal::SignalGeneric::mapSignal;
 std::mutex feal::SignalGeneric::mtxMapSig;
 
+feal::EventId_t feal::EventSignal::getId(void)
+{
+    return 0; // which is invalid
+}
+
 void feal::SignalGeneric::init(void)
 {
     const std::lock_guard<std::mutex> lock(mtxMapSig);

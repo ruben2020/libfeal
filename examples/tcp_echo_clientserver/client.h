@@ -8,85 +8,14 @@
 
 #include "feal.h"
 
-class EvtEndTimer : public feal::Event
-{
-public:
-EvtEndTimer() = default;
-EvtEndTimer( const EvtEndTimer & ) = default;
-EvtEndTimer& operator= ( const EvtEndTimer & ) = default;
-~EvtEndTimer() = default;
-feal::EventId_t getId(void);
-};
-
-class EvtDelayTimer : public feal::Event
-{
-public:
-EvtDelayTimer() = default;
-EvtDelayTimer( const EvtDelayTimer & ) = default;
-EvtDelayTimer& operator= ( const EvtDelayTimer & ) = default;
-~EvtDelayTimer() = default;
-feal::EventId_t getId(void);
-};
-
-class EvtRetryTimer : public feal::Event
-{
-public:
-EvtRetryTimer() = default;
-EvtRetryTimer( const EvtRetryTimer & ) = default;
-EvtRetryTimer& operator= ( const EvtRetryTimer & ) = default;
-~EvtRetryTimer() = default;
-feal::EventId_t getId(void);
-};
-
-class EvtSigInt : public feal::EventSignal
-{
-public:
-EvtSigInt() = default;
-EvtSigInt( const EvtSigInt & ) = default;
-EvtSigInt& operator= ( const EvtSigInt & ) = default;
-~EvtSigInt() = default;
-feal::EventId_t getId(void);
-};
-
-class EvtConnectedToServer : public feal::EventComm
-{
-public:
-EvtConnectedToServer() = default;
-EvtConnectedToServer( const EvtConnectedToServer & ) = default;
-EvtConnectedToServer& operator= ( const EvtConnectedToServer & ) = default;
-~EvtConnectedToServer() = default;
-feal::EventId_t getId(void);
-};
-
-class EvtDataReadAvail : public feal::EventComm
-{
-public:
-EvtDataReadAvail() = default;
-EvtDataReadAvail( const EvtDataReadAvail & ) = default;
-EvtDataReadAvail& operator= ( const EvtDataReadAvail & ) = default;
-~EvtDataReadAvail() = default;
-feal::EventId_t getId(void);
-};
-
-class EvtDataWriteAvail : public feal::EventComm
-{
-public:
-EvtDataWriteAvail() = default;
-EvtDataWriteAvail( const EvtDataWriteAvail & ) = default;
-EvtDataWriteAvail& operator= ( const EvtDataWriteAvail & ) = default;
-~EvtDataWriteAvail() = default;
-feal::EventId_t getId(void);
-};
-
-class EvtConnectionShutdown : public feal::EventComm
-{
-public:
-EvtConnectionShutdown() = default;
-EvtConnectionShutdown( const EvtConnectionShutdown & ) = default;
-EvtConnectionShutdown& operator= ( const EvtConnectionShutdown & ) = default;
-~EvtConnectionShutdown() = default;
-feal::EventId_t getId(void);
-};
+FEAL_EVENT_DEFAULT_DECLARE(EvtEndTimer, Event)
+FEAL_EVENT_DEFAULT_DECLARE(EvtDelayTimer, Event)
+FEAL_EVENT_DEFAULT_DECLARE(EvtRetryTimer, Event)
+FEAL_EVENT_DEFAULT_DECLARE(EvtSigInt, EventSignal)
+FEAL_EVENT_DEFAULT_DECLARE(EvtConnectedToServer, EventComm)
+FEAL_EVENT_DEFAULT_DECLARE(EvtDataReadAvail, EventComm)
+FEAL_EVENT_DEFAULT_DECLARE(EvtDataWriteAvail, EventComm)
+FEAL_EVENT_DEFAULT_DECLARE(EvtConnectionShutdown, EventComm)
 
 
 class Client : public feal::Actor

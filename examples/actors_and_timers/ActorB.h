@@ -20,7 +20,7 @@ EventCabbage() = default;
 EventCabbage( const EventCabbage & ) = default;
 EventCabbage& operator= ( const EventCabbage & ) = default;
 ~EventCabbage() = default;
-feal::EventId_t getId(void);
+FEAL_EVENT_GETID(EventCabbage)
 
 int get_cabbages(void);
 
@@ -30,25 +30,8 @@ int cabbages=0;
 
 };
 
-class EventTimerB1 : public feal::Event
-{
-public:
-EventTimerB1() = default;
-EventTimerB1( const EventTimerB1 & ) = default;
-EventTimerB1& operator= ( const EventTimerB1 & ) = default;
-~EventTimerB1() = default;
-feal::EventId_t getId(void);
-};
-
-class EventTimerB2 : public feal::Event
-{
-public:
-EventTimerB2() = default;
-EventTimerB2( const EventTimerB2 & ) = default;
-EventTimerB2& operator= ( const EventTimerB2 & ) = default;
-~EventTimerB2() = default;
-feal::EventId_t getId(void);
-};
+FEAL_EVENT_DEFAULT_DECLARE(EventTimerB1, Event)
+FEAL_EVENT_DEFAULT_DECLARE(EventTimerB2, Event)
 
 class ActorB : public feal::Actor
 {

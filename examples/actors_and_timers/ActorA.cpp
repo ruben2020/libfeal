@@ -8,11 +8,6 @@
 #include "ActorA.h"
 #include "ActorB.h"
 
-feal::EventId_t EvtNotifyVege::getId(void)
-{
-    return getIdOfType<EvtNotifyVege>();
-}
-
 int EvtNotifyVege::get_carrots(void)
 {
     return carrots;
@@ -32,11 +27,6 @@ void EvtNotifyVege::set_tomatoes(const int& num)
 }
 
 
-feal::EventId_t EvtNotifyFruit::getId(void)
-{
-    return getIdOfType<EvtNotifyFruit>();
-}
-
 int EvtNotifyFruit::get_apples(void)
 {
     return apples;
@@ -55,10 +45,6 @@ void EvtNotifyFruit::set_oranges(const int& num)
     oranges = num;
 }
 
-feal::EventId_t EventTimerA1::getId(void)
-{
-    return getIdOfType<EventTimerA1>();
-}
 
 void ActorA::initActor(void)
 {

@@ -25,6 +25,7 @@ EventSignal() = default;
 EventSignal( const EventSignal & ) = default;
 EventSignal& operator= ( const EventSignal & ) = default;
 ~EventSignal() = default;
+virtual EventId_t getId(void) override;
 int signo = -1;
 int sicode = -1;
 };

@@ -23,12 +23,6 @@ static size_t write_data(void *ptr, size_t size, size_t nmemb, void *stream)
 }
 
 
-feal::EventId_t EvtCurlPromiseComplete::getId(void)
-{
-    return getIdOfType<EvtCurlPromiseComplete>();
-}
-
-
 void ActorA::initActor(void)
 {
     printf("ActorA initActor\n");

@@ -8,15 +8,8 @@
 
 #include "feal.h"
 
-class EvtAllDone : public feal::Event
-{
-public:
-EvtAllDone() = default;
-EvtAllDone( const EvtAllDone & ) = default;
-EvtAllDone& operator= ( const EvtAllDone & ) = default;
-~EvtAllDone() = default;
-feal::EventId_t getId(void);
-};
+FEAL_EVENT_DEFAULT_DECLARE(EvtAllDone, Event)
+
 
 class ActorsManager : public feal::Actor
 {

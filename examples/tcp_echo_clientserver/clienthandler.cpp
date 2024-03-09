@@ -10,26 +10,6 @@
 
 #define MIN(a,b) (a<b ? a : b)
 
-feal::EventId_t EvtClientDisconnected::getId(void)
-{
-    return getIdOfType<EvtClientDisconnected>();
-}
-
-feal::EventId_t EvtDataReadAvail::getId(void)
-{
-    return getIdOfType<EvtDataReadAvail>();
-}
-
-feal::EventId_t EvtDataWriteAvail::getId(void)
-{
-    return getIdOfType<EvtDataWriteAvail>();
-}
-
-feal::EventId_t EvtClientShutdown::getId(void)
-{
-    return getIdOfType<EvtClientShutdown>();
-}
-
 
 void ClientHandler::setParam(feal::Stream<Server>* p, feal::handle_t fd, char *s)
 {

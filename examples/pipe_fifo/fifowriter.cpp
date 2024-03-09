@@ -12,15 +12,6 @@
 
 #define FIFOPATH "/tmp/fealfifo"
 
-feal::EventId_t EvtEndTimer::getId(void)
-{
-    return getIdOfType<EvtEndTimer>();
-}
-
-feal::EventId_t EvtDelayTimer::getId(void)
-{
-    return getIdOfType<EvtDelayTimer>();
-}
 
 void Fifowriter::initActor(void)
 {

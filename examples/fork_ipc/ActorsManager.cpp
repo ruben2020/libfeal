@@ -7,10 +7,6 @@
 #include "ActorsManager.h"
 #include "ActorA.h"
 
-feal::EventId_t EvtAllDone::getId(void)
-{
-    return getIdOfType<EvtAllDone>();
-}
 
 void ActorsManager::initActor(void)
 {

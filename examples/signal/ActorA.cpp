@@ -7,10 +7,6 @@
 #include "feal.h"
 #include "ActorA.h"
 
-feal::EventId_t EventTimerA1::getId(void)
-{
-    return getIdOfType<EventTimerA1>();
-}
 
 void ActorA::initActor(void)
 {

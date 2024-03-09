@@ -8,56 +8,11 @@
 
 #include "feal.h"
 
-class EvtEndTimer : public feal::Event
-{
-public:
-EvtEndTimer() = default;
-EvtEndTimer( const EvtEndTimer & ) = default;
-EvtEndTimer& operator= ( const EvtEndTimer & ) = default;
-~EvtEndTimer() = default;
-feal::EventId_t getId(void);
-};
-
-class EvtRetryTimer : public feal::Event
-{
-public:
-EvtRetryTimer() = default;
-EvtRetryTimer( const EvtRetryTimer & ) = default;
-EvtRetryTimer& operator= ( const EvtRetryTimer & ) = default;
-~EvtRetryTimer() = default;
-feal::EventId_t getId(void);
-};
-
-class EvtDgramReadAvail : public feal::EventComm
-{
-public:
-EvtDgramReadAvail() = default;
-EvtDgramReadAvail( const EvtDgramReadAvail & ) = default;
-EvtDgramReadAvail& operator= ( const EvtDgramReadAvail & ) = default;
-~EvtDgramReadAvail() = default;
-feal::EventId_t getId(void);
-};
-
-class EvtDgramWriteAvail : public feal::EventComm
-{
-public:
-EvtDgramWriteAvail() = default;
-EvtDgramWriteAvail( const EvtDgramWriteAvail & ) = default;
-EvtDgramWriteAvail& operator= ( const EvtDgramWriteAvail & ) = default;
-~EvtDgramWriteAvail() = default;
-feal::EventId_t getId(void);
-};
-
-class EvtSockErr : public feal::EventComm
-{
-public:
-EvtSockErr() = default;
-EvtSockErr( const EvtSockErr & ) = default;
-EvtSockErr& operator= ( const EvtSockErr & ) = default;
-~EvtSockErr() = default;
-feal::EventId_t getId(void);
-};
-
+FEAL_EVENT_DEFAULT_DECLARE(EvtEndTimer, Event)
+FEAL_EVENT_DEFAULT_DECLARE(EvtRetryTimer, Event)
+FEAL_EVENT_DEFAULT_DECLARE(EvtDgramReadAvail, EventComm)
+FEAL_EVENT_DEFAULT_DECLARE(EvtDgramWriteAvail, EventComm)
+FEAL_EVENT_DEFAULT_DECLARE(EvtSockErr, EventComm)
 
 
 class Server : public feal::Actor

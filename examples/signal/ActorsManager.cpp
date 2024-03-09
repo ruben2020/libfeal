@@ -7,16 +7,6 @@
 #include "ActorsManager.h"
 #include "ActorA.h"
 
-feal::EventId_t EventTimerShutdown::getId(void)
-{
-    return getIdOfType<EventTimerShutdown>();
-}
-
-feal::EventId_t EvtSigInt::getId(void)
-{
-    return getIdOfType<EvtSigInt>();
-}
-
 
 void ActorsManager::initActor(void)
 {
