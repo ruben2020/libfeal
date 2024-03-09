@@ -37,8 +37,8 @@ void ActorA::startActor(void)
         DOWNLOADURL, FILEDEST);
     curl_work_thread = std::thread(&curlThreadLauncher,
         this,
-        std::move(std::string(DOWNLOADURL)),
-        std::move(std::string(FILEDEST)),
+        std::string(DOWNLOADURL),
+        std::string(FILEDEST),
         std::move(curl_promise));
     subscribePromise(this, fut_curl);
 }

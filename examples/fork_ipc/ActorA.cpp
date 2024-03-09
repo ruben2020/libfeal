@@ -34,7 +34,7 @@ void ActorA::forkChild(int childnum, const char* medium)
 {
     pid_t p;
     feal::handle_t fd[2]; // handle_t and handle_t are the same
-    int ret;
+    int ret = -1;
     switch(childnum)
     {
         case 1:
