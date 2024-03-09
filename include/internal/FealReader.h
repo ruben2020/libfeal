@@ -101,20 +101,28 @@ protected:
 
 void receiveEventReadAvail(errenum errnum, handle_t fd, int datalen)
 {
-    auto itw = std::dynamic_pointer_cast<EventComm>(EventBus::getInstance().cloneEvent(evtread));
-    itw.get()->errnum = errnum;
-    itw.get()->fd = fd;
-    itw.get()->datalen = datalen;
-    if (actorptr) actorptr->receiveEvent(itw);
+    if (evtread.get()) 
+    {
+        auto itw = std::dynamic_pointer_cast<EventComm>(EventBus::getInstance().cloneEvent(evtread));
+        itw.get()->errnum = errnum;
+        itw.get()->fd = fd;
+        itw.get()->datalen = datalen;
+        if (actorptr) actorptr->receiveEvent(itw);
+    }
+    else printf("No subscription using Reader::subscribeReadAvail\n");
 }
 
 void receiveEventSockErr(errenum errnum, handle_t fd, int datalen)
 {
-    auto itw = std::dynamic_pointer_cast<EventComm>(EventBus::getInstance().cloneEvent(evterrsock));
-    itw.get()->errnum = errnum;
-    itw.get()->fd = fd;
-    itw.get()->datalen = datalen;
-    if (actorptr) actorptr->receiveEvent(itw);
+    if (evterrsock.get()) 
+    {
+        auto itw = std::dynamic_pointer_cast<EventComm>(EventBus::getInstance().cloneEvent(evterrsock));
+        itw.get()->errnum = errnum;
+        itw.get()->fd = fd;
+        itw.get()->datalen = datalen;
+        if (actorptr) actorptr->receiveEvent(itw);
+    }
+    else printf("No subscription using Reader::subscribeSockErr\n");
 }
 
 private:

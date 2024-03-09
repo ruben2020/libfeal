@@ -284,56 +284,80 @@ protected:
 
 void receiveEventIncomingConn(errenum errnum, handle_t fd, int datalen)
 {
-    auto itw = std::dynamic_pointer_cast<EventComm>(EventBus::getInstance().cloneEvent(evtincomingconn));
-    itw.get()->errnum = errnum;
-    itw.get()->fd = fd;
-    itw.get()->datalen = datalen;
-    if (actorptr) actorptr->receiveEvent(itw);
+    if (evtincomingconn.get()) 
+    {
+        auto itw = std::dynamic_pointer_cast<EventComm>(EventBus::getInstance().cloneEvent(evtincomingconn));
+        itw.get()->errnum = errnum;
+        itw.get()->fd = fd;
+        itw.get()->datalen = datalen;
+        if (actorptr) actorptr->receiveEvent(itw);
+    }
+    else printf("No subscription using Stream::subscribeIncomingConn\n");
 }
 
 void receiveEventReadAvail(errenum errnum, handle_t fd, int datalen)
 {
-    auto itw = std::dynamic_pointer_cast<EventComm>(EventBus::getInstance().cloneEvent(evtreadavail));
-    itw.get()->errnum = errnum;
-    itw.get()->fd = fd;
-    itw.get()->datalen = datalen;
-    if (actorptr) actorptr->receiveEvent(itw);
+    if (evtreadavail.get()) 
+    {
+        auto itw = std::dynamic_pointer_cast<EventComm>(EventBus::getInstance().cloneEvent(evtreadavail));
+        itw.get()->errnum = errnum;
+        itw.get()->fd = fd;
+        itw.get()->datalen = datalen;
+        if (actorptr) actorptr->receiveEvent(itw);
+    }
+    else printf("No subscription using Stream::subscribeReadAvail\n");
 }
 
 void receiveEventWriteAvail(errenum errnum, handle_t fd, int datalen)
 {
-    auto itw = std::dynamic_pointer_cast<EventComm>(EventBus::getInstance().cloneEvent(evtwriteavail));
-    itw.get()->errnum = errnum;
-    itw.get()->fd = fd;
-    itw.get()->datalen = datalen;
-    if (actorptr) actorptr->receiveEvent(itw);
+    if (evtwriteavail.get()) 
+    {
+        auto itw = std::dynamic_pointer_cast<EventComm>(EventBus::getInstance().cloneEvent(evtwriteavail));
+        itw.get()->errnum = errnum;
+        itw.get()->fd = fd;
+        itw.get()->datalen = datalen;
+        if (actorptr) actorptr->receiveEvent(itw);
+    }
+    else printf("No subscription using Stream::subscribeWriteAvail\n");
 }
 
 void receiveEventServerShutdown(errenum errnum, handle_t fd, int datalen)
 {
-    auto itw = std::dynamic_pointer_cast<EventComm>(EventBus::getInstance().cloneEvent(evtservershutdown));
-    itw.get()->errnum = errnum;
-    itw.get()->fd = fd;
-    itw.get()->datalen = datalen;
-    if (actorptr) actorptr->receiveEvent(itw);
+    if (evtservershutdown.get()) 
+    {
+        auto itw = std::dynamic_pointer_cast<EventComm>(EventBus::getInstance().cloneEvent(evtservershutdown));
+        itw.get()->errnum = errnum;
+        itw.get()->fd = fd;
+        itw.get()->datalen = datalen;
+        if (actorptr) actorptr->receiveEvent(itw);
+    }
+    else printf("No subscription using Stream::subscribeServerShutdown\n");
 }
 
 void receiveEventConnectedToServer(errenum errnum, handle_t fd, int datalen)
 {
-    auto itw = std::dynamic_pointer_cast<EventComm>(EventBus::getInstance().cloneEvent(evtconnectedtoserver));
-    itw.get()->errnum = errnum;
-    itw.get()->fd = fd;
-    itw.get()->datalen = datalen;
-    if (actorptr) actorptr->receiveEvent(itw);
+    if (evtconnectedtoserver.get()) 
+    {
+        auto itw = std::dynamic_pointer_cast<EventComm>(EventBus::getInstance().cloneEvent(evtconnectedtoserver));
+        itw.get()->errnum = errnum;
+        itw.get()->fd = fd;
+        itw.get()->datalen = datalen;
+        if (actorptr) actorptr->receiveEvent(itw);
+    }
+    else printf("No subscription using Stream::subscribeConnectedToServer\n");
 }
 
 void receiveEventConnectionShutdown(errenum errnum, handle_t fd, int datalen)
 {
-    auto itw = std::dynamic_pointer_cast<EventComm>(EventBus::getInstance().cloneEvent(evtconnshutdown));
-    itw.get()->errnum = errnum;
-    itw.get()->fd = fd;
-    itw.get()->datalen = datalen;
-    if (actorptr) actorptr->receiveEvent(itw);
+    if (evtconnshutdown.get()) 
+    {
+        auto itw = std::dynamic_pointer_cast<EventComm>(EventBus::getInstance().cloneEvent(evtconnshutdown));
+        itw.get()->errnum = errnum;
+        itw.get()->fd = fd;
+        itw.get()->datalen = datalen;
+        if (actorptr) actorptr->receiveEvent(itw);
+    }
+    else printf("No subscription using Stream::subscribeConnectionShutdown\n");
 }
 
 
