@@ -95,11 +95,14 @@ jobs:
           usesh: true
           prepare: pkg install -y ninja cmake llvm curl
           run: |
+            freebsd-version
+            uname -mrs
             pwd
             mkdir -p build
             cd build
             cmake -G Ninja -DCURL_EX=ON ..
             ninja
+            cd ..
             echo Running fealactorstimers ...
             ./build/examples/actors_and_timers/fealactorstimers
             echo Running promise ...
