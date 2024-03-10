@@ -63,7 +63,7 @@ void ActorA::forkChild(int childnum, const char* medium)
         printf("Child %d: Starting child process\n", childnum);
         for(int i=0; i<20; i++)
         {
-            sprintf(buf, "Child %d, hello %d", childnum, i);
+            snprintf(buf, sizeof(buf), "Child %d, hello %d", childnum, i);
             printf("Child %d: Sending \"%s\" to parent using %s\n", childnum, buf, medium);
             write(fd[1], buf, strlen(buf) + 1);
             std::this_thread::sleep_for(std::chrono::seconds(2));            

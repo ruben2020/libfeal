@@ -67,7 +67,7 @@ void Clientund::send_to_server(void)
     strcpy(clientaddr.sun_path, CLIENTPATH);
     char buf[8];
     srand(mix(clock(), time(NULL), getpid()));
-    sprintf(buf, "%d", rand() % 4096);
+    snprintf(buf, sizeof(buf), "%d", rand() % 4096);
     strcat(clientaddr.sun_path, buf);
     unlink(clientaddr.sun_path);
     se = dgram.create_sock((feal::family_t) clientaddr.sun_family);
@@ -91,7 +91,7 @@ void Clientund::send_something(void)
     char buf[30];
     int32_t bytes;
     memset(&buf, 0, sizeof(buf));
-    sprintf(buf, "Client %d", n++);
+    snprintf(buf, sizeof(buf), "Client %d", n++);
     printf("Trying to send \"%s\" to %s\n", buf, SERVERPATH);
     feal::errenum se = dgram.send_to((void*) buf, MIN(strlen(buf) + 1,
         sizeof(buf)), &bytes, &serveraddr, sizeof(serveraddr));

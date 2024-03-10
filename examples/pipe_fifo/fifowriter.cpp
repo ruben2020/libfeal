@@ -60,7 +60,7 @@ void Fifowriter::send_something(void)
     char buf[30];
     ssize_t bytes;
     memset(&buf, 0, sizeof(buf));
-    sprintf(buf, "Fifowriter %d", n++);
+    snprintf(buf, sizeof(buf), "Fifowriter %d", n++);
     printf("Trying to send \"%s\" to %s\n", buf, FIFOPATH);
     bytes = write(fifofd, buf, strlen(buf) + 2);
     if (bytes > 0) printf ("Wrote %ld bytes\n", bytes);

@@ -62,7 +62,7 @@ void Client::send_something(void)
     char buf[30];
     int32_t bytes;
     memset(&buf, 0, sizeof(buf));
-    sprintf(buf, "Client %d", n++);
+    snprintf(buf, sizeof(buf), "Client %d", n++);
     printf("Trying to send \"%s\"\n",buf);
     feal::errenum se = stream.send((void*) buf, MIN(strlen(buf) + 1, sizeof(buf)), &bytes);
     if (se != feal::FEAL_OK) printf("Error sending \"Client n\": %d\n", se);
