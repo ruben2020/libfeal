@@ -79,7 +79,8 @@ jobs:
       - name: Install dependencies on macOS
         if: startsWith(matrix.config.name, 'macOS Clang')
         run: |
-          brew install cmake curl
+          brew update
+          brew install ninja curl
           clang -v
           cmake --version
           ninja --version
