@@ -1,6 +1,6 @@
 //
 // Copyright (c) 2022 ruben2020 https://github.com/ruben2020
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
  
 #ifndef _FEAL_ACTOR_A_H
@@ -15,7 +15,7 @@ EvtAccPromiseComplete() = default;
 EvtAccPromiseComplete( const EvtAccPromiseComplete & ) = default;
 EvtAccPromiseComplete& operator= ( const EvtAccPromiseComplete & ) = default;
 ~EvtAccPromiseComplete() = default;
-feal::EventId_t getId(void);
+FEAL_EVENT_GETID(EvtAccPromiseComplete)
 int total = 0;
 };
 
@@ -26,7 +26,7 @@ EvtPopenPromiseComplete() = default;
 EvtPopenPromiseComplete( const EvtPopenPromiseComplete & ) = default;
 EvtPopenPromiseComplete& operator= ( const EvtPopenPromiseComplete & ) = default;
 ~EvtPopenPromiseComplete() = default;
-feal::EventId_t getId(void);
+FEAL_EVENT_GETID(EvtPopenPromiseComplete)
 std::string str;
 };
 

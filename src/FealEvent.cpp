@@ -1,11 +1,16 @@
 //
 // Copyright (c) 2022 ruben2020 https://github.com/ruben2020
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
  
 #include "feal.h"
 
 feal::EventId_t feal::Event::getId(void)
+{
+    return 0; // which is invalid
+}
+
+feal::EventId_t feal::EventComm::getId(void)
 {
     return 0; // which is invalid
 }

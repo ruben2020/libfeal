@@ -1,6 +1,6 @@
 //
 // Copyright (c) 2022 ruben2020 https://github.com/ruben2020
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
  
 #ifndef _FEAL_ACTOR_A_H
@@ -8,56 +8,11 @@
 
 #include "feal.h"
 
-
-class EvtSigInt : public feal::EventSignal
-{
-public:
-EvtSigInt() = default;
-EvtSigInt( const EvtSigInt & ) = default;
-EvtSigInt& operator= ( const EvtSigInt & ) = default;
-~EvtSigInt() = default;
-feal::EventId_t getId(void);
-};
-
-class EvtSigChld : public feal::EventSignal
-{
-public:
-EvtSigChld() = default;
-EvtSigChld( const EvtSigChld & ) = default;
-EvtSigChld& operator= ( const EvtSigChld & ) = default;
-~EvtSigChld() = default;
-feal::EventId_t getId(void);
-};
-
-class EvtPipeRead : public feal::EvtReader
-{
-public:
-EvtPipeRead() = default;
-EvtPipeRead( const EvtPipeRead & ) = default;
-EvtPipeRead& operator= ( const EvtPipeRead & ) = default;
-~EvtPipeRead() = default;
-feal::EventId_t getId(void);
-};
-
-class EvtSockStreamRead : public feal::EvtReader
-{
-public:
-EvtSockStreamRead() = default;
-EvtSockStreamRead( const EvtSockStreamRead & ) = default;
-EvtSockStreamRead& operator= ( const EvtSockStreamRead & ) = default;
-~EvtSockStreamRead() = default;
-feal::EventId_t getId(void);
-};
-
-class EvtSockDatagramRead : public feal::EvtReader
-{
-public:
-EvtSockDatagramRead() = default;
-EvtSockDatagramRead( const EvtSockDatagramRead & ) = default;
-EvtSockDatagramRead& operator= ( const EvtSockDatagramRead & ) = default;
-~EvtSockDatagramRead() = default;
-feal::EventId_t getId(void);
-};
+FEAL_EVENT_DEFAULT_DECLARE(EvtSigInt, EventSignal)
+FEAL_EVENT_DEFAULT_DECLARE(EvtSigChld, EventSignal)
+FEAL_EVENT_DEFAULT_DECLARE(EvtPipeRead, EventComm)
+FEAL_EVENT_DEFAULT_DECLARE(EvtSockStreamRead, EventComm)
+FEAL_EVENT_DEFAULT_DECLARE(EvtSockDatagramRead, EventComm)
 
 
 class ActorA : public feal::Actor

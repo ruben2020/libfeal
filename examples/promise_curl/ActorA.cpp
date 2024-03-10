@@ -1,6 +1,6 @@
 //
 // Copyright (c) 2022 ruben2020 https://github.com/ruben2020
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
  
 #include <cstdio>
@@ -23,12 +23,6 @@ static size_t write_data(void *ptr, size_t size, size_t nmemb, void *stream)
 }
 
 
-feal::EventId_t EvtCurlPromiseComplete::getId(void)
-{
-    return getIdOfType<EvtCurlPromiseComplete>();
-}
-
-
 void ActorA::initActor(void)
 {
     printf("ActorA initActor\n");
@@ -43,8 +37,8 @@ void ActorA::startActor(void)
         DOWNLOADURL, FILEDEST);
     curl_work_thread = std::thread(&curlThreadLauncher,
         this,
-        std::move(std::string(DOWNLOADURL)),
-        std::move(std::string(FILEDEST)),
+        std::string(DOWNLOADURL),
+        std::string(FILEDEST),
         std::move(curl_promise));
     subscribePromise(this, fut_curl);
 }

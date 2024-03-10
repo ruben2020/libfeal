@@ -1,6 +1,6 @@
 //
 // Copyright (c) 2022 ruben2020 https://github.com/ruben2020
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
  
 #ifndef _CLIENTUND_H
@@ -8,25 +8,12 @@
 
 #include "feal.h"
 
-class EvtEndTimer : public feal::Event
-{
-public:
-EvtEndTimer() = default;
-EvtEndTimer( const EvtEndTimer & ) = default;
-EvtEndTimer& operator= ( const EvtEndTimer & ) = default;
-~EvtEndTimer() = default;
-feal::EventId_t getId(void);
-};
+FEAL_EVENT_DEFAULT_DECLARE(EvtEndTimer, Event)
+FEAL_EVENT_DEFAULT_DECLARE(EvtDelayTimer, Event)
+FEAL_EVENT_DEFAULT_DECLARE(EvtDgramReadAvail, EventComm)
+FEAL_EVENT_DEFAULT_DECLARE(EvtDgramWriteAvail, EventComm)
+FEAL_EVENT_DEFAULT_DECLARE(EvtSockErr, EventComm)
 
-class EvtDelayTimer : public feal::Event
-{
-public:
-EvtDelayTimer() = default;
-EvtDelayTimer( const EvtDelayTimer & ) = default;
-EvtDelayTimer& operator= ( const EvtDelayTimer & ) = default;
-~EvtDelayTimer() = default;
-feal::EventId_t getId(void);
-};
 
 class Clientund : public feal::Actor
 {
@@ -43,9 +30,9 @@ void shutdownActor(void);
 
 void handleEvent(std::shared_ptr<EvtEndTimer> pevt);
 void handleEvent(std::shared_ptr<EvtDelayTimer> pevt);
-void handleEvent(std::shared_ptr<feal::EvtDgramReadAvail> pevt);
-void handleEvent(std::shared_ptr<feal::EvtDgramWriteAvail> pevt);
-void handleEvent(std::shared_ptr<feal::EvtSockErr> pevt);
+void handleEvent(std::shared_ptr<EvtDgramReadAvail> pevt);
+void handleEvent(std::shared_ptr<EvtDgramWriteAvail> pevt);
+void handleEvent(std::shared_ptr<EvtSockErr> pevt);
 
 protected:
 

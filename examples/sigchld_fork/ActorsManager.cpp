@@ -1,16 +1,12 @@
 //
 // Copyright (c) 2022 ruben2020 https://github.com/ruben2020
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
  
 #include <cstdio>
 #include "ActorsManager.h"
 #include "ActorA.h"
 
-feal::EventId_t EvtAllDone::getId(void)
-{
-    return getIdOfType<EvtAllDone>();
-}
 
 void ActorsManager::initActor(void)
 {

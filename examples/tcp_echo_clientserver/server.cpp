@@ -1,6 +1,6 @@
 //
 // Copyright (c) 2022 ruben2020 https://github.com/ruben2020
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
  
 #include <cstdio>
@@ -8,28 +8,14 @@
 #include "clienthandler.h"
 #include "server.h"
 
-class EvtClientDisconnected;
-
-feal::EventId_t EvtEndTimer::getId(void)
-{
-    return getIdOfType<EvtEndTimer>();
-}
-
-feal::EventId_t EvtRetryTimer::getId(void)
-{
-    return getIdOfType<EvtRetryTimer>();
-}
-
-feal::EventId_t EvtSigInt::getId(void)
-{
-    return getIdOfType<EvtSigInt>();
-}
 
 void Server::initActor(void)
 {
     printf("Server::initActor\n");
     timers.init(this);
     stream.init(this);
+    stream.subscribeIncomingConn<EvtIncomingConn>();
+    stream.subscribeServerShutdown<EvtServerShutdown>();
     signal.init(this);
     subscribeEvent<EvtClientDisconnected>(this);
     signal.registerSignal<EvtSigInt>(SIGINT);
@@ -97,31 +83,31 @@ void Server::handleEvent(std::shared_ptr<EvtRetryTimer> pevt)
     start_server();
 }
 
-void Server::handleEvent(std::shared_ptr<feal::EvtIncomingConn> pevt)
+void Server::handleEvent(std::shared_ptr<EvtIncomingConn> pevt)
 {
     if (!pevt ) return;
     printf("Server::EvtIncomingConn\n");
-    printf("Incoming connection, client socket: %ld\n", (long int) pevt.get()->client_sockfd);
+    printf("Incoming connection, client socket: %ld\n", (long int) pevt.get()->fd);
     if (pevt.get()-> errnum != feal::FEAL_OK)
     {
     	printf("Error1 %d\n", pevt.get()-> errnum);
     	return;
     }
-    auto it = mapch.find(pevt.get()->client_sockfd);
+    auto it = mapch.find(pevt.get()->fd);
     if (it == mapch.end())
     {
         char buf[100];
-        get_client_address(pevt.get()->client_sockfd, buf);
+        get_client_address(pevt.get()->fd, buf, sizeof(buf));
         std::shared_ptr<ClientHandler> ch1 = std::make_shared<ClientHandler>();
-        ch1.get()->setParam(&stream, pevt.get()->client_sockfd, buf);
+        ch1.get()->setParam(&stream, pevt.get()->fd, buf);
         ch1.get()->init();
         ch1.get()->start();
-        mapch[pevt.get()->client_sockfd] = ch1;
-        print_client_address(pevt.get()->client_sockfd);
+        mapch[pevt.get()->fd] = ch1;
+        print_client_address(pevt.get()->fd);
     }
 }
 
-void Server::print_client_address(feal::socket_t fd)
+void Server::print_client_address(feal::handle_t fd)
 {
     feal::errenum se = feal::FEAL_OK;
     feal::ipaddr fa;
@@ -137,19 +123,19 @@ void Server::print_client_address(feal::socket_t fd)
     }
 }
 
-void Server::get_client_address(feal::socket_t fd, char* addr)
+void Server::get_client_address(feal::handle_t fd, char* addr, int addrbuflen)
 {
     feal::errenum se = feal::FEAL_OK;
     feal::ipaddr fa;
     se = stream.getpeername(&fa, fd);
     if ((se == feal::FEAL_OK)&&(addr))
     {
-        sprintf(addr, "%s %s port %d",
+        snprintf(addr, addrbuflen, "%s %s port %d",
             (fa.family == feal::ipaddr::INET ? "IPv4" : "IPv6"), fa.addr, fa.port);
     }
 }
 
-void Server::handleEvent(std::shared_ptr<feal::EvtServerShutdown> pevt)
+void Server::handleEvent(std::shared_ptr<EvtServerShutdown> pevt)
 {
     if (!pevt ) return;
     printf("Server::EvtServerShutdown\n");
@@ -159,13 +145,13 @@ void Server::handleEvent(std::shared_ptr<EvtClientDisconnected> pevt)
 {
     if (!pevt ) return;
     printf("Server::EvtClientDisconnected\n");
-    print_client_address(pevt.get()->client_sockfd);
-    auto it = mapch.find(pevt.get()->client_sockfd);
+    print_client_address(pevt.get()->fd);
+    auto it = mapch.find(pevt.get()->fd);
     if (it != mapch.end())
     {
         it->second.get()->shutdown();
     }
-    mapch.erase(pevt.get()->client_sockfd);
+    mapch.erase(pevt.get()->fd);
 }
 
 void Server::handleEvent(std::shared_ptr<EvtSigInt> pevt)

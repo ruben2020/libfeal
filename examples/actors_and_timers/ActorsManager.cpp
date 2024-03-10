@@ -1,6 +1,6 @@
 //
 // Copyright (c) 2022 ruben2020 https://github.com/ruben2020
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
  
 #include <stdio.h>
@@ -8,10 +8,6 @@
 #include "ActorA.h"
 #include "ActorB.h"
 
-feal::EventId_t EventTimerShutdown::getId(void)
-{
-    return getIdOfType<EventTimerShutdown>();
-}
 
 void ActorsManager::initActor(void)
 {

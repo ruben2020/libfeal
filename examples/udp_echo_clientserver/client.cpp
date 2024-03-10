@@ -1,6 +1,6 @@
 //
 // Copyright (c) 2022 ruben2020 https://github.com/ruben2020
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
  
 #include <cstdio>
@@ -9,21 +9,15 @@
 
 #define MIN(a,b) (a<b ? a : b)
 
-feal::EventId_t EvtEndTimer::getId(void)
-{
-    return getIdOfType<EvtEndTimer>();
-}
-
-feal::EventId_t EvtDelayTimer::getId(void)
-{
-    return getIdOfType<EvtDelayTimer>();
-}
 
 void Client::initActor(void)
 {
     printf("Client::initActor\n");
     timers.init(this);
     dgram.init(this);
+    dgram.subscribeReadAvail<EvtDgramReadAvail>();
+    dgram.subscribeWriteAvail<EvtDgramWriteAvail>();
+    dgram.subscribeSockErr<EvtSockErr>();
 }
 
 void Client::startActor(void)
@@ -61,7 +55,7 @@ void Client::send_something(void)
     char buf[30];
     int32_t bytes;
     memset(&buf, 0, sizeof(buf));
-    sprintf(buf, "Client %d", n++);
+    snprintf(buf, sizeof(buf), "Client %d", n++);
     printf("Trying to send \"%s\" to %s:%d\n", buf, serveraddr.addr, serveraddr.port);
     feal::errenum se = dgram.send_to((void*) buf, MIN(strlen(buf) + 1, sizeof(buf)), &bytes, &serveraddr);
     if (se != feal::FEAL_OK) printf("Error sending \"Client n\": %d\n", se);
@@ -84,7 +78,7 @@ void Client::handleEvent(std::shared_ptr<EvtDelayTimer> pevt)
     timers.startTimer<EvtDelayTimer>(std::chrono::seconds(2));
 }
 
-void Client::handleEvent(std::shared_ptr<feal::EvtDgramReadAvail> pevt)
+void Client::handleEvent(std::shared_ptr<EvtDgramReadAvail> pevt)
 {
     if (!pevt) return;
     printf("Client::EvtDgramReadAvail\n");
@@ -97,14 +91,14 @@ void Client::handleEvent(std::shared_ptr<feal::EvtDgramReadAvail> pevt)
     else printf("Received %d bytes: \"%s\" from %s:%d\n", bytes, buf, recvaddr.addr, recvaddr.port);
 }
 
-void Client::handleEvent(std::shared_ptr<feal::EvtDgramWriteAvail> pevt)
+void Client::handleEvent(std::shared_ptr<EvtDgramWriteAvail> pevt)
 {
     if (!pevt) return;
     printf("Client::EvtDgramWriteAvail\n");
     send_something();
 }
 
-void Client::handleEvent(std::shared_ptr<feal::EvtSockErr> pevt)
+void Client::handleEvent(std::shared_ptr<EvtSockErr> pevt)
 {
     if (!pevt) return;
     printf("Client::EvtSockErr\n");

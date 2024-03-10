@@ -1,6 +1,6 @@
 //
 // Copyright (c) 2022 ruben2020 https://github.com/ruben2020
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
  
 #ifndef _FEAL_READER_H
@@ -12,19 +12,6 @@
 
 namespace feal
 {
-
-class EvtReader : public Event
-{
-public:
-EvtReader() = default;
-EvtReader( const EvtReader & ) = default;
-EvtReader& operator= ( const EvtReader & ) = default;
-~EvtReader() = default;
-EventId_t getId(void);
-handle_t readerfd = FEAL_INVALID_HANDLE;
-bool error = false;
-int datalen = -1;
-};
 
 
 class ReaderGeneric : public Tool
@@ -42,7 +29,7 @@ errenum close_and_reset(void);
 protected:
 
 std::thread readerThread;
-socket_t readerfd = FEAL_INVALID_HANDLE;
+handle_t readerfd = FEAL_INVALID_HANDLE;
 errenum open_pipe_for_reading(const char *pathname);
 errenum registerhandle(handle_t fd);
 
@@ -55,7 +42,8 @@ const unsigned int max_events = 64;
 int kq = -1;
 #endif
 
-virtual void receiveEvent(handle_t fd, bool error, int datalen);
+virtual void receiveEventReadAvail(errenum errnum, handle_t fd, int datalen);
+virtual void receiveEventSockErr(errenum errnum, handle_t fd, int datalen);
 
 private:
 
@@ -66,8 +54,8 @@ void handle_error(void);
 void handle_read_avail(void);
 
 #if defined (__linux__)
-static int epoll_ctl_add(int epfd, socket_t fd, uint32_t events);
-static int epoll_ctl_mod(int epfd, socket_t fd, uint32_t events);
+static int epoll_ctl_add(int epfd, handle_t fd, uint32_t events);
+static int epoll_ctl_mod(int epfd, handle_t fd, uint32_t events);
 #endif
 
 
@@ -89,30 +77,58 @@ void init(Y* p)
     p->addTool(this);
 }
 
+
 template<typename T>
-errenum subscribeReader(handle_t fd)
+errenum subscribeReadAvail(handle_t fd)
 {
     T inst;
     actorptr->addEvent(actorptr, inst);
-    myevt = std::make_shared<T>();
+    evtread = std::make_shared<T>();
     EventBus::getInstance().registerEventCloner<T>();
     return ReaderGeneric::registerhandle(fd);
 }
 
+template<typename T>
+void subscribeSockErr()
+{
+    T inst;
+    actorptr->addEvent(actorptr, inst);
+    evterrsock = std::make_shared<T>();
+    EventBus::getInstance().registerEventCloner<T>();
+}
+
 protected:
 
-void receiveEvent(handle_t fd, bool error, int datalen)
+void receiveEventReadAvail(errenum errnum, handle_t fd, int datalen)
 {
-    auto itw = std::dynamic_pointer_cast<EvtReader>(EventBus::getInstance().cloneEvent(myevt));
-    itw.get()->readerfd = fd;
-    itw.get()->error = error;
-    itw.get()->datalen = datalen;
-    if (actorptr) actorptr->receiveEvent(itw);
+    if (evtread.get()) 
+    {
+        auto itw = std::dynamic_pointer_cast<EventComm>(EventBus::getInstance().cloneEvent(evtread));
+        itw.get()->errnum = errnum;
+        itw.get()->fd = fd;
+        itw.get()->datalen = datalen;
+        if (actorptr) actorptr->receiveEvent(itw);
+    }
+    else printf("No subscription using Reader::subscribeReadAvail\n");
+}
+
+void receiveEventSockErr(errenum errnum, handle_t fd, int datalen)
+{
+    if (evterrsock.get()) 
+    {
+        auto itw = std::dynamic_pointer_cast<EventComm>(EventBus::getInstance().cloneEvent(evterrsock));
+        itw.get()->errnum = errnum;
+        itw.get()->fd = fd;
+        itw.get()->datalen = datalen;
+        if (actorptr) actorptr->receiveEvent(itw);
+    }
+    else printf("No subscription using Reader::subscribeSockErr\n");
 }
 
 private:
 Y* actorptr = nullptr;
-std::shared_ptr<EvtReader> myevt;
+std::shared_ptr<EventComm> evtread;
+std::shared_ptr<EventComm> evterrsock;
 
 };
 

@@ -1,6 +1,6 @@
 //
 // Copyright (c) 2022 ruben2020 https://github.com/ruben2020
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
  
 #include <cstdio>
@@ -10,21 +10,15 @@
 #define MIN(a,b) (a<b ? a : b)
 #define SERVERPATH "/tmp/fealundserver"
 
-feal::EventId_t EvtEndTimer::getId(void)
-{
-    return getIdOfType<EvtEndTimer>();
-}
-
-feal::EventId_t EvtRetryTimer::getId(void)
-{
-    return getIdOfType<EvtRetryTimer>();
-}
 
 void Serverund::initActor(void)
 {
     printf("Serverund::initActor\n");
     timers.init(this);
     dgram.init(this);
+    dgram.subscribeReadAvail<EvtDgramReadAvail>();
+    dgram.subscribeWriteAvail<EvtDgramWriteAvail>();
+    dgram.subscribeSockErr<EvtSockErr>();
 }
 
 void Serverund::startActor(void)
@@ -87,7 +81,7 @@ void Serverund::handleEvent(std::shared_ptr<EvtRetryTimer> pevt)
     start_listening();
 }
 
-void Serverund::handleEvent(std::shared_ptr<feal::EvtDgramReadAvail> pevt)
+void Serverund::handleEvent(std::shared_ptr<EvtDgramReadAvail> pevt)
 {
     if (!pevt) return;
     printf("Serverund::EvtDgramReadAvail\n");
@@ -104,13 +98,13 @@ void Serverund::handleEvent(std::shared_ptr<feal::EvtDgramReadAvail> pevt)
     if (se != feal::FEAL_OK) printf("Error sending back \"%s\" to %s\n", buf, recvaddr.sun_path);
 }
 
-void Serverund::handleEvent(std::shared_ptr<feal::EvtDgramWriteAvail> pevt)
+void Serverund::handleEvent(std::shared_ptr<EvtDgramWriteAvail> pevt)
 {
     if (!pevt) return;
     printf("Serverund::EvtDgramWriteAvail\n");
 }
 
-void Serverund::handleEvent(std::shared_ptr<feal::EvtSockErr> pevt)
+void Serverund::handleEvent(std::shared_ptr<EvtSockErr> pevt)
 {
     if (!pevt) return;
     printf("Serverund::EvtSockErr\n");

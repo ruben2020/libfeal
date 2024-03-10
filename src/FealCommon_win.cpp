@@ -1,6 +1,6 @@
 //
 // Copyright (c) 2022 ruben2020 https://github.com/ruben2020
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
  
 #include "feal.h"
@@ -86,7 +86,7 @@ int feal::ipaddr_feal2posix(feal::ipaddr* fa, sockaddr_ip* su)
     return res;
 }
 
-int feal::setnonblocking(socket_t fd)
+int feal::setnonblocking(handle_t fd)
 {
     ULONG NonBlock = 1;
     if (ioctlsocket(fd, FIONBIO, &NonBlock) == SOCKET_ERROR)
@@ -96,7 +96,7 @@ int feal::setnonblocking(socket_t fd)
    return 0;
 }
 
-int feal::setipv6only(socket_t fd)
+int feal::setipv6only(handle_t fd)
 {
     int on = 1;
     if (setsockopt(fd, IPPROTO_IPV6, IPV6_V6ONLY,
@@ -107,7 +107,7 @@ int feal::setipv6only(socket_t fd)
     return 0;
 }
 
-int feal::datareadavaillen(socket_t fd)
+int feal::datareadavaillen(handle_t fd)
 {
     ULONG len;
     int ret = SOCKET_ERROR;

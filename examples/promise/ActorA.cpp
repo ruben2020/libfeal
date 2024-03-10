@@ -1,6 +1,6 @@
 //
 // Copyright (c) 2022 ruben2020 https://github.com/ruben2020
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
  
 #include <cstdio>
@@ -14,17 +14,6 @@
 #else
 #define CMDSTR "ls -al /"
 #endif
-
-
-feal::EventId_t EvtAccPromiseComplete::getId(void)
-{
-    return getIdOfType<EvtAccPromiseComplete>();
-}
-
-feal::EventId_t EvtPopenPromiseComplete::getId(void)
-{
-    return getIdOfType<EvtPopenPromiseComplete>();
-}
 
 
 void ActorA::initActor(void)

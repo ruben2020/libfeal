@@ -1,17 +1,12 @@
 //
 // Copyright (c) 2022 ruben2020 https://github.com/ruben2020
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
  
 #include <stdio.h>
 #include "feal.h"
 #include "ActorB.h"
 #include "ActorA.h"
-
-feal::EventId_t EventCabbage::getId(void)
-{
-    return getIdOfType<EventCabbage>();
-}
 
 void EventCabbage::set_cabbages(const int& num)
 {
@@ -23,16 +18,6 @@ int EventCabbage::get_cabbages(void)
     return cabbages;
 }
 
-
-feal::EventId_t EventTimerB1::getId(void)
-{
-    return getIdOfType<EventTimerB1>();
-}
-
-feal::EventId_t EventTimerB2::getId(void)
-{
-    return getIdOfType<EventTimerB2>();
-}
 
 void ActorB::initActor(void)
 {

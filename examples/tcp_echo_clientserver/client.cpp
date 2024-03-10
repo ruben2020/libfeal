@@ -1,6 +1,6 @@
 //
 // Copyright (c) 2022 ruben2020 https://github.com/ruben2020
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
  
 #include <cstdio>
@@ -9,31 +9,16 @@
 
 #define MIN(a,b) (a<b ? a : b)
 
-feal::EventId_t EvtEndTimer::getId(void)
-{
-    return getIdOfType<EvtEndTimer>();
-}
-
-feal::EventId_t EvtDelayTimer::getId(void)
-{
-    return getIdOfType<EvtDelayTimer>();
-}
-
-feal::EventId_t EvtRetryTimer::getId(void)
-{
-    return getIdOfType<EvtRetryTimer>();
-}
-
-feal::EventId_t EvtSigInt::getId(void)
-{
-    return getIdOfType<EvtSigInt>();
-}
 
 void Client::initActor(void)
 {
     printf("Client::initActor\n");
     timers.init(this);
     stream.init(this);
+    stream.subscribeConnectedToServer<EvtConnectedToServer>();
+    stream.subscribeReadAvail<EvtDataReadAvail>();
+    stream.subscribeWriteAvail<EvtDataWriteAvail>();
+    stream.subscribeConnectionShutdown<EvtConnectionShutdown>();
     signal.init(this);
     signal.registerSignal<EvtSigInt>(SIGINT);
 }
@@ -77,7 +62,7 @@ void Client::send_something(void)
     char buf[30];
     int32_t bytes;
     memset(&buf, 0, sizeof(buf));
-    sprintf(buf, "Client %d", n++);
+    snprintf(buf, sizeof(buf), "Client %d", n++);
     printf("Trying to send \"%s\"\n",buf);
     feal::errenum se = stream.send((void*) buf, MIN(strlen(buf) + 1, sizeof(buf)), &bytes);
     if (se != feal::FEAL_OK) printf("Error sending \"Client n\": %d\n", se);
@@ -105,7 +90,7 @@ void Client::handleEvent(std::shared_ptr<EvtRetryTimer> pevt)
     connect_to_server();
 }
 
-void Client::handleEvent(std::shared_ptr<feal::EvtConnectedToServer> pevt)
+void Client::handleEvent(std::shared_ptr<EvtConnectedToServer> pevt)
 {
     if (!pevt) return;
     printf("Client::EvtConnectedToServer\n");
@@ -117,7 +102,7 @@ void Client::handleEvent(std::shared_ptr<feal::EvtConnectedToServer> pevt)
     if (se != feal::FEAL_OK) printf("Error sending \"Hello! Client here!\": %d\n", se);
 }
 
-void Client::handleEvent(std::shared_ptr<feal::EvtDataReadAvail> pevt)
+void Client::handleEvent(std::shared_ptr<EvtDataReadAvail> pevt)
 {
     if (!pevt) return;
     printf("Client::EvtDataReadAvail\n");
@@ -130,14 +115,14 @@ void Client::handleEvent(std::shared_ptr<feal::EvtDataReadAvail> pevt)
     timers.startTimer<EvtDelayTimer>(std::chrono::seconds(2));
 }
 
-void Client::handleEvent(std::shared_ptr<feal::EvtDataWriteAvail> pevt)
+void Client::handleEvent(std::shared_ptr<EvtDataWriteAvail> pevt)
 {
     if (!pevt) return;
     printf("Client::EvtDataWriteAvail\n");
     send_something();
 }
 
-void Client::handleEvent(std::shared_ptr<feal::EvtConnectionShutdown> pevt)
+void Client::handleEvent(std::shared_ptr<EvtConnectionShutdown> pevt)
 {
     if (!pevt) return;
     printf("Client::EvtConnectionShutdown\n");

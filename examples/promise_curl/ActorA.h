@@ -1,6 +1,6 @@
 //
 // Copyright (c) 2022 ruben2020 https://github.com/ruben2020
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
  
 #ifndef _FEAL_ACTOR_A_H
@@ -16,7 +16,7 @@ EvtCurlPromiseComplete() = default;
 EvtCurlPromiseComplete( const EvtCurlPromiseComplete & ) = default;
 EvtCurlPromiseComplete& operator= ( const EvtCurlPromiseComplete & ) = default;
 ~EvtCurlPromiseComplete() = default;
-feal::EventId_t getId(void);
+FEAL_EVENT_GETID(EvtCurlPromiseComplete)
 curl_off_t bytes;
 bool success = false;
 };

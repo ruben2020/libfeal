@@ -1,6 +1,6 @@
 //
 // Copyright (c) 2022 ruben2020 https://github.com/ruben2020
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
  
 #ifndef _SERVER_H
@@ -11,35 +11,12 @@
 class ClientHandler;
 class EvtClientDisconnected;
 
-class EvtEndTimer : public feal::Event
-{
-public:
-EvtEndTimer() = default;
-EvtEndTimer( const EvtEndTimer & ) = default;
-EvtEndTimer& operator= ( const EvtEndTimer & ) = default;
-~EvtEndTimer() = default;
-feal::EventId_t getId(void);
-};
-
-class EvtRetryTimer : public feal::Event
-{
-public:
-EvtRetryTimer() = default;
-EvtRetryTimer( const EvtRetryTimer & ) = default;
-EvtRetryTimer& operator= ( const EvtRetryTimer & ) = default;
-~EvtRetryTimer() = default;
-feal::EventId_t getId(void);
-};
-
-class EvtSigInt : public feal::EventSignal
-{
-public:
-EvtSigInt() = default;
-EvtSigInt( const EvtSigInt & ) = default;
-EvtSigInt& operator= ( const EvtSigInt & ) = default;
-~EvtSigInt() = default;
-feal::EventId_t getId(void);
-};
+FEAL_EVENT_DEFAULT_DECLARE(EvtEndTimer, Event)
+FEAL_EVENT_DEFAULT_DECLARE(EvtRetryTimer, Event)
+FEAL_EVENT_DEFAULT_DECLARE(EvtSigInt, EventSignal)
+FEAL_EVENT_DEFAULT_DECLARE(EvtIncomingConn, EventComm)
+FEAL_EVENT_DEFAULT_DECLARE(EvtServerShutdown, EventComm)
+FEAL_EVENT_DEFAULT_DECLARE(EvtConnectionShutdown, EventComm)
 
 
 class Server : public feal::Actor
@@ -58,8 +35,8 @@ virtual void shutdownActor(void);
 
 void handleEvent(std::shared_ptr<EvtEndTimer> pevt);
 void handleEvent(std::shared_ptr<EvtRetryTimer> pevt);
-void handleEvent(std::shared_ptr<feal::EvtIncomingConn> pevt);
-void handleEvent(std::shared_ptr<feal::EvtServerShutdown> pevt);
+void handleEvent(std::shared_ptr<EvtIncomingConn> pevt);
+void handleEvent(std::shared_ptr<EvtServerShutdown> pevt);
 void handleEvent(std::shared_ptr<EvtClientDisconnected> pevt);
 void handleEvent(std::shared_ptr<EvtSigInt> pevt);
 
@@ -69,11 +46,11 @@ feal::Timers<Server> timers;
 feal::Stream<Server> stream;
 feal::Signal<Server> signal;
 virtual void start_server(void);
-virtual void print_client_address(feal::socket_t fd);
-virtual void get_client_address(feal::socket_t fd, char* addr);
+virtual void print_client_address(feal::handle_t fd);
+virtual void get_client_address(feal::handle_t fd, char* addr, int addrbuflen);
 
 private:
-std::map<feal::socket_t, std::shared_ptr<ClientHandler>> mapch;
+std::map<feal::handle_t, std::shared_ptr<ClientHandler>> mapch;
 
 };
 

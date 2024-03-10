@@ -1,6 +1,6 @@
 //
 // Copyright (c) 2022 ruben2020 https://github.com/ruben2020
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
  
 #ifndef _FEAL_ACTOR_A_H
@@ -19,7 +19,7 @@ EvtNotifyVege() = default;
 EvtNotifyVege( const EvtNotifyVege & ) = default;
 EvtNotifyVege& operator= ( const EvtNotifyVege & ) = default;
 ~EvtNotifyVege() = default;
-feal::EventId_t getId(void);
+FEAL_EVENT_GETID(EvtNotifyVege)
 
 int get_carrots(void);
 int get_tomatoes(void);
@@ -41,7 +41,7 @@ EvtNotifyFruit() = default;
 EvtNotifyFruit( const EvtNotifyFruit & ) = default;
 EvtNotifyFruit& operator= ( const EvtNotifyFruit & ) = default;
 ~EvtNotifyFruit() = default;
-feal::EventId_t getId(void);
+FEAL_EVENT_GETID(EvtNotifyFruit)
 
 int get_apples(void);
 int get_oranges(void);
@@ -54,16 +54,7 @@ int oranges=0;
 
 };
 
-class EventTimerA1 : public feal::Event
-{
-public:
-EventTimerA1() = default;
-EventTimerA1( const EventTimerA1 & ) = default;
-EventTimerA1& operator= ( const EventTimerA1 & ) = default;
-~EventTimerA1() = default;
-feal::EventId_t getId(void);
-};
-
+FEAL_EVENT_DEFAULT_DECLARE(EventTimerA1, Event)
 
 class ActorA : public feal::Actor
 {

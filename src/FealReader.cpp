@@ -1,14 +1,10 @@
 //
 // Copyright (c) 2022 ruben2020 https://github.com/ruben2020
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 
 #include "feal.h"
 
-feal::EventId_t feal::EvtReader::getId(void)
-{
-    return getIdOfType<EvtReader>();
-}
 
 void feal::ReaderGeneric::shutdownTool(void)
 {
@@ -141,7 +137,7 @@ void feal::ReaderGeneric::close_handle(void)
 }
 
 #if defined (__linux__)
-int feal::ReaderGeneric::epoll_ctl_add(int epfd, socket_t fd, uint32_t events)
+int feal::ReaderGeneric::epoll_ctl_add(int epfd, handle_t fd, uint32_t events)
 {
     struct epoll_event ev;
     ev.events = events;
@@ -149,7 +145,7 @@ int feal::ReaderGeneric::epoll_ctl_add(int epfd, socket_t fd, uint32_t events)
     return epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &ev);
 }
 
-int feal::ReaderGeneric::epoll_ctl_mod(int epfd, socket_t fd, uint32_t events)
+int feal::ReaderGeneric::epoll_ctl_mod(int epfd, handle_t fd, uint32_t events)
 {
     struct epoll_event ev;
     ev.events = events;
@@ -160,17 +156,24 @@ int feal::ReaderGeneric::epoll_ctl_mod(int epfd, socket_t fd, uint32_t events)
 
 void feal::ReaderGeneric::handle_error(void)
 {
-    receiveEvent(FEAL_INVALID_HANDLE, true, -1);
+    receiveEventSockErr(FEAL_OK, FEAL_INVALID_HANDLE, -1);
 }
 
 void feal::ReaderGeneric::handle_read_avail(void)
 {
-    receiveEvent(readerfd, false, datareadavaillen(readerfd));
+    receiveEventReadAvail(FEAL_OK, readerfd, datareadavaillen(readerfd));
 }
 
-void feal::ReaderGeneric::receiveEvent(handle_t fd, bool error, int datalen)
-    {
-        (void) fd;
-        (void) error;
-        (void) datalen;
-    }
+void feal::ReaderGeneric::receiveEventReadAvail(errenum errnum, handle_t fd, int datalen)
+{
+    (void) errnum;
+    (void) fd;
+    (void) datalen;
+}
+
+void feal::ReaderGeneric::receiveEventSockErr(errenum errnum, handle_t fd, int datalen)
+{
+    (void) errnum;
+    (void) fd;
+    (void) datalen;
+}

@@ -1,38 +1,19 @@
 //
 // Copyright (c) 2022 ruben2020 https://github.com/ruben2020
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
  
 #include <cstdio>
 #include <sys/wait.h>
+
+#if defined(__APPLE__) || defined(__MACH__)
+#include <fcntl.h>
+#define SOCK_NONBLOCK O_NONBLOCK
+#endif
+
 #include "feal.h"
 #include "ActorA.h"
 #include "ActorsManager.h"
-
-feal::EventId_t EvtSigInt::getId(void)
-{
-    return getIdOfType<EvtSigInt>();
-}
-
-feal::EventId_t EvtSigChld::getId(void)
-{
-    return getIdOfType<EvtSigChld>();
-}
-
-feal::EventId_t EvtPipeRead::getId(void)
-{
-    return getIdOfType<EvtPipeRead>();
-}
-
-feal::EventId_t EvtSockStreamRead::getId(void)
-{
-    return getIdOfType<EvtSockStreamRead>();
-}
-
-feal::EventId_t EvtSockDatagramRead::getId(void)
-{
-    return getIdOfType<EvtSockDatagramRead>();
-}
 
 
 void ActorA::initActor(void)
@@ -58,12 +39,22 @@ void ActorA::startActor(void)
 void ActorA::forkChild(int childnum, const char* medium)
 {
     pid_t p;
-    feal::handle_t fd[2]; // handle_t and socket_t are the same
-    int ret;
+    feal::handle_t fd[2]; // handle_t and handle_t are the same
+    int ret = -1;
     switch(childnum)
     {
         case 1:
+#if defined(__APPLE__) || defined(__MACH__)
+            ret = pipe(fd);
+            fcntl(fd[0], F_SETFL,
+                fcntl(fd[0], F_GETFL) |
+                O_NONBLOCK);
+            fcntl(fd[1], F_SETFL,
+                fcntl(fd[1], F_GETFL) |
+                O_NONBLOCK);
+#else
             ret = pipe2(fd, O_NONBLOCK);
+#endif
             break;
         case 2:
             ret = socketpair(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0, fd);
@@ -88,7 +79,7 @@ void ActorA::forkChild(int childnum, const char* medium)
         printf("Child %d: Starting child process\n", childnum);
         for(int i=0; i<20; i++)
         {
-            sprintf(buf, "Child %d, hello %d", childnum, i);
+            snprintf(buf, sizeof(buf), "Child %d, hello %d", childnum, i);
             printf("Child %d: Sending \"%s\" to parent using %s\n", childnum, buf, medium);
             write(fd[1], buf, strlen(buf) + 1);
             std::this_thread::sleep_for(std::chrono::seconds(2));            
@@ -103,13 +94,13 @@ void ActorA::forkChild(int childnum, const char* medium)
     switch(childnum)
     {
         case 1:
-            readerPipe.subscribeReader<EvtPipeRead>(fd[0]);
+            readerPipe.subscribeReadAvail<EvtPipeRead>(fd[0]);
             break;
         case 2:
-            readerSockStream.subscribeReader<EvtSockStreamRead>(fd[0]);
+            readerSockStream.subscribeReadAvail<EvtSockStreamRead>(fd[0]);
             break;
         case 3:
-            readerSockDatagram.subscribeReader<EvtSockDatagramRead>(fd[0]);
+            readerSockDatagram.subscribeReadAvail<EvtSockDatagramRead>(fd[0]);
             break;
         default:
             break;
@@ -199,8 +190,8 @@ void ActorA::handleEvent(std::shared_ptr<EvtPipeRead> pevt)
     if (!pevt ) return;
     printf("ActorA::EvtPipeRead\n");
     printf("EvtPipeRead: handle %d, error %d, data avail %d\n", 
-        pevt.get()->readerfd, pevt.get()->error, pevt.get()->datalen);
-    if (pevt.get()->error)
+        pevt.get()->fd, pevt.get()->errnum, pevt.get()->datalen);
+    if (pevt.get()->errnum != feal::FEAL_OK)
     {
         readerPipe.close_and_reset();
         printf("Pipe error. Closed\n");
@@ -208,7 +199,7 @@ void ActorA::handleEvent(std::shared_ptr<EvtPipeRead> pevt)
     }
     printf("EvtPipeRead: Data available for reading: %d\n", pevt.get()->datalen);
     char buf[100];
-    read(pevt.get()->readerfd, buf, sizeof(buf));
+    read(pevt.get()->fd, buf, sizeof(buf));
     printf("EvtPipeRead: Read from pipe: %s\n", buf);
 }
 
@@ -217,8 +208,8 @@ void ActorA::handleEvent(std::shared_ptr<EvtSockStreamRead> pevt)
     if (!pevt ) return;
     printf("ActorA::EvtSockStreamRead\n");
     printf("hEvtSockStreamRead: andle %d, error %d, data avail %d\n", 
-        pevt.get()->readerfd, pevt.get()->error, pevt.get()->datalen);
-    if (pevt.get()->error)
+        pevt.get()->fd, pevt.get()->errnum, pevt.get()->datalen);
+    if (pevt.get()->errnum != feal::FEAL_OK)
     {
         readerSockStream.close_and_reset();
         printf("Socket error. Closed\n");
@@ -226,7 +217,7 @@ void ActorA::handleEvent(std::shared_ptr<EvtSockStreamRead> pevt)
     }
     printf("EvtSockStreamRead: Data available for reading: %d\n", pevt.get()->datalen);
     char buf[100];
-    read(pevt.get()->readerfd, buf, sizeof(buf));
+    read(pevt.get()->fd, buf, sizeof(buf));
     printf("EvtSockStreamRead: Read from sock stream: %s\n", buf);
 }
 
@@ -235,8 +226,8 @@ void ActorA::handleEvent(std::shared_ptr<EvtSockDatagramRead> pevt)
     if (!pevt ) return;
     printf("ActorA::EvtSockDatagramRead\n");
     printf("EvtSockDatagramRead: handle %d, error %d, data avail %d\n", 
-        pevt.get()->readerfd, pevt.get()->error, pevt.get()->datalen);
-    if (pevt.get()->error)
+        pevt.get()->fd, pevt.get()->errnum, pevt.get()->datalen);
+    if (pevt.get()->errnum != feal::FEAL_OK)
     {
         readerSockDatagram.close_and_reset();
         printf("Socket error. Closed\n");
@@ -244,7 +235,7 @@ void ActorA::handleEvent(std::shared_ptr<EvtSockDatagramRead> pevt)
     }
     printf("EvtSockDatagramRead: Data available for reading: %d\n", pevt.get()->datalen);
     char buf[100];
-    read(pevt.get()->readerfd, buf, sizeof(buf));
+    read(pevt.get()->fd, buf, sizeof(buf));
     printf("EvtSockDatagramRead: Read from sock datagram: %s\n", buf);
 }
 

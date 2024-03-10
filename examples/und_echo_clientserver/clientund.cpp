@@ -1,6 +1,6 @@
 //
 // Copyright (c) 2022 ruben2020 https://github.com/ruben2020
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
  
 #include <cstdio>
@@ -27,21 +27,15 @@ unsigned long mix(unsigned long a, unsigned long b, unsigned long c)
     return c;
 }
 
-feal::EventId_t EvtEndTimer::getId(void)
-{
-    return getIdOfType<EvtEndTimer>();
-}
-
-feal::EventId_t EvtDelayTimer::getId(void)
-{
-    return getIdOfType<EvtDelayTimer>();
-}
 
 void Clientund::initActor(void)
 {
     printf("Clientund::initActor\n");
     timers.init(this);
     dgram.init(this);
+    dgram.subscribeReadAvail<EvtDgramReadAvail>();
+    dgram.subscribeWriteAvail<EvtDgramWriteAvail>();
+    dgram.subscribeSockErr<EvtSockErr>();
 }
 
 void Clientund::startActor(void)
@@ -73,7 +67,7 @@ void Clientund::send_to_server(void)
     strcpy(clientaddr.sun_path, CLIENTPATH);
     char buf[8];
     srand(mix(clock(), time(NULL), getpid()));
-    sprintf(buf, "%d", rand() % 4096);
+    snprintf(buf, sizeof(buf), "%d", rand() % 4096);
     strcat(clientaddr.sun_path, buf);
     unlink(clientaddr.sun_path);
     se = dgram.create_sock((feal::family_t) clientaddr.sun_family);
@@ -97,7 +91,7 @@ void Clientund::send_something(void)
     char buf[30];
     int32_t bytes;
     memset(&buf, 0, sizeof(buf));
-    sprintf(buf, "Client %d", n++);
+    snprintf(buf, sizeof(buf), "Client %d", n++);
     printf("Trying to send \"%s\" to %s\n", buf, SERVERPATH);
     feal::errenum se = dgram.send_to((void*) buf, MIN(strlen(buf) + 1,
         sizeof(buf)), &bytes, &serveraddr, sizeof(serveraddr));
@@ -121,7 +115,7 @@ void Clientund::handleEvent(std::shared_ptr<EvtDelayTimer> pevt)
     timers.startTimer<EvtDelayTimer>(std::chrono::seconds(2));
 }
 
-void Clientund::handleEvent(std::shared_ptr<feal::EvtDgramReadAvail> pevt)
+void Clientund::handleEvent(std::shared_ptr<EvtDgramReadAvail> pevt)
 {
     if (!pevt) return;
     printf("Clientund::EvtDgramReadAvail\n");
@@ -136,14 +130,14 @@ void Clientund::handleEvent(std::shared_ptr<feal::EvtDgramReadAvail> pevt)
     else printf("Received %d bytes: \"%s\" from %s\n", bytes, buf, recvaddr.sun_path);
 }
 
-void Clientund::handleEvent(std::shared_ptr<feal::EvtDgramWriteAvail> pevt)
+void Clientund::handleEvent(std::shared_ptr<EvtDgramWriteAvail> pevt)
 {
     if (!pevt) return;
     printf("Clientund::EvtDgramWriteAvail\n");
     send_something();
 }
 
-void Clientund::handleEvent(std::shared_ptr<feal::EvtSockErr> pevt)
+void Clientund::handleEvent(std::shared_ptr<EvtSockErr> pevt)
 {
     if (!pevt) return;
     printf("Clientund::EvtSockErr\n");

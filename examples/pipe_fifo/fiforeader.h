@@ -1,6 +1,6 @@
 //
 // Copyright (c) 2022 ruben2020 https://github.com/ruben2020
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
  
 #ifndef _FIFOREADER_H
@@ -8,35 +8,9 @@
 
 #include "feal.h"
 
-class EvtEndTimer : public feal::Event
-{
-public:
-EvtEndTimer() = default;
-EvtEndTimer( const EvtEndTimer & ) = default;
-EvtEndTimer& operator= ( const EvtEndTimer & ) = default;
-~EvtEndTimer() = default;
-feal::EventId_t getId(void);
-};
-
-class EvtRetryTimer : public feal::Event
-{
-public:
-EvtRetryTimer() = default;
-EvtRetryTimer( const EvtRetryTimer & ) = default;
-EvtRetryTimer& operator= ( const EvtRetryTimer & ) = default;
-~EvtRetryTimer() = default;
-feal::EventId_t getId(void);
-};
-
-class EvtFifoRead : public feal::EvtReader
-{
-public:
-EvtFifoRead() = default;
-EvtFifoRead( const EvtFifoRead & ) = default;
-EvtFifoRead& operator= ( const EvtFifoRead & ) = default;
-~EvtFifoRead() = default;
-feal::EventId_t getId(void);
-};
+FEAL_EVENT_DEFAULT_DECLARE(EvtEndTimer, Event)
+FEAL_EVENT_DEFAULT_DECLARE(EvtRetryTimer, Event)
+FEAL_EVENT_DEFAULT_DECLARE(EvtFifoRead, EventComm)
 
 
 class Fiforeader : public feal::Actor

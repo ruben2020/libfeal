@@ -1,6 +1,6 @@
 //
 // Copyright (c) 2022 ruben2020 https://github.com/ruben2020
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
  
 #include <cstdio>
@@ -12,15 +12,6 @@
 
 #define FIFOPATH "/tmp/fealfifo"
 
-feal::EventId_t EvtEndTimer::getId(void)
-{
-    return getIdOfType<EvtEndTimer>();
-}
-
-feal::EventId_t EvtDelayTimer::getId(void)
-{
-    return getIdOfType<EvtDelayTimer>();
-}
 
 void Fifowriter::initActor(void)
 {
@@ -69,7 +60,7 @@ void Fifowriter::send_something(void)
     char buf[30];
     ssize_t bytes;
     memset(&buf, 0, sizeof(buf));
-    sprintf(buf, "Fifowriter %d", n++);
+    snprintf(buf, sizeof(buf), "Fifowriter %d", n++);
     printf("Trying to send \"%s\" to %s\n", buf, FIFOPATH);
     bytes = write(fifofd, buf, strlen(buf) + 2);
     if (bytes > 0) printf ("Wrote %ld bytes\n", bytes);

@@ -1,6 +1,6 @@
 //
 // Copyright (c) 2022 ruben2020 https://github.com/ruben2020
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
  
 #ifndef _CLIENTHANDLER_H
@@ -9,6 +9,7 @@
 #include "feal.h"
 
 class Server;
+
 
 class EvtClientDisconnected : public feal::Event
 {
@@ -19,13 +20,17 @@ EvtClientDisconnected() = default;
 EvtClientDisconnected( const EvtClientDisconnected & ) = default;
 EvtClientDisconnected& operator= ( const EvtClientDisconnected & ) = default;
 ~EvtClientDisconnected() = default;
-feal::EventId_t getId(void);
+FEAL_EVENT_GETID(EvtClientDisconnected)
 
-feal::socket_t client_sockfd = -1;
+feal::handle_t fd = -1;
 
 private:
 
 };
+
+FEAL_EVENT_DEFAULT_DECLARE(EvtDataReadAvail, EventComm)
+FEAL_EVENT_DEFAULT_DECLARE(EvtDataWriteAvail, EventComm)
+FEAL_EVENT_DEFAULT_DECLARE(EvtClientShutdown, EventComm)
 
 
 class ClientHandler : public feal::Actor
@@ -35,20 +40,20 @@ public:
 
 ClientHandler()=default;
 ~ClientHandler() = default;
-void setParam(feal::Stream<Server>* p, feal::socket_t fd, char *s);
+void setParam(feal::Stream<Server>* p, feal::handle_t fd, char *s);
 
 void initActor(void);
 void startActor(void);
 void pauseActor(void);
 void shutdownActor(void);
 
-void handleEvent(std::shared_ptr<feal::EvtDataReadAvail> pevt);
-void handleEvent(std::shared_ptr<feal::EvtDataWriteAvail> pevt);
-void handleEvent(std::shared_ptr<feal::EvtClientShutdown> pevt);
+void handleEvent(std::shared_ptr<EvtDataReadAvail> pevt);
+void handleEvent(std::shared_ptr<EvtDataWriteAvail> pevt);
+void handleEvent(std::shared_ptr<EvtClientShutdown> pevt);
 
 private:
 feal::Stream<Server>* stream = nullptr;
-feal::socket_t sockfd = -1;
+feal::handle_t sockfd = -1;
 std::string addrstr;
 
 };

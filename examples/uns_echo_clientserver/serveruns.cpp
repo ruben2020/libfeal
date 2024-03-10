@@ -1,6 +1,6 @@
 //
 // Copyright (c) 2022 ruben2020 https://github.com/ruben2020
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
  
 #include <cstdio>
@@ -35,7 +35,7 @@ void Serveruns::start_server(void)
     printf("Listening ...\n");
 }
 
-void Serveruns::print_client_address(feal::socket_t fd)
+void Serveruns::print_client_address(feal::handle_t fd)
 {
     uid_t euid=0;
     gid_t egid=0;
@@ -44,12 +44,12 @@ void Serveruns::print_client_address(feal::socket_t fd)
         (long) euid, (long) egid);
 }
 
-void Serveruns::get_client_address(feal::socket_t fd, char* addr)
+void Serveruns::get_client_address(feal::handle_t fd, char* addr, int addrbuflen)
 {
 
     uid_t euid=0;
     gid_t egid=0;
     stream.getpeereid(fd, &euid, &egid);
-    if (addr) sprintf(addr, "euid=%ld, egid=%ld",
+    if (addr) snprintf(addr, addrbuflen, "euid=%ld, egid=%ld",
                 (long) euid, (long) egid);
 }

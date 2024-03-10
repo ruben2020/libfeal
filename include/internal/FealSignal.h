@@ -1,6 +1,6 @@
 //
 // Copyright (c) 2022 ruben2020 https://github.com/ruben2020
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
  
 #ifndef _FEAL_SIGNAL_H
@@ -25,6 +25,7 @@ EventSignal() = default;
 EventSignal( const EventSignal & ) = default;
 EventSignal& operator= ( const EventSignal & ) = default;
 ~EventSignal() = default;
+virtual EventId_t getId(void) override;
 int signo = -1;
 int sicode = -1;
 };
