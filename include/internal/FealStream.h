@@ -37,7 +37,7 @@ StreamGeneric& operator= ( const StreamGeneric & ) = default;
 
 void shutdownTool(void);
 
-#if defined(unix) || defined(__unix__) || defined(__unix)
+#if defined(unix) || defined(__unix__) || defined(__unix) || defined(__APPLE__) || defined(__MACH__) || defined(__linux__)
 errenum create_and_bind(struct sockaddr_un* su);
 errenum getpeername(struct sockaddr_un* su, handle_t fd = -1);
 errenum getpeereid(uid_t* euid, gid_t* egid);
@@ -199,7 +199,7 @@ errenum create_and_connect(feal::ipaddr* fa)
     return res;
 }
 
-#if defined(unix) || defined(__unix__) || defined(__unix)
+#if defined(unix) || defined(__unix__) || defined(__unix) || defined(__APPLE__) || defined(__MACH__) || defined(__linux__)
 errenum create_and_connect(struct sockaddr_un* su)
 {
     errenum res = FEAL_OK;

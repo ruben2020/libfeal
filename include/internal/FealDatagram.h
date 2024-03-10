@@ -31,7 +31,7 @@ errenum recv_from(void *buf,
 errenum send_to(void *buf, uint32_t len, int32_t* bytes, 
     feal::ipaddr* dest, bool confirm = false);
 
-#if defined(unix) || defined(__unix__) || defined(__unix)
+#if defined(unix) || defined(__unix__) || defined(__unix) || defined(__APPLE__) || defined(__MACH__) || defined(__linux__)
 errenum bind_sock(struct sockaddr_un* su);
 errenum recv_from(void *buf, 
     uint32_t len, int32_t* bytes,

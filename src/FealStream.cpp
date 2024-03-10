@@ -56,7 +56,7 @@ feal::errenum feal::StreamGeneric::create_and_bind(feal::ipaddr* fa)
     return res;
 }
 
-#if defined(unix) || defined(__unix__) || defined(__unix)
+#if defined(unix) || defined(__unix__) || defined(__unix) || defined(__APPLE__) || defined(__MACH__) || defined(__linux__)
 feal::errenum feal::StreamGeneric::create_and_bind(struct sockaddr_un* su)
 {
     errenum res = FEAL_OK;
@@ -156,7 +156,7 @@ feal::errenum feal::StreamGeneric::getpeername(feal::ipaddr* fa, feal::handle_t 
     return res;
 }
 
-#if defined(unix) || defined(__unix__) || defined(__unix)
+#if defined(unix) || defined(__unix__) || defined(__unix) || defined(__APPLE__) || defined(__MACH__) || defined(__linux__)
 feal::errenum feal::StreamGeneric::getpeername(struct sockaddr_un* su, feal::handle_t fd)
 {
     errenum res = FEAL_OK;

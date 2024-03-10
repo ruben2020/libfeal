@@ -61,7 +61,7 @@ feal::errenum feal::DatagramGeneric::bind_sock(feal::ipaddr* fa)
     return res;
 }
 
-#if defined(unix) || defined(__unix__) || defined(__unix)
+#if defined(unix) || defined(__unix__) || defined(__unix) || defined(__APPLE__) || defined(__MACH__) || defined(__linux__)
 feal::errenum feal::DatagramGeneric::bind_sock(struct sockaddr_un* su)
 {
     errenum res = FEAL_OK;
@@ -100,7 +100,7 @@ feal::errenum feal::DatagramGeneric::recv_from(void *buf,
     return res;
 }
 
-#if defined(unix) || defined(__unix__) || defined(__unix)
+#if defined(unix) || defined(__unix__) || defined(__unix) || defined(__APPLE__) || defined(__MACH__) || defined(__linux__)
 feal::errenum feal::DatagramGeneric::recv_from(void *buf, 
     uint32_t len, int32_t* bytes,
     struct sockaddr_un* src, socklen_t *srcaddrlen)
@@ -163,7 +163,7 @@ feal::errenum feal::DatagramGeneric::send_to(void *buf,
     return res;
 }
 
-#if defined(unix) || defined(__unix__) || defined(__unix)
+#if defined(unix) || defined(__unix__) || defined(__unix) || defined(__APPLE__) || defined(__MACH__) || defined(__linux__)
 feal::errenum feal::DatagramGeneric::send_to(void *buf, 
     uint32_t len, int32_t* bytes,
     struct sockaddr_un* dest, socklen_t destaddrlen,
