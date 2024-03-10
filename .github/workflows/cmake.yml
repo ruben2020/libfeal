@@ -41,13 +41,13 @@ jobs:
             cc: "gcc",
             cxx: "g++"
           }
-#        - {
-#            name: "macOS Clang",
-#            os: macos-latest,
-#            build_type: "Debug",
-#            cc: "clang",
-#            cxx: "clang++"
-#          }
+        - {
+            name: "macOS Clang",
+            os: macos-latest,
+            build_type: "Debug",
+            cc: "clang",
+            cxx: "clang++"
+          }
 #        - {
 #            name: "FreeBSD Clang",
 #            os: macos-10.15,
@@ -79,7 +79,7 @@ jobs:
       - name: Install dependencies on macOS
         if: startsWith(matrix.config.name, 'macOS Clang')
         run: |
-          brew install cmake
+          brew install cmake curl
           clang -v
           cmake --version
           ninja --version
