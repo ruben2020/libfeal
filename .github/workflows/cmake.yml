@@ -49,7 +49,7 @@ jobs:
             cxx: "clang++"
           }
         - {
-            name: "FreeBSD Clang",
+            name: "FreeBSD",
             os: ubuntu-latest,
             build_type: "Debug",
             cc: "clang",
@@ -103,16 +103,7 @@ jobs:
             cmake -G Ninja -DCURL_EX=ON ..
             ninja
             cd ..
-            echo Running fealactorstimers ...
-            ./build/examples/actors_and_timers/fealactorstimers
-            echo Running promise ...
-            ./build/examples/promise/fealpromise
-            echo Running sigchld fork ...
-            ./build/examples/sigchld_fork/fealfork
-            echo Running fork ipc ...
-            ./build/examples/fork_ipc/fealforkipc
-            echo Running promise curl ...
-            ./build/examples/promise_curl/fealpromisecurl
+            sh ./helpers/exunix.sh
 
       - name: Configure CMake and Build with Clang on Linux
         if: contains(matrix.config.name, 'Ubuntu-latest Clang')
@@ -151,15 +142,11 @@ jobs:
         run: call "helpers/exwingithub.bat"
           
       - name: Run some examples on Linux, MacOS and Unix
-        if: ${{ !startsWith(matrix.config.name, 'Windows MinGW') }}
+        if: contains(matrix.config.name, 'GCC')
         run: |
-          echo Running fealactorstimers ...
-          ./build/examples/actors_and_timers/fealactorstimers
-          echo Running promise ...
-          ./build/examples/promise/fealpromise
-          echo Running sigchld fork ...
-          ./build/examples/sigchld_fork/fealfork
-          echo Running fork ipc ...
-          ./build/examples/fork_ipc/fealforkipc
-          echo Running promise curl ...
-          ./build/examples/promise_curl/fealpromisecurl
+          sh ./helpers/exunix.sh
+
+      - name: Run some examples on Linux, MacOS and Unix
+        if: contains(matrix.config.name, 'Clang')
+        run: |
+          sh ./helpers/exunix.sh
