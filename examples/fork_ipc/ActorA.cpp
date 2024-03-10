@@ -5,6 +5,12 @@
  
 #include <cstdio>
 #include <sys/wait.h>
+
+#if defined(__APPLE__) || defined(__MACH__)
+#include <fcntl.h>
+#define SOCK_NONBLOCK O_NONBLOCK
+#endif
+
 #include "feal.h"
 #include "ActorA.h"
 #include "ActorsManager.h"
@@ -38,7 +44,17 @@ void ActorA::forkChild(int childnum, const char* medium)
     switch(childnum)
     {
         case 1:
+#if defined(__APPLE__) || defined(__MACH__)
+            ret = pipe(fd);
+            fcntl(fd[0], F_SETFL,
+                fcntl(fd[0], F_GETFL) |
+                O_NONBLOCK);
+            fcntl(fd[1], F_SETFL,
+                fcntl(fd[1], F_GETFL) |
+                O_NONBLOCK);
+#else
             ret = pipe2(fd, O_NONBLOCK);
+#endif
             break;
         case 2:
             ret = socketpair(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0, fd);
