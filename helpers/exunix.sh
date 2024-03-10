@@ -5,6 +5,11 @@ echo =================================
 echo Running promise ...
 ./build/examples/promise/fealpromise
 echo =================================
+echo Running signal ...
+./build/examples/signal/fealsignal &
+sleep 8
+pkill -SIGINT fealsignal
+echo =================================
 echo Running sigchld fork ...
 ./build/examples/sigchld_fork/fealfork
 echo =================================
@@ -14,9 +19,9 @@ echo =================================
 echo Running promise curl ...
 ./build/examples/promise_curl/fealpromisecurl
 echo =================================
-echo Running pipe info ...
-./build/examples/pipe_info/fealfifowriter &
-./build/examples/pipe_info/fealfiforeader
+echo Running pipe fifo ...
+./build/examples/pipe_fifo/fealfifowriter &
+./build/examples/pipe_fifo/fealfiforeader
 echo =================================
 echo Running tcp IPv4 ...
 ./build/examples/tcp_echo_clientserver/fealtcpclient &
@@ -41,7 +46,3 @@ echo =================================
 echo Running uns ...
 ./build/examples/uns_echo_clientserver/fealunsclient &
 ./build/examples/uns_echo_clientserver/fealunsserver
-echo =================================
-echo Running uns abstract ...
-./build/examples/uns_echo_clientserver/fealunsclient_abs &
-./build/examples/uns_echo_clientserver/fealunsserver_abs

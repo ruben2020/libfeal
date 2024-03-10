@@ -145,6 +145,7 @@ jobs:
         if: contains(matrix.config.name, 'GCC')
         run: |
           sh ./helpers/exunix.sh
+          sh ./helpers/exlinux.sh
 
       - name: Run some examples on Linux, MacOS and Unix
         if: contains(matrix.config.name, 'Clang')
