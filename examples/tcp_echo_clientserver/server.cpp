@@ -97,7 +97,7 @@ void Server::handleEvent(std::shared_ptr<EvtIncomingConn> pevt)
     if (it == mapch.end())
     {
         char buf[100];
-        get_client_address(pevt.get()->fd, buf);
+        get_client_address(pevt.get()->fd, buf, sizeof(buf));
         std::shared_ptr<ClientHandler> ch1 = std::make_shared<ClientHandler>();
         ch1.get()->setParam(&stream, pevt.get()->fd, buf);
         ch1.get()->init();
@@ -123,14 +123,14 @@ void Server::print_client_address(feal::handle_t fd)
     }
 }
 
-void Server::get_client_address(feal::handle_t fd, char* addr)
+void Server::get_client_address(feal::handle_t fd, char* addr, int addrbuflen)
 {
     feal::errenum se = feal::FEAL_OK;
     feal::ipaddr fa;
     se = stream.getpeername(&fa, fd);
     if ((se == feal::FEAL_OK)&&(addr))
     {
-        sprintf(addr, "%s %s port %d",
+        snprintf(addr, addrbuflen, "%s %s port %d",
             (fa.family == feal::ipaddr::INET ? "IPv4" : "IPv6"), fa.addr, fa.port);
     }
 }

@@ -22,7 +22,7 @@ protected:
 
 void start_server(void);
 void print_client_address(feal::handle_t fd);
-void get_client_address(feal::handle_t fd, char* addr);
+void get_client_address(feal::handle_t fd, char* addr, int addrbuflen);
 
 };
 
