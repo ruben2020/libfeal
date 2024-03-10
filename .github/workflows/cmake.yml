@@ -88,7 +88,7 @@ jobs:
         if: startsWith(matrix.config.name, 'Windows MinGW')
         uses: seanmiddleditch/gha-setup-ninja@master
 
-      - name: Install dependencies on FreeBSD
+      - name: Install dependencies, make and run on FreeBSD
         if: contains(matrix.config.name, 'FreeBSD')
         uses: vmactions/freebsd-vm@v1
         with:
@@ -96,12 +96,20 @@ jobs:
           prepare: pkg install -y ninja cmake llvm curl
           run: |
             pwd
-            ls -lah
-            whoami
-            env
-            freebsd-version
-            clang -v && clang++ -v
-            cmake --version && ninja --version
+            mkdir -p build
+            cd build
+            cmake -G Ninja -DCURL_EX=ON ..
+            ninja
+            echo Running fealactorstimers ...
+            ./build/examples/actors_and_timers/fealactorstimers
+            echo Running promise ...
+            ./build/examples/promise/fealpromise
+            echo Running sigchld fork ...
+            ./build/examples/sigchld_fork/fealfork
+            echo Running fork ipc ...
+            ./build/examples/fork_ipc/fealforkipc
+            echo Running promise curl ...
+            ./build/examples/promise_curl/fealpromisecurl
 
       - name: Configure CMake and Build with Clang on Linux
         if: contains(matrix.config.name, 'Ubuntu-latest Clang')
@@ -116,15 +124,6 @@ jobs:
       - name: Configure CMake and Build with Clang on MacOS
         if: contains(matrix.config.name, 'macOS Clang')
         run: |
-          mkdir -p build
-          cd build
-          cmake -G Ninja -DCURL_EX=ON ..
-          ninja
-
-      - name: Configure CMake and Build with Clang on FreeBSD
-        if: contains(matrix.config.name, 'FreeBSD')
-        run: |
-          freebsd-version
           mkdir -p build
           cd build
           cmake -G Ninja -DCURL_EX=ON ..
