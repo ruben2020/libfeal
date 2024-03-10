@@ -48,17 +48,17 @@ jobs:
             cc: "clang",
             cxx: "clang++"
           }
-#        - {
-#            name: "FreeBSD Clang",
-#            os: macos-10.15,
-#            build_type: "Debug",
-#            cc: "clang",
-#            cxx: "clang++"
-#          }
+        - {
+            name: "FreeBSD Clang",
+            os: ubuntu-latest,
+            build_type: "Debug",
+            cc: "clang",
+            cxx: "clang++"
+          }
 
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Print env
         run: |
@@ -79,8 +79,7 @@ jobs:
       - name: Install dependencies on macOS
         if: startsWith(matrix.config.name, 'macOS Clang')
         run: |
-          brew update
-          brew install ninja curl
+          brew install ninja
           clang -v
           cmake --version
           ninja --version
@@ -91,7 +90,7 @@ jobs:
 
       - name: Install dependencies on FreeBSD
         if: contains(matrix.config.name, 'FreeBSD')
-        uses: vmactions/freebsd-vm@v0.1.5
+        uses: vmactions/freebsd-vm@v1
         with:
           usesh: true
           prepare: pkg install -y ninja cmake llvm curl
@@ -104,16 +103,33 @@ jobs:
             clang -v && clang++ -v
             cmake --version && ninja --version
 
-      - name: Configure CMake and Build with Clang
-        if: contains(matrix.config.name, 'Clang')
+      - name: Configure CMake and Build with Clang on Linux
+        if: contains(matrix.config.name, 'Ubuntu-latest Clang')
         run: |
           mkdir -p build
           cd build
           export CC=clang
           export CXX=clang++
-          cmake -G "Unix Makefiles" -DCURL_EX=ON ..
-          make
-     
+          cmake -G Ninja -DCURL_EX=ON ..
+          ninja
+
+      - name: Configure CMake and Build with Clang on MacOS
+        if: contains(matrix.config.name, 'macOS Clang')
+        run: |
+          mkdir -p build
+          cd build
+          cmake -G Ninja -DCURL_EX=ON ..
+          ninja
+
+      - name: Configure CMake and Build with Clang on FreeBSD
+        if: contains(matrix.config.name, 'FreeBSD')
+        run: |
+          freebsd-version
+          mkdir -p build
+          cd build
+          cmake -G Ninja -DCURL_EX=ON ..
+          ninja
+
       - name: Configure CMake and Build with GCC on Linux
         if: contains(matrix.config.name, 'GCC')
         run: |
@@ -127,10 +143,10 @@ jobs:
         shell: cmd
         run: call "helpers/buildwingithub.bat"
 
-#      - name: Run some examples on Windows
-#        if: startsWith(matrix.config.name, 'Windows MinGW')
-#        shell: cmd
-#        run: call "helpers/exwingithub.bat"
+      - name: Run some examples on Windows
+        if: startsWith(matrix.config.name, 'Windows MinGW')
+        shell: cmd
+        run: call "helpers/exwingithub.bat"
           
       - name: Run some examples on Linux, MacOS and Unix
         if: ${{ !startsWith(matrix.config.name, 'Windows MinGW') }}
