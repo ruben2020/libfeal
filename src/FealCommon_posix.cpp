@@ -2,7 +2,8 @@
 // Copyright (c) 2022 ruben2020 https://github.com/ruben2020
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
- 
+
+#include <fcntl.h>
 #include "feal.h"
 
 void feal::ipaddr_posix2feal(sockaddr_ip* su, feal::ipaddr* fa)
@@ -47,6 +48,15 @@ int feal::setnonblocking(handle_t fd)
 		return -1;
 	}
 	return 0;
+}
+
+int feal::setnonblocking(handle_t fd[2])
+{
+    int ret1 = 0;
+    int ret2 = 0;
+    ret1 = feal::setnonblocking(fd[0]);
+    ret2 = feal::setnonblocking(fd[1]);
+    return (ret1 < 0 ? ret1 : ret2);
 }
 
 int feal::setipv6only(handle_t fd)

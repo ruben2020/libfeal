@@ -202,6 +202,7 @@ typedef union sockaddr_ip {
 void ipaddr_posix2feal(sockaddr_ip* su, ipaddr* fa);
 int  ipaddr_feal2posix(ipaddr* fa, sockaddr_ip* su);
 int  setnonblocking(handle_t fd);
+int  setnonblocking(handle_t fd[2]);
 int  setipv6only(handle_t fd);
 int  datareadavaillen(handle_t fd);
 
