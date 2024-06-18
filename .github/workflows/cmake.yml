@@ -49,7 +49,7 @@ jobs:
             cxx: "clang++"
           }
         - {
-            name: "FreeBSD Clang",
+            name: "FreeBSD",
             os: ubuntu-latest,
             build_type: "Debug",
             cc: "clang",
