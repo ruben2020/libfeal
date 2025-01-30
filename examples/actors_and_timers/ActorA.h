@@ -19,7 +19,6 @@ EvtNotifyVege() = default;
 EvtNotifyVege( const EvtNotifyVege & ) = default;
 EvtNotifyVege& operator= ( const EvtNotifyVege & ) = default;
 ~EvtNotifyVege() = default;
-FEAL_EVENT_GETID(EvtNotifyVege)
 
 int get_carrots(void);
 int get_tomatoes(void);
@@ -41,7 +40,6 @@ EvtNotifyFruit() = default;
 EvtNotifyFruit( const EvtNotifyFruit & ) = default;
 EvtNotifyFruit& operator= ( const EvtNotifyFruit & ) = default;
 ~EvtNotifyFruit() = default;
-FEAL_EVENT_GETID(EvtNotifyFruit)
 
 int get_apples(void);
 int get_oranges(void);

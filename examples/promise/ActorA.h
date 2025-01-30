@@ -15,7 +15,6 @@ EvtAccPromiseComplete() = default;
 EvtAccPromiseComplete( const EvtAccPromiseComplete & ) = default;
 EvtAccPromiseComplete& operator= ( const EvtAccPromiseComplete & ) = default;
 ~EvtAccPromiseComplete() = default;
-FEAL_EVENT_GETID(EvtAccPromiseComplete)
 int total = 0;
 };
 
@@ -26,7 +25,6 @@ EvtPopenPromiseComplete() = default;
 EvtPopenPromiseComplete( const EvtPopenPromiseComplete & ) = default;
 EvtPopenPromiseComplete& operator= ( const EvtPopenPromiseComplete & ) = default;
 ~EvtPopenPromiseComplete() = default;
-FEAL_EVENT_GETID(EvtPopenPromiseComplete)
 std::string str;
 };
 

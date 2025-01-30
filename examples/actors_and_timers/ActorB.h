@@ -20,7 +20,6 @@ EventCabbage() = default;
 EventCabbage( const EventCabbage & ) = default;
 EventCabbage& operator= ( const EventCabbage & ) = default;
 ~EventCabbage() = default;
-FEAL_EVENT_GETID(EventCabbage)
 
 int get_cabbages(void);
 

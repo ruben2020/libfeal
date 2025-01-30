@@ -20,7 +20,6 @@ EvtClientDisconnected() = default;
 EvtClientDisconnected( const EvtClientDisconnected & ) = default;
 EvtClientDisconnected& operator= ( const EvtClientDisconnected & ) = default;
 ~EvtClientDisconnected() = default;
-FEAL_EVENT_GETID(EvtClientDisconnected)
 
 feal::handle_t fd = -1;
 

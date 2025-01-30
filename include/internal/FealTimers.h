@@ -12,6 +12,9 @@
 
 #include <memory>
 #include <chrono>
+#include <unordered_map>
+#include <map>
+#include <typeindex>
 
 namespace feal
 {
@@ -38,7 +41,7 @@ void shutdownTool(void)
 template< typename T, class D1, class D2 >
 void startTimer(const D1& oneshot_time, const D2& repeat_time)
 {
-    EventId_t id = Event::getIdOfType<T>();
+    auto id = std::type_index(typeid(T));
     auto it = mapTimers.find(id);
     if (it != mapTimers.end())
     {
@@ -56,7 +59,7 @@ void startTimer(const D1& oneshot_time, const D2& repeat_time)
 template< typename T, class D1 >
 void startTimer(const D1& oneshot_time)
 {
-    EventId_t id = Event::getIdOfType<T>();
+    auto id = std::type_index(typeid(T));
     auto it = mapTimers.find(id);
     if (it != mapTimers.end())
     {
@@ -74,7 +77,7 @@ void startTimer(const D1& oneshot_time)
 template< typename T >
 void stopTimer(void)
 {
-    EventId_t id = Event::getIdOfType<T>();
+    auto id = std::type_index(typeid(T));
     auto it = mapTimers.find(id);
     if (it != mapTimers.end())
     {
@@ -86,7 +89,7 @@ template< typename T, class D >
 bool setTimerRepeat(const D& repeat_time)
 {
     bool ret = false;
-    EventId_t id = Event::getIdOfType<T>();
+    auto id = std::type_index(typeid(T));
     auto it = mapTimers.find(id);
     if (it != mapTimers.end())
     {
@@ -105,7 +108,7 @@ bool setTimerRepeat(const D& repeat_time)
 template< typename T >
 std::chrono::seconds getTimerRepeat(void)
 {
-    EventId_t id = Event::getIdOfType<T>();
+    auto id = std::type_index(typeid(T));
     auto sec = std::chrono::seconds(0);
     auto it = mapTimers.find(id);
     if (it != mapTimers.end())
@@ -142,13 +145,13 @@ void finalizeAllTimers(void)
 private:
 
 Y* actorptr = nullptr;
-std::map<EventId_t, std::unique_ptr<Timer>> mapTimers;
+std::unordered_map<std::type_index, std::unique_ptr<Timer>> mapTimers;
 
 template<typename T>
 void createTimer(void)
 {
     if (actorptr == nullptr) return;
-    EventId_t id = Event::getIdOfType<T>();
+    auto id = std::type_index(typeid(T));
     T inst;
     actorptr->addEvent(actorptr, inst);
     auto it = mapTimers.find(id);

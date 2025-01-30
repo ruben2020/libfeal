@@ -16,7 +16,6 @@ EvtCurlPromiseComplete() = default;
 EvtCurlPromiseComplete( const EvtCurlPromiseComplete & ) = default;
 EvtCurlPromiseComplete& operator= ( const EvtCurlPromiseComplete & ) = default;
 ~EvtCurlPromiseComplete() = default;
-FEAL_EVENT_GETID(EvtCurlPromiseComplete)
 curl_off_t bytes;
 bool success = false;
 };

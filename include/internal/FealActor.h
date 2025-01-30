@@ -18,9 +18,11 @@
 #include <atomic>
 #include <chrono>
 #include <functional>
+#include <unordered_map>
 #include <map>
 #include <vector>
 #include <future>
+#include <typeindex>
 
 namespace feal
 {
@@ -34,7 +36,6 @@ EventStartActor() = default;
 EventStartActor( const EventStartActor & ) = default;
 EventStartActor& operator= ( const EventStartActor & ) = default;
 ~EventStartActor() = default;
-EventId_t getId(void);
 };
 
 class EventPauseActor : public Event
@@ -44,7 +45,6 @@ EventPauseActor() = default;
 EventPauseActor( const EventPauseActor & ) = default;
 EventPauseActor& operator= ( const EventPauseActor & ) = default;
 ~EventPauseActor() = default;
-EventId_t getId(void);
 };
 
 
@@ -67,9 +67,8 @@ void addTool(Tool* p);
 template<typename T, typename Y>
 void addEvent(Y* p, T& k)
 {
-    EventId_t id = k.getId();
-    if (id == 0) printf("WARNING! getId not defined for Event!\n");
-    if (id == 0) id = Event::getIdOfType<T>();
+    (void) k;
+    auto id = std::type_index(typeid(T));
     auto it = mapEventHandlers.find(id);
     if (it == mapEventHandlers.end())
     {
@@ -84,9 +83,8 @@ void addEvent(Y* p, T& k)
 template<typename T, typename Y>
 void subscribeEvent(Y* p, T& k)
 {
-    EventId_t id = k.getId();
-    if (id == 0) printf("WARNING! getId not defined for Event!\n");
-    if (id == 0) id = Event::getIdOfType<T>();
+    (void) k;
+    auto id = std::type_index(typeid(T));
     auto it = mapEventHandlers.find(id);
     if (it == mapEventHandlers.end())
     {
@@ -113,9 +111,7 @@ void subscribePromise(Y* p, std::shared_future<std::shared_ptr<T>> fut)
 template<typename T>
 void unsubscribeEvent(T& k)
 {
-    EventId_t id = k.getId();
-    if (id == 0) printf("WARNING! getId not defined for Event!\n");
-    if (id == 0) id = Event::getIdOfType<T>();
+    auto id = std::type_index(typeid(T));
     for (auto it = mapEventHandlers.begin(); it != mapEventHandlers.end(); )
     {
         if (it->first == id) mapEventHandlers.erase(it);
@@ -135,7 +131,7 @@ void publishEvent(std::shared_ptr<Event> pevt);
 template<typename T, typename Y>
 void subscribeEvent(Y* p)
 {
-    EventId_t id = Event::getIdOfType<T>();
+    auto id = std::type_index(typeid(T));
     auto it = mapEventHandlers.find(id);
     if (it == mapEventHandlers.end())
     {
@@ -151,7 +147,7 @@ void subscribeEvent(Y* p)
 template<typename T>
 void unsubscribeEvent(void)
 {
-    EventId_t id = Event::getIdOfType<T>();
+    auto id = std::type_index(typeid(T));
     for (auto it = mapEventHandlers.begin(); it != mapEventHandlers.end(); )
     {
         if (it->first == id) mapEventHandlers.erase(it);
@@ -165,7 +161,7 @@ private:
 std::atomic_bool threadValid {true};
 std::atomic_bool threadRunning {false};
 std::queue<std::shared_ptr<Event>> evtQueue;
-std::map<EventId_t, std::function<void(std::shared_ptr<Event>)>> mapEventHandlers;
+std::unordered_map<std::type_index, std::function<void(std::shared_ptr<Event>)>> mapEventHandlers;
 std::vector<Tool*> vecTool;
 std::thread actorThread;
 std::mutex mtxEventQueue;

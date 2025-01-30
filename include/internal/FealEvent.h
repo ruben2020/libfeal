@@ -13,10 +13,6 @@
 #include <vector>
 #include <memory>
 
-#define FEAL_EVENT_GETID(X) \
-virtual feal::EventId_t getId(void) override \
-{ return getIdOfType<X>(); }
-
 #define FEAL_EVENT_DEFAULT_DECLARE(X,Y) \
 class X : public feal::Y \
 { \
@@ -25,8 +21,6 @@ X() = default; \
 X( const X & ) = default; \
 X& operator= ( const X & ) = default; \
 ~X() = default; \
-virtual feal::EventId_t getId(void) override \
-{ return getIdOfType<X>(); } \
 };
 
 
@@ -48,25 +42,12 @@ virtual ~Event() = default;
 
 std::shared_ptr<Event> getptr(void);
 
-virtual EventId_t getId(void);
 void replyEvent(std::shared_ptr<Event> spevt);
-
-template<typename T>
- static EventId_t getIdOfType()
- {
-     static EventId_t s_evtId = 0;
-     if ( s_evtId == 0 )
-     {
-        s_evtId = generateUniqueID();
-     }
-     return s_evtId;
- }
 
 void setSender(std::weak_ptr<Actor>& act);
 
 private:
 std::weak_ptr<Actor> sender;
-static EventId_t generateUniqueID(void);
 
 };
 
@@ -77,7 +58,6 @@ EventComm() = default;
 EventComm( const EventComm & ) = default;
 EventComm& operator= ( const EventComm & ) = default;
 ~EventComm() = default;
-virtual EventId_t getId(void) override;
 errenum errnum = FEAL_OK;
 handle_t fd = FEAL_INVALID_HANDLE;
 int datalen = -1;

@@ -4,6 +4,7 @@
 //
  
 #include <memory>
+#include <typeindex>
 #include "feal.h"
 
 
@@ -15,12 +16,12 @@ void feal::Actor::shutdownActor(void){}
 void feal::Actor::init(void)
 {
     if (threadValid == false) return; // not possible after shutdown
-    mapEventHandlers.insert(std::make_pair(EventStartActor::getIdOfType<EventStartActor>(),
+    mapEventHandlers.insert(std::make_pair(std::type_index(typeid(EventStartActor)),
             [this](std::shared_ptr<Event> fe)
                 {   this->handleEvent(std::dynamic_pointer_cast<EventStartActor>(fe));  }
             )
     );
-    mapEventHandlers.insert(std::make_pair(EventPauseActor::getIdOfType<EventPauseActor>(),
+    mapEventHandlers.insert(std::make_pair(std::type_index(typeid(EventPauseActor)),
             [this](std::shared_ptr<Event> fe)
                 {   this->handleEvent(std::dynamic_pointer_cast<EventPauseActor>(fe));  }
             )
@@ -118,7 +119,6 @@ void feal::Actor::eventLoop(void)
 {
     bool queue_empty;
     std::shared_ptr<Event> fe;
-    EventId_t id;
     while (threadValid)
     {
         while (threadRunning)
@@ -132,8 +132,7 @@ void feal::Actor::eventLoop(void)
             }
             mtxEventQueue.unlock();
             if ((queue_empty) || (!threadValid)) break;
-            id = fe.get()->getId();
-            if (id == 0) continue;
+            auto id = std::type_index(typeid(*fe));
             auto it = mapEventHandlers.find(id);
             if (it != mapEventHandlers.end())
             {
@@ -170,12 +169,3 @@ void feal::Actor::publishEvent(std::shared_ptr<feal::Event> pevt)
     }
 }
 
-feal::EventId_t feal::EventStartActor::getId(void)
-{
-    return getIdOfType<EventStartActor>();
-}
-
-feal::EventId_t feal::EventPauseActor::getId(void)
-{
-    return getIdOfType<EventPauseActor>();
-}

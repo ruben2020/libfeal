@@ -14,6 +14,7 @@
 #include <mutex>
 #include <map>
 #include <memory>
+#include <typeindex>
 
 namespace feal
 {
@@ -25,7 +26,6 @@ EventSignal() = default;
 EventSignal( const EventSignal & ) = default;
 EventSignal& operator= ( const EventSignal & ) = default;
 ~EventSignal() = default;
-virtual EventId_t getId(void) override;
 int signo = -1;
 int sicode = -1;
 };
@@ -50,7 +50,7 @@ errenum registersignal(int signum)
 {
     errenum ee = FEAL_OK;
     std::shared_ptr<EventSignal> k = std::make_shared<T>();
-    EventId_t id = Event::getIdOfType<T>();
+    auto id = std::type_index(typeid(T));
     const std::lock_guard<std::mutex> lock(mtxMapSig);
     auto it = mapSignal.find(signum);
     if (it == mapSignal.end())
@@ -67,7 +67,7 @@ errenum registersignal(int signum)
         bool notinvec = true;
         for (auto itv = ves.begin(); itv != ves.end(); ++itv)
         {
-            if (id == (*itv).get()->getId())
+            if (id == std::type_index(typeid((*itv).get())))
             {
                 notinvec = false;
                 break;
@@ -89,7 +89,7 @@ errenum deregistersignal(int signum)
 {
     errenum ee = FEAL_OK;
     std::shared_ptr<EventSignal> k = std::make_shared<T>();
-    EventId_t id = Event::getIdOfType<T>();
+    auto id = std::type_index(typeid(T));
     const std::lock_guard<std::mutex> lock(mtxMapSig);
     auto it = mapSignal.find(signum);
     if (it != mapSignal.end())
@@ -97,7 +97,7 @@ errenum deregistersignal(int signum)
         vec_evtsig_ptr_t ves = it->second;
         for (auto itv = ves.begin(); itv != ves.end(); ++itv)
         {
-            if (id == (*itv).get()->getId())
+            if (id == std::type_index(typeid((*itv).get())))
             {
                 ves.erase(itv);
                 break;

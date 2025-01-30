@@ -28,7 +28,7 @@ feal::EventBus::~EventBus()
 {
 }
 
-void feal::EventBus::subscribeEvent(const feal::EventId_t& evtid, feal::actorptr_t ptr)
+void feal::EventBus::subscribeEvent(const std::type_index& evtid, feal::actorptr_t ptr)
 {
     const std::lock_guard<std::mutex> lock(mtxEventBus);
     auto it = mapEventSubscribers.find(evtid);
@@ -52,7 +52,7 @@ void feal::EventBus::subscribeEvent(const feal::EventId_t& evtid, feal::actorptr
     
 }
 
-void feal::EventBus::unsubscribeEvent(const feal::EventId_t& evtid, feal::actorptr_t ptr)
+void feal::EventBus::unsubscribeEvent(const std::type_index& evtid, feal::actorptr_t ptr)
 {
     const std::lock_guard<std::mutex> lock(mtxEventBus);
     auto it = mapEventSubscribers.find(evtid);
@@ -73,7 +73,7 @@ void feal::EventBus::publishEvent(std::shared_ptr<Event> pevt)
 {
     if ((!pevt)|| (eventBusOff)) return;
     const std::lock_guard<std::mutex> lock(mtxEventBus);
-    auto it = mapEventSubscribers.find(pevt.get()->getId());
+    auto it = mapEventSubscribers.find(std::type_index(typeid(*pevt)));
     if (it != mapEventSubscribers.end())
     {
         for (auto itv = it->second.begin(); itv !=  it->second.end(); ++itv)
@@ -87,7 +87,7 @@ void feal::EventBus::publishEvent(std::shared_ptr<Event> pevt)
 std::shared_ptr<feal::Event> feal::EventBus::cloneEvent(std::shared_ptr<feal::Event> p)
 {
     const std::lock_guard<std::mutex> lock(mtxEventBus);
-    auto it = mapEventCloners.find(p.get()->getId());
+    auto it = mapEventCloners.find(std::type_index(typeid(*p)));
     if (it != mapEventCloners.end())
     {
         return it->second();
