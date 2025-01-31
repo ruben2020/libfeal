@@ -111,6 +111,7 @@ void subscribePromise(Y* p, std::shared_future<std::shared_ptr<T>> fut)
 template<typename T>
 void unsubscribeEvent(T& k)
 {
+    (void) k;
     auto id = std::type_index(typeid(T));
     for (auto it = mapEventHandlers.begin(); it != mapEventHandlers.end(); )
     {

@@ -10,8 +10,8 @@ option(CURL_EX "libCurl example" OFF)
 
 MESSAGE("-- libCurl = " ${CURL_EX})
 
-# C++14 required
-SET( CMAKE_CXX_STANDARD 14 )
+# C++17 required
+SET( CMAKE_CXX_STANDARD 17 )
 SET( CMAKE_CXX_STANDARD_REQUIRED ON )
 SET( CMAKE_CXX_EXTENSIONS OFF )
 
