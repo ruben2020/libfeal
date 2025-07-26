@@ -33,6 +33,7 @@
 #ifndef _WIN32
 #include "internal/FealReader.h"
 #include "internal/FealFifoReader.h"
+#include "internal/FealFileDescMon.h"
 #endif
 
 #endif // _FEAL_H
