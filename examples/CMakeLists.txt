@@ -20,8 +20,11 @@ add_subdirectory( "uns_echo_clientserver_abstract" )
 add_subdirectory( "sigchld_fork" )
 add_subdirectory( "pipe_fifo" )
 add_subdirectory( "fork_ipc" )
-add_subdirectory( "filedescmon_inotify" )
 endif(WIN32)
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+add_subdirectory( "filedescmon_inotify" )
+endif()
 
 if (CURL_EX)
 add_subdirectory( "promise_curl" )
