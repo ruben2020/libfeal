@@ -6,8 +6,16 @@
 #include <cstdio>
 #include <cstring>
 #include <stdlib.h>
-#include <linux/limits.h>
 #include <sys/inotify.h>
+
+#if defined (__linux__)
+#include <linux/limits.h>
+#elif defined (__APPLE__)
+#include <sys/syslimits.h>
+#else
+#include <sys/syslimits.h>
+#endif
+
 #include "ActorA.h"
 
 
