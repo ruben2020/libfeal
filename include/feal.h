@@ -34,6 +34,7 @@
 #include "internal/FealReader.h"
 #include "internal/FealFifoReader.h"
 #include "internal/FealDescMon.h"
+#include "internal/FealFileDirMon.h"
 #endif
 
 #endif // _FEAL_H

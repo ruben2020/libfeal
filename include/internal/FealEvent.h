@@ -61,6 +61,7 @@ EventComm& operator= ( const EventComm & ) = default;
 errenum errnum = FEAL_OK;
 handle_t fd = FEAL_INVALID_HANDLE;
 int datalen = -1;
+mask_t mask = 0;
 };
 
 

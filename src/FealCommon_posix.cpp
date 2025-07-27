@@ -4,6 +4,7 @@
 //
 
 #include <fcntl.h>
+
 #include "feal.h"
 
 void feal::ipaddr_posix2feal(sockaddr_ip* su, feal::ipaddr* fa)

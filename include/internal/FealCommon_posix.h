@@ -23,6 +23,8 @@
 
 #if defined (__linux__)
 #include <sys/epoll.h>
+#include <sys/inotify.h>
+#include <linux/limits.h>
 #else
 #include <sys/event.h>
 
@@ -175,6 +177,28 @@ typedef enum
 
 } errenum;
 
+#if defined (__linux__)
+    #define FEAL_FDM_ATTRIB          IN_ATTRIB,
+    #define FEAL_FDM_CLOSE_NOWRITE   IN_CLOSE_NOWRITE
+    #define FEAL_FDM_CLOSE_WRITE     IN_CLOSE_WRITE
+    #define FEAL_FDM_MODIFY          IN_MODIFY
+    #define FEAL_FDM_DELETE          IN_DELETE
+    #define FEAL_FDM_OPEN            IN_OPEN
+    #define FEAL_FDM_ACCESS          IN_ACCESS
+    #define FEAL_FDM_READ            IN_ACCESS
+    #define FEAL_FDM_WRITE           IN_MODIFY
+#else
+    #define FEAL_FDM_ATTRIB          NOTE_ATTRIB,
+    #define FEAL_FDM_CLOSE_NOWRITE   NOTE_CLOSE
+    #define FEAL_FDM_CLOSE_WRITE     NOTE_CLOSE_WRITE
+    #define FEAL_FDM_MODIFY          NOTE_WRITE
+    #define FEAL_FDM_DELETE          NOTE_DELETE
+    #define FEAL_FDM_OPEN            NOTE_OPEN
+    #define FEAL_FDM_ACCESS          (NOTE_OPEN | NOTE_READ)
+    #define FEAL_FDM_READ            NOTE_READ
+    #define FEAL_FDM_WRITE           NOTE_WRITE
+#endif
+
 
 typedef int handle_t;
 #define FEAL_INVALID_HANDLE    (-1)
@@ -189,15 +213,21 @@ typedef union sockaddr_ip {
 } sockaddr_ip;
 
 
-    typedef uint32_t EventId_t;
-    typedef uint32_t ActorId_t;
-    typedef enum {INET=AF_INET, INET6=AF_INET6, UNIX=AF_UNIX} family_t;
+typedef uint32_t EventId_t;
+typedef uint32_t ActorId_t;
+typedef enum {INET=AF_INET, INET6=AF_INET6, UNIX=AF_UNIX} family_t;
 
-    typedef struct {
-        enum {INET=AF_INET, INET6=AF_INET6} family;
-        uint16_t port;
-        char addr[INET6_ADDRSTRLEN];
-    } ipaddr;
+typedef struct {
+    enum {INET=AF_INET, INET6=AF_INET6} family;
+    uint16_t port;
+    char addr[INET6_ADDRSTRLEN];
+} ipaddr;
+
+#if defined (__linux__)
+    typedef uint32_t mask_t;
+#else
+    typedef unsigned int mask_t;
+#endif
 
 void ipaddr_posix2feal(sockaddr_ip* su, ipaddr* fa);
 int  ipaddr_feal2posix(ipaddr* fa, sockaddr_ip* su);

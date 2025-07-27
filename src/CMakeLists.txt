@@ -27,6 +27,7 @@ set( FEAL_LIB_SRCS
 set( FEAL_LIB_UNIX_SRCS 
      FealReader.cpp
      FealDescMon.cpp
+     FealFileDirMon.cpp
   )
 
 if(WIN32)
