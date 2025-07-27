@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
  
-#ifndef _FEAL_FILEDESCMON_H
-#define _FEAL_FILEDESCMON_H
+#ifndef _FEAL_DESCMON_H
+#define _FEAL_DESCMON_H
 
 #ifndef _FEAL_H
 #error "Please include feal.h and not the other internal Feal header files, to avoid include errors."
@@ -14,13 +14,13 @@ namespace feal
 {
 
 
-class FileDescMonGeneric : public Tool
+class DescMonGeneric : public Tool
 {
 public:
-FileDescMonGeneric() = default;
-FileDescMonGeneric( const FileDescMonGeneric & ) = default;
-FileDescMonGeneric& operator= ( const FileDescMonGeneric & ) = default;
-~FileDescMonGeneric() = default;
+DescMonGeneric() = default;
+DescMonGeneric( const DescMonGeneric & ) = default;
+DescMonGeneric& operator= ( const DescMonGeneric & ) = default;
+~DescMonGeneric() = default;
 
 void shutdownTool(void);
 
@@ -29,7 +29,7 @@ errenum close_and_reset(void);
 
 protected:
 
-std::thread FileDescMonThread;
+std::thread DescMonThread;
 handle_t genfd = FEAL_INVALID_HANDLE;
 
 #if defined (__linux__)
@@ -43,11 +43,11 @@ int kq = -1;
 
 virtual void receiveEventReadAvail(errenum errnum, handle_t fd, int datalen);
 virtual void receiveEventWriteAvail(errenum errnum, handle_t fd, int datalen);
-virtual void receiveEventFDErr(errenum errnum, handle_t fd, int datalen);
+virtual void receiveEventDescErr(errenum errnum, handle_t fd, int datalen);
 
 private:
 
-static void fdmonLoopLauncher(FileDescMonGeneric *p);
+static void fdmonLoopLauncher(DescMonGeneric *p);
 void fdmonLoop(void);
 void close_fd(void);
 void fd_error(void);
@@ -63,13 +63,13 @@ static int epoll_ctl_mod(int epfd, handle_t fd, uint32_t events);
 
 
 template<typename Y>
-class FileDescMon : public FileDescMonGeneric
+class DescMon : public DescMonGeneric
 {
 public:
-FileDescMon() = default;
-FileDescMon( const FileDescMon & ) = default;
-FileDescMon& operator= ( const FileDescMon & ) = default;
-~FileDescMon() = default;
+DescMon() = default;
+DescMon( const DescMon & ) = default;
+DescMon& operator= ( const DescMon & ) = default;
+~DescMon() = default;
 
 void init(Y* p)
 {
@@ -96,7 +96,7 @@ void subscribeWriteAvail()
 }
 
 template<typename T>
-void subscribeFDErr()
+void subscribeDescErr()
 {
     T inst;
     actorptr->addEvent(actorptr, inst);
@@ -117,7 +117,7 @@ void receiveEventReadAvail(errenum errnum, handle_t fd, int datalen)
         itw.get()->datalen = datalen;
         if (actorptr) actorptr->receiveEvent(itw);
     }
-    else printf("No subscription using FileDescMon::subscribeReadAvail\n");
+    else printf("No subscription using DescMon::subscribeReadAvail\n");
 }
 
 void receiveEventWriteAvail(errenum errnum, handle_t fd, int datalen)
@@ -130,10 +130,10 @@ void receiveEventWriteAvail(errenum errnum, handle_t fd, int datalen)
         itw.get()->datalen = datalen;
         if (actorptr) actorptr->receiveEvent(itw);
     }
-    else printf("No subscription using FileDescMon::subscribeWriteAvail\n");
+    else printf("No subscription using DescMon::subscribeWriteAvail\n");
 }
 
-void receiveEventFDErr(errenum errnum, handle_t fd, int datalen)
+void receiveEventDescErr(errenum errnum, handle_t fd, int datalen)
 {
     if (evterrfd.get())
     {
@@ -143,7 +143,7 @@ void receiveEventFDErr(errenum errnum, handle_t fd, int datalen)
         itw.get()->datalen = datalen;
         if (actorptr) actorptr->receiveEvent(itw);
     }
-    else printf("No subscription using FileDescMon::subscribeFDErr\n");
+    else printf("No subscription using DescMon::subscribeDescErr\n");
 }
 
 

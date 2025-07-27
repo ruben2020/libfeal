@@ -5,12 +5,12 @@
  
 #include "feal.h"
 
-void feal::FileDescMonGeneric::shutdownTool(void)
+void feal::DescMonGeneric::shutdownTool(void)
 {
     close_and_reset();
 }
 
-feal::errenum feal::FileDescMonGeneric::monitor(handle_t fd)
+feal::errenum feal::DescMonGeneric::monitor(handle_t fd)
 {
     errenum res = FEAL_OK;
     genfd = fd;
@@ -20,11 +20,11 @@ feal::errenum feal::FileDescMonGeneric::monitor(handle_t fd)
         return res;
     }
     setnonblocking(genfd);
-    FileDescMonThread = std::thread(&fdmonLoopLauncher, this);
+    DescMonThread = std::thread(&fdmonLoopLauncher, this);
     return res;
 }
 
-feal::errenum feal::FileDescMonGeneric::close_and_reset(void)
+feal::errenum feal::DescMonGeneric::close_and_reset(void)
 {
     errenum res = FEAL_OK;
     close(genfd);
@@ -36,16 +36,16 @@ feal::errenum feal::FileDescMonGeneric::close_and_reset(void)
     close(kq);
     kq = -1;
 #endif
-    if (FileDescMonThread.joinable()) FileDescMonThread.join();
+    if (DescMonThread.joinable()) DescMonThread.join();
     return res;
 }
 
-void feal::FileDescMonGeneric::fdmonLoopLauncher(feal::FileDescMonGeneric *p)
+void feal::DescMonGeneric::fdmonLoopLauncher(feal::DescMonGeneric *p)
 {
     if (p) p->fdmonLoop();
 }
 
-void feal::FileDescMonGeneric::fdmonLoop(void)
+void feal::DescMonGeneric::fdmonLoop(void)
 {
 #if defined (__linux__)
     int nfds = 0;
@@ -134,7 +134,7 @@ void feal::FileDescMonGeneric::fdmonLoop(void)
 #endif
 }
 
-void feal::FileDescMonGeneric::close_fd(void)
+void feal::DescMonGeneric::close_fd(void)
 {
     close(genfd);
     genfd = FEAL_INVALID_HANDLE;
@@ -148,7 +148,7 @@ void feal::FileDescMonGeneric::close_fd(void)
 }
 
 #if defined (__linux__)
-int feal::FileDescMonGeneric::epoll_ctl_add(int epfd, handle_t fd, uint32_t events)
+int feal::DescMonGeneric::epoll_ctl_add(int epfd, handle_t fd, uint32_t events)
 {
     struct epoll_event ev;
     ev.events = events;
@@ -156,7 +156,7 @@ int feal::FileDescMonGeneric::epoll_ctl_add(int epfd, handle_t fd, uint32_t even
     return epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &ev);
 }
 
-int feal::FileDescMonGeneric::epoll_ctl_mod(int epfd, handle_t fd, uint32_t events)
+int feal::DescMonGeneric::epoll_ctl_mod(int epfd, handle_t fd, uint32_t events)
 {
     struct epoll_event ev;
     ev.events = events;
@@ -165,36 +165,36 @@ int feal::FileDescMonGeneric::epoll_ctl_mod(int epfd, handle_t fd, uint32_t even
 }
 #endif
 
-void feal::FileDescMonGeneric::fd_error(void)
+void feal::DescMonGeneric::fd_error(void)
 {
-    receiveEventFDErr(FEAL_OK, FEAL_INVALID_HANDLE, -1);
+    receiveEventDescErr(FEAL_OK, FEAL_INVALID_HANDLE, -1);
 }
 
-void feal::FileDescMonGeneric::fd_read_avail(void)
+void feal::DescMonGeneric::fd_read_avail(void)
 {
     receiveEventReadAvail(FEAL_OK, genfd, datareadavaillen(genfd));
 }
 
-void feal::FileDescMonGeneric::fd_write_avail(void)
+void feal::DescMonGeneric::fd_write_avail(void)
 {
     receiveEventWriteAvail(FEAL_OK, genfd, -1);
 }
 
-void feal::FileDescMonGeneric::receiveEventReadAvail(errenum errnum, handle_t fd, int datalen)
+void feal::DescMonGeneric::receiveEventReadAvail(errenum errnum, handle_t fd, int datalen)
 {
     (void) errnum;
     (void) fd;
     (void) datalen;
 }
 
-void feal::FileDescMonGeneric::receiveEventWriteAvail(errenum errnum, handle_t fd, int datalen)
+void feal::DescMonGeneric::receiveEventWriteAvail(errenum errnum, handle_t fd, int datalen)
 {
     (void) errnum;
     (void) fd;
     (void) datalen;
 }
 
-void feal::FileDescMonGeneric::receiveEventFDErr(errenum errnum, handle_t fd, int datalen)
+void feal::DescMonGeneric::receiveEventDescErr(errenum errnum, handle_t fd, int datalen)
 {
     (void) errnum;
     (void) fd;

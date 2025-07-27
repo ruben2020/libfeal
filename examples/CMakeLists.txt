@@ -23,7 +23,7 @@ add_subdirectory( "fork_ipc" )
 endif(WIN32)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-add_subdirectory( "filedescmon_inotify" )
+add_subdirectory( "descmon_inotify" )
 endif()
 
 if (CURL_EX)

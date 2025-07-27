@@ -18,7 +18,7 @@ void ActorA::initActor(void)
     fdmon.init(this);
     fdmon.subscribeReadAvail<EvtINotifyReadAvail>();
     fdmon.subscribeWriteAvail<EvtINotifyWriteAvail>();
-    fdmon.subscribeFDErr<EvtINotifyErr>();
+    fdmon.subscribeDescErr<EvtINotifyErr>();
 }
 
 void ActorA::startActor(void)

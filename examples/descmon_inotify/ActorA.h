@@ -37,7 +37,7 @@ void handleEvent(std::shared_ptr<EvtINotifyErr> pevt);
 protected:
 
 feal::Timers<ActorA> timers;
-feal::FileDescMon<ActorA> fdmon;
+feal::DescMon<ActorA> fdmon;
 
 private:
 int n = 0;
