@@ -187,6 +187,12 @@ typedef enum
     #define FEAL_FDM_ACCESS          IN_ACCESS
     #define FEAL_FDM_READ            IN_ACCESS
     #define FEAL_FDM_WRITE           IN_MODIFY
+#elif defined (__APPLE__) 
+    #define FEAL_FDM_ATTRIB          NOTE_ATTRIB,
+    #define FEAL_FDM_CLOSE_WRITE     NOTE_WRITE
+    #define FEAL_FDM_MODIFY          NOTE_WRITE
+    #define FEAL_FDM_DELETE          NOTE_DELETE
+    #define FEAL_FDM_WRITE           NOTE_WRITE
 #else
     #define FEAL_FDM_ATTRIB          NOTE_ATTRIB,
     #define FEAL_FDM_CLOSE_NOWRITE   NOTE_CLOSE

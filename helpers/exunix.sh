@@ -46,3 +46,6 @@ echo =================================
 echo Running uns ...
 ./build/examples/uns_echo_clientserver/fealunsclient &
 ./build/examples/uns_echo_clientserver/fealunsserver
+echo Running filedirmon ...
+./build/examples/filedirmon/fealfiledirmon
+

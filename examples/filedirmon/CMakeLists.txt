@@ -14,6 +14,6 @@ set( FILEDIRMON_SRCS
     main_filedirmon.cpp
   )
 
-add_executable( filedirmon ${FILEDIRMON_SRCS} )
-target_link_libraries( filedirmon feal_lib )
+add_executable( fealfiledirmon ${FILEDIRMON_SRCS} )
+target_link_libraries( fealfiledirmon feal_lib )
 

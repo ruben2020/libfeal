@@ -14,6 +14,6 @@ set( INOTIFYMON_SRCS
     main_inotify.cpp
   )
 
-add_executable( inotifymon ${INOTIFYMON_SRCS} )
-target_link_libraries( inotifymon feal_lib )
+add_executable( fealinotifymon ${INOTIFYMON_SRCS} )
+target_link_libraries( fealinotifymon feal_lib )
 
