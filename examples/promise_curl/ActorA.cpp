@@ -9,11 +9,11 @@
 #include "ActorsManager.h"
 #include "ActorA.h"
 
-#define DOWNLOADURL "https://raw.githubusercontent.com/ruben2020/feal/master/LICENSE"
+#define DOWNLOADURL "https://raw.githubusercontent.com/ruben2020/libfeal/refs/heads/master/NOTICE"
 #if defined (_WIN32)
-#define FILEDEST "C:\\Users\\AppData\\Local\\Temp\\LICENSE.txt"
+#define FILEDEST "C:\\Users\\AppData\\Local\\Temp\\NOTICE.txt"
 #else
-#define FILEDEST "/tmp/LICENSE.txt"
+#define FILEDEST "/tmp/NOTICE.txt"
 #endif
 
 static size_t write_data(void *ptr, size_t size, size_t nmemb, void *stream)

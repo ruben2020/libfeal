@@ -29,4 +29,5 @@ endif()
 
 if (CURL_EX)
 add_subdirectory( "promise_curl" )
+add_subdirectory( "descmon_curl" )
 endif (CURL_EX)

@@ -15,10 +15,10 @@ void ActorA::initActor(void)
 {
     printf("ActorA::initActor\n");
     timers.init(this);
-    fdmon.init(this);
-    fdmon.subscribeReadAvail<EvtINotifyReadAvail>();
-    fdmon.subscribeWriteAvail<EvtINotifyWriteAvail>();
-    fdmon.subscribeDescErr<EvtINotifyErr>();
+    dmon.init(this);
+    dmon.subscribeReadAvail<EvtINotifyReadAvail>();
+    dmon.subscribeWriteAvail<EvtINotifyWriteAvail>();
+    dmon.subscribeDescErr<EvtINotifyErr>();
 }
 
 void ActorA::startActor(void)
@@ -40,7 +40,7 @@ void ActorA::startActor(void)
     }
     wd = inotify_add_watch(fd, "/tmp/test_inotifymon.txt", IN_CLOSE_WRITE);
     printf("Watch descriptor for IN_CLOSE_WRITE for /tmp/test_inotifymon.txt = %d\n", wd);
-    fdmon.monitor(fd);
+    dmon.monitor(fd);
 }
 
 void ActorA::pauseActor(void)
@@ -61,7 +61,7 @@ void ActorA::handleEvent(std::shared_ptr<EvtEndTimer> pevt)
     printf("ActorA::EvtEndTimer Elapsed\n");
     timers.stopTimer<EvtDelayTimer>();
     inotify_rm_watch(fd, wd);
-    fdmon.close_and_reset();
+    dmon.close_and_reset();
     shutdown();
 }
 
@@ -112,6 +112,6 @@ void ActorA::handleEvent(std::shared_ptr<EvtINotifyErr> pevt)
     if (!pevt) return;
     printf("ActorA::EvtINotifyErr\n");
     timers.stopTimer<EvtDelayTimer>();
-    fdmon.close_and_reset();
+    dmon.close_and_reset();
 }
 
