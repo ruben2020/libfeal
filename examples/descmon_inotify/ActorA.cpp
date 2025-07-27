@@ -89,7 +89,14 @@ void ActorA::handleEvent(std::shared_ptr<EvtINotifyReadAvail> pevt)
         printf("inotify read event with watch descriptor = %d for event %s\n", 
             event[0].wd, (event[0].mask && IN_CLOSE_WRITE == IN_CLOSE_WRITE ? "IN_CLOSE_WRITE" : "something else"));
         printf("File contents of /tmp/test_inotifymon.txt: ");
-        system("cat /tmp/test_inotifymon.txt");
+        FILE *fp = fopen("/tmp/test_inotifymon.txt", "r");
+        if (fp != NULL)
+        {
+            int val=0;
+            fscanf(fp, "%d\n", &val);
+            printf("%d\n", val);
+            fclose(fp);
+        }
     }
     delete[] event;
 }
