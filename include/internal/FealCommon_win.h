@@ -148,6 +148,8 @@ typedef struct {
     char addr[INET6_ADDRSTRLEN];
 } ipaddr;
 
+typedef unsigned int mask_t;
+
 int inet_pton(int af, const char *src, void *dst);
 const char * inet_ntop(int af, const void *src, char *dst, socklen_t size);
 void ipaddr_posix2feal(sockaddr_ip* su, ipaddr* fa);
