@@ -10,7 +10,7 @@
 #include "ActorA.h"
 
 
-#define DOWNLOADURL "http://httpforever.com/"
+#define DOWNLOADURL "https://raw.githubusercontent.com/ruben2020/libfeal/refs/heads/master/NOTICE"
 
 void ActorA::initActor(void)
 {
@@ -144,10 +144,9 @@ int ActorA::cb_socket(CURL *easy, curl_socket_t s, int action,
         act->timers.stopTimer<EvtCurlTimer>();
         curl_multi_assign(act->multi, s, NULL);
         if (act->multi) curl_multi_cleanup(act->multi);
-        close(act->sockfd);
-        if (act->fpdownload) fclose(act->fpdownload);
         act->dmon.close_and_reset();
-        act->shutdown();
+        if (act->fpdownload) fclose(act->fpdownload);
+        //act->shutdown();
         break;
     default:
         printf("CURL_POLL DEFAULT\n");    
@@ -165,8 +164,8 @@ int ActorA::cb_timeout(CURLM *multi, long timeout_ms, ActorA *act)
         act->timers.stopTimer<EvtCurlTimer>();
     else 
     {
-        if(timeout_ms == 0) timeout_ms = 10;
-        timeout_ms *= 10;
+        if(timeout_ms == 0) timeout_ms = 1;
+        //timeout_ms *= 10;
         printf("set timeout to %ld ms\n", timeout_ms);
         act->timers.startTimer<EvtCurlTimer>(std::chrono::milliseconds(timeout_ms));
     }

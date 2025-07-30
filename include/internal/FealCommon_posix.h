@@ -230,9 +230,9 @@ typedef struct {
 } ipaddr;
 
 #if defined (__linux__)
-    typedef uint32_t mask_t;
+    typedef uint32_t flags_t;
 #else
-    typedef unsigned int mask_t;
+    typedef unsigned int flags_t;
 #endif
 
 void ipaddr_posix2feal(sockaddr_ip* su, ipaddr* fa);

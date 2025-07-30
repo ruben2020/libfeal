@@ -22,6 +22,7 @@ void feal::DatagramGeneric::shutdownTool(void)
 feal::errenum feal::DatagramGeneric::create_sock(feal::family_t fam)
 {
     errenum res = FEAL_OK;
+    if (datagramThread.joinable()) return res;
     sockfd = socket((int) fam, SOCK_DGRAM, 0);
     if (sockfd == FEAL_INVALID_HANDLE)
     {
@@ -274,17 +275,18 @@ void feal::DatagramGeneric::dgramLoop(void)
                     sock_error();
                     break;
                 }
-                sockread[0] = INVALID_SOCKET;
-                sock_read_avail();
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
-                continue;
+                else
+                {
+                    sockread[0] = INVALID_SOCKET;
+                    sock_read_avail();
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                }
             }
-            else if (FD_ISSET(sockwrite[i], &WriteSet))
+            if (FD_ISSET(sockwrite[i], &WriteSet))
             {
                 nfds--;
                 sockwrite[0] = INVALID_SOCKET;
                 sock_write_avail();
-                continue;
             }
         }
     }
@@ -315,17 +317,15 @@ void feal::DatagramGeneric::dgramLoop(void)
                 sock_error();
                 break;
             }
-            else if ((events[i].events & EPOLLIN) == EPOLLIN)
+            if ((events[i].events & EPOLLIN) == EPOLLIN)
             {
                 sock_read_avail();
-                continue;
             }
-            else if ((events[i].events & EPOLLOUT) == EPOLLOUT)
+            if ((events[i].events & EPOLLOUT) == EPOLLOUT)
             {
                 sock_write_avail();
                 epoll_ctl_mod(epfd, sockfd, 
                     (EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP));
-                continue;
             }
         }
     }
@@ -357,17 +357,15 @@ void feal::DatagramGeneric::dgramLoop(void)
                 sock_error();
                 break;
             }
-            else if ((event[i].filter & EVFILT_READ) == EVFILT_READ)
+            if ((event[i].filter & EVFILT_READ) == EVFILT_READ)
             {
                 sock_read_avail();
-                continue;
             }
-            else if ((event[i].filter & EVFILT_WRITE) == EVFILT_WRITE)
+            if ((event[i].filter & EVFILT_WRITE) == EVFILT_WRITE)
             {
                 sock_write_avail();
                 EV_SET(change_event, sockfd, EVFILT_WRITE, EV_DELETE, 0, 0, 0);
                 kevent(kq, (const struct kevent	*) change_event, 1, nullptr, 0, nullptr);
-                continue;
             }
         }
     }

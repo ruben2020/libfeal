@@ -55,17 +55,15 @@ void feal::BaseStream::serverLoop(void)
                 client_shutdown((int) event[i].ident);
                 continue;
             }
-            else if ((event[i].filter & EVFILT_READ) == EVFILT_READ)
+            if ((event[i].filter & EVFILT_READ) == EVFILT_READ)
             {
                 client_read_avail((int) event[i].ident);
-                continue;
             }
-            else if ((event[i].filter & EVFILT_WRITE) == EVFILT_WRITE)
+            if ((event[i].filter & EVFILT_WRITE) == EVFILT_WRITE)
             {
                 client_write_avail((int) event[i].ident);
                 EV_SET(change_event, event[i].ident, EVFILT_WRITE, EV_DELETE, 0, 0, 0);
                 kevent(kq, (const struct kevent	*) change_event, 1, nullptr, 0, nullptr);
-                continue;
             }
         }
     }
@@ -154,12 +152,11 @@ void feal::BaseStream::connectLoop(void)
                 connection_shutdown();
                 break;
             }
-            else if ((event[i].filter & EVFILT_READ) == EVFILT_READ)
+            if ((event[i].filter & EVFILT_READ) == EVFILT_READ)
             {
                 connection_read_avail();
-                continue;
             }
-            else if ((event[i].filter & EVFILT_WRITE) == EVFILT_WRITE)
+            if ((event[i].filter & EVFILT_WRITE) == EVFILT_WRITE)
             {
                 if (waitingforconn)
                 {
@@ -172,7 +169,6 @@ void feal::BaseStream::connectLoop(void)
                 }
                 EV_SET(change_event, sockfd, EVFILT_WRITE, EV_DELETE, 0, 0, 0);
                 kevent(kq, (const struct kevent	*) change_event, 1, nullptr, 0, nullptr);
-                continue;
             }
         }
     }

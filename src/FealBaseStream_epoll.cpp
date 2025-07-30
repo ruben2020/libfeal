@@ -52,17 +52,15 @@ void feal::BaseStream::serverLoop(void)
                 client_shutdown(events[i].data.fd);
                 continue;
             }
-            else if ((events[i].events & EPOLLIN) == EPOLLIN)
+            if ((events[i].events & EPOLLIN) == EPOLLIN)
             {
                 client_read_avail(events[i].data.fd);
-                continue;
             }
-            else if ((events[i].events & EPOLLOUT) == EPOLLOUT)
+            if ((events[i].events & EPOLLOUT) == EPOLLOUT)
             {
                 client_write_avail(events[i].data.fd);
                 epoll_ctl_mod(epfd, events[i].data.fd, 
                     (EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP));
-                continue;
             }
         }
     }
@@ -150,12 +148,11 @@ void feal::BaseStream::connectLoop(void)
                 connection_shutdown();
                 break;
             }
-            else if ((events[i].events & EPOLLIN) == EPOLLIN)
+            if ((events[i].events & EPOLLIN) == EPOLLIN)
             {
                 connection_read_avail();
-                continue;
             }
-            else if ((events[i].events & EPOLLOUT) == EPOLLOUT)
+            if ((events[i].events & EPOLLOUT) == EPOLLOUT)
             {
                 if (waitingforconn)
                 {
@@ -168,7 +165,6 @@ void feal::BaseStream::connectLoop(void)
                 }
                 epoll_ctl_mod(epfd, sockfd, 
                     (EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP));
-                continue;
             }
         }
     }

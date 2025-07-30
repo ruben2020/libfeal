@@ -24,7 +24,7 @@ FileDirMonGeneric& operator= ( const FileDirMonGeneric & ) = default;
 
 void shutdownTool(void);
 
-errenum monitor(const char *s, mask_t mask);
+errenum monitor(const char *s, flags_t mask);
 errenum close_and_reset(void);
 
 protected:
@@ -32,7 +32,7 @@ protected:
 std::thread FileDirMonThread;
 handle_t genfd = FEAL_INVALID_HANDLE;
 handle_t genwd = FEAL_INVALID_HANDLE;
-mask_t fdmask = 0;
+flags_t fdmask = 0;
 std::string fdname;
 
 #if defined (__linux__)
@@ -44,8 +44,8 @@ const unsigned int max_events = 64;
 int kq = -1;
 #endif
 
-virtual void receiveEventReadAvail(errenum errnum, handle_t fd, int datalen, mask_t mask1);
-virtual void receiveEventDescErr(errenum errnum, handle_t fd, int datalen, mask_t mask1);
+virtual void receiveEventReadAvail(errenum errnum, handle_t fd, int datalen, flags_t flags1);
+virtual void receiveEventDescErr(errenum errnum, handle_t fd, int datalen, flags_t flags1);
 
 private:
 
@@ -53,7 +53,7 @@ static void fdmonLoopLauncher(FileDirMonGeneric *p);
 void fdmonLoop(void);
 void close_fd(void);
 void fd_error(void);
-void fd_read_avail(mask_t mask1);
+void fd_read_avail(flags_t flags1);
 #if defined (__linux__)
 static int epoll_ctl_add(int epfd, handle_t fd, uint32_t events);
 static int epoll_ctl_mod(int epfd, handle_t fd, uint32_t events);
@@ -99,7 +99,7 @@ void subscribeDescErr()
 
 protected:
 
-void receiveEventReadAvail(errenum errnum, handle_t fd, int datalen, mask_t mask1)
+void receiveEventReadAvail(errenum errnum, handle_t fd, int datalen, flags_t flags1)
 {
     if (evtread.get())
     {
@@ -107,13 +107,13 @@ void receiveEventReadAvail(errenum errnum, handle_t fd, int datalen, mask_t mask
         itw.get()->errnum = errnum;
         itw.get()->fd = fd;
         itw.get()->datalen = datalen;
-        itw.get()->mask = mask1;
+        itw.get()->flags = flags1;
         if (actorptr) actorptr->receiveEvent(itw);
     }
     else printf("No subscription using FileDirMon::subscribeReadAvail\n");
 }
 
-void receiveEventDescErr(errenum errnum, handle_t fd, int datalen, mask_t mask1)
+void receiveEventDescErr(errenum errnum, handle_t fd, int datalen, flags_t flags1)
 {
     if (evterrfd.get())
     {
@@ -121,7 +121,7 @@ void receiveEventDescErr(errenum errnum, handle_t fd, int datalen, mask_t mask1)
         itw.get()->errnum = errnum;
         itw.get()->fd = fd;
         itw.get()->datalen = datalen;
-        itw.get()->mask = mask1;
+        itw.get()->flags = flags1;
         if (actorptr) actorptr->receiveEvent(itw);
     }
     else printf("No subscription using FileDirMon::subscribeDescErr\n");

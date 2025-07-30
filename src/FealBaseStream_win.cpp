@@ -64,7 +64,7 @@ void feal::BaseStream::serverLoop(void)
                 }
                 continue;
             }
-            else if ((i > 0) && (FD_ISSET(sockread[i], &ReadSet)))
+            if ((i > 0) && (FD_ISSET(sockread[i], &ReadSet)))
             {
                 nfds--;
                 ret = recv(sockread[i], buf, sizeof(buf), MSG_PEEK);
@@ -73,6 +73,7 @@ void feal::BaseStream::serverLoop(void)
                     tempsockfd = sockread[i];
                     do_client_shutdown(tempsockfd);
                     client_shutdown(tempsockfd);
+                    continue;
                 }
                 else
                 {
@@ -81,14 +82,12 @@ void feal::BaseStream::serverLoop(void)
                     sockread[i] = INVALID_SOCKET;
                     client_read_avail(tempsockfd);
                 }
-                continue;
             }
-            else if (FD_ISSET(sockwrite[i], &WriteSet))
+            if (FD_ISSET(sockwrite[i], &WriteSet))
             {
                 nfds--;
                 client_write_avail(sockwrite[i]);
                 sockwrite[i] = INVALID_SOCKET;
-                continue;
             }
         }
     }
@@ -240,6 +239,7 @@ void feal::BaseStream::connectLoop(void)
                 {
                     do_full_shutdown();
                     connection_shutdown();
+                    continue;
                 }
                 else
                 {
@@ -248,9 +248,8 @@ void feal::BaseStream::connectLoop(void)
                     connection_read_avail();
                     //std::this_thread::sleep_for(std::chrono::milliseconds(1));
                 }
-                continue;
             }
-            else if (FD_ISSET(sockwrite[i], &WriteSet))
+            if (FD_ISSET(sockwrite[i], &WriteSet))
             {
                 nfds--;
                 if (waitingforconn)
@@ -263,9 +262,8 @@ void feal::BaseStream::connectLoop(void)
                     connection_write_avail();
                 }
                 sockwrite[i] = INVALID_SOCKET;
-                continue;
             }
-            else if (FD_ISSET(sockexcpt[i], &ExceptSet))
+            if (FD_ISSET(sockexcpt[i], &ExceptSet))
             {
                 do_full_shutdown();
                 connection_shutdown();

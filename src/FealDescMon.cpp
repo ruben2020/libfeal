@@ -13,6 +13,7 @@ void feal::DescMonGeneric::shutdownTool(void)
 feal::errenum feal::DescMonGeneric::monitor(handle_t fd)
 {
     errenum res = FEAL_OK;
+    if (DescMonThread.joinable()) return res;
     genfd = fd;
     if (genfd == FEAL_INVALID_HANDLE)
     {
@@ -70,19 +71,15 @@ void feal::DescMonGeneric::fdmonLoop(void)
         {
             if ((events[i].events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR)) != 0)
             {
-                close_fd();
                 fd_error();
-                break;
             }
-            else if ((events[i].events & EPOLLIN) == EPOLLIN)
+            if ((events[i].events & EPOLLIN) == EPOLLIN)
             {
                 fd_read_avail();
-                continue;
             }
-            else if ((events[i].events & EPOLLOUT) == EPOLLOUT)
+            if ((events[i].events & EPOLLOUT) == EPOLLOUT)
             {
                 fd_write_avail();
-                continue;
             }
         }
     }
@@ -119,15 +116,13 @@ void feal::DescMonGeneric::fdmonLoop(void)
                 fd_error();
                 break;
             }
-            else if ((event[i].filter & EVFILT_READ) == EVFILT_READ)
+            if ((event[i].filter & EVFILT_READ) == EVFILT_READ)
             {
                 fd_read_avail();
-                continue;
             }
-            else if ((event[i].filter & EVFILT_WRITE) == EVFILT_WRITE)
+            if ((event[i].filter & EVFILT_WRITE) == EVFILT_WRITE)
             {
                 fd_write_avail();
-                continue;
             }
         }
     }

@@ -203,6 +203,7 @@ errenum create_and_connect(feal::ipaddr* fa)
 errenum create_and_connect(struct sockaddr_un* su)
 {
     errenum res = FEAL_OK;
+    if (connectThread.joinable()) return res;
     int ret;
     if (su == nullptr) return res;
     sockfd = socket(su->sun_family, SOCK_STREAM, 0);
@@ -239,6 +240,7 @@ errenum create_and_connect(struct sockaddr_un* su)
 errenum listen(int backlog = 32)
 {
     errenum res = FEAL_OK;
+    if (serverThread.joinable()) return res;
     if (::listen(sockfd, backlog) == FEAL_HANDLE_ERROR)
         res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
     else

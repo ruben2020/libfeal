@@ -10,7 +10,7 @@ void feal::FileDirMonGeneric::shutdownTool(void)
     close_and_reset();
 }
 
-feal::errenum feal::FileDirMonGeneric::monitor(const char *s, mask_t mask)
+feal::errenum feal::FileDirMonGeneric::monitor(const char *s, flags_t mask)
 {
     errenum res = FEAL_OK;
     fdname = s;
@@ -173,23 +173,23 @@ void feal::FileDirMonGeneric::fd_error(void)
     receiveEventDescErr(FEAL_OK, FEAL_INVALID_HANDLE, -1, 0);
 }
 
-void feal::FileDirMonGeneric::fd_read_avail(mask_t mask1)
+void feal::FileDirMonGeneric::fd_read_avail(flags_t flags1)
 {
-    receiveEventReadAvail(FEAL_OK, genfd, datareadavaillen(genfd), mask1);
+    receiveEventReadAvail(FEAL_OK, genfd, datareadavaillen(genfd), flags1);
 }
 
-void feal::FileDirMonGeneric::receiveEventReadAvail(errenum errnum, handle_t fd, int datalen, mask_t mask1)
+void feal::FileDirMonGeneric::receiveEventReadAvail(errenum errnum, handle_t fd, int datalen, flags_t flags1)
 {
     (void) errnum;
     (void) fd;
     (void) datalen;
-    (void) mask1;
+    (void) flags1;
 }
 
-void feal::FileDirMonGeneric::receiveEventDescErr(errenum errnum, handle_t fd, int datalen, mask_t mask1)
+void feal::FileDirMonGeneric::receiveEventDescErr(errenum errnum, handle_t fd, int datalen, flags_t flags1)
 {
     (void) errnum;
     (void) fd;
     (void) datalen;
-    (void) mask1;
+    (void) flags1;
 }

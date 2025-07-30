@@ -71,7 +71,7 @@ void ActorA::handleEvent(std::shared_ptr<EvtFDMReadAvail> pevt)
     if (!pevt) return;
     printf("ActorA::EvtFDMReadAvail\n");
     printf("filedirmon event for event %s\n", 
-        (pevt->mask && FEAL_FDM_CLOSE_WRITE == FEAL_FDM_CLOSE_WRITE ? "FEAL_FDM_CLOSE_WRITE" : "something else"));
+        (pevt->flags && FEAL_FDM_CLOSE_WRITE == FEAL_FDM_CLOSE_WRITE ? "FEAL_FDM_CLOSE_WRITE" : "something else"));
     printf("File contents of /tmp/test_filedirmon.txt: ");
     FILE *fp = fopen("/tmp/test_filedirmon.txt", "r");
     if (fp != NULL)
