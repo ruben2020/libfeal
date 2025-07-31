@@ -11,6 +11,7 @@
 
 
 #define DOWNLOADURL "https://raw.githubusercontent.com/ruben2020/libfeal/refs/heads/master/NOTICE"
+//#define DOWNLOADURL "http://httpforever.com/"
 
 void ActorA::initActor(void)
 {
@@ -24,7 +25,6 @@ void ActorA::initActor(void)
 
 void ActorA::startActor(void)
 {
-    int running_handles;
     printf("ActorA::startActor\n");
     curl_global_init(CURL_GLOBAL_ALL);
     multi = curl_multi_init();
@@ -33,7 +33,7 @@ void ActorA::startActor(void)
     curl_multi_setopt(multi, CURLMOPT_TIMERFUNCTION, cb_timeout);
     curl_multi_setopt(multi, CURLMOPT_TIMERDATA, this);
     add_download(DOWNLOADURL, 1);
-    curl_multi_socket_action(multi, CURL_SOCKET_TIMEOUT, 0, &running_handles);
+    timers.startTimer<EvtCurlTimer>(std::chrono::seconds(2));
 }
 
 void ActorA::pauseActor(void)
@@ -114,6 +114,8 @@ void ActorA::add_download(const char *url, int num)
     curl_easy_setopt(handle, CURLOPT_WRITEDATA, file);
     curl_easy_setopt(handle, CURLOPT_PRIVATE, file);
     curl_easy_setopt(handle, CURLOPT_URL, url);
+    curl_easy_setopt(handle, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+    //curl_easy_setopt(handle, CURLOPT_VERBOSE, 1L);
     curl_multi_add_handle(multi, handle);
     fprintf(stderr, "Added download %s -> %s\n", url, filename);
 }
@@ -140,17 +142,12 @@ int ActorA::cb_socket(CURL *easy, curl_socket_t s, int action,
         break;
     case CURL_POLL_REMOVE:
         printf("CURL_POLL_REMOVE\n");
-        act->active_state = false;
-        act->timers.stopTimer<EvtCurlTimer>();
-        curl_multi_assign(act->multi, s, NULL);
-        if (act->multi) curl_multi_cleanup(act->multi);
         act->dmon.close_and_reset();
-        if (act->fpdownload) fclose(act->fpdownload);
-        //act->shutdown();
+        curl_multi_assign(act->multi, s, NULL);
+        free(socketp);
         break;
     default:
         printf("CURL_POLL DEFAULT\n");    
-        //act->shutdown();
     }
  
   return 0;
@@ -165,7 +162,6 @@ int ActorA::cb_timeout(CURLM *multi, long timeout_ms, ActorA *act)
     else 
     {
         if(timeout_ms == 0) timeout_ms = 1;
-        //timeout_ms *= 10;
         printf("set timeout to %ld ms\n", timeout_ms);
         act->timers.startTimer<EvtCurlTimer>(std::chrono::milliseconds(timeout_ms));
     }
@@ -194,10 +190,9 @@ void ActorA::check_multi_info(void)
  
                 curl_multi_remove_handle(multi, easy_handle);
                 curl_easy_cleanup(easy_handle);
-                if(file) 
-                {
-                    fclose(file);
-                }
+                fclose(file);
+                dmon.close_and_reset();
+                shutdown();
                 break;
  
             default:
