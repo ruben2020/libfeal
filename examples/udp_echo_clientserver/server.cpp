@@ -23,7 +23,7 @@ void Server::initActor(void)
 void Server::startActor(void)
 {
     printf("Server::startActor\n");
-    timers.startTimer<EvtEndTimer>(std::chrono::seconds(80));
+    timers.startTimer<EvtEndTimer>(std::chrono::seconds(15));
     start_listening();
 }
 

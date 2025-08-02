@@ -41,7 +41,7 @@ void Clientund::initActor(void)
 void Clientund::startActor(void)
 {
     printf("Clientund::startActor\n");
-    timers.startTimer<EvtEndTimer>(std::chrono::seconds(45));
+    timers.startTimer<EvtEndTimer>(std::chrono::seconds(15));
     send_to_server();
 }
 

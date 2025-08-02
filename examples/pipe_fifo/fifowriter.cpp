@@ -23,7 +23,7 @@ void Fifowriter::startActor(void)
 {
     printf("Fifowriter::startActor\n");
     signal(SIGPIPE, SIG_IGN);
-    timers.startTimer<EvtEndTimer>(std::chrono::seconds(45));
+    timers.startTimer<EvtEndTimer>(std::chrono::seconds(12));
     if (access(FIFOPATH, F_OK | R_OK | W_OK) != 0)
         mkfifo(FIFOPATH, 0666);
     open_for_writing();

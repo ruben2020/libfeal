@@ -26,7 +26,7 @@ void Client::initActor(void)
 void Client::startActor(void)
 {
     printf("Client::startActor\n");
-    timers.startTimer<EvtEndTimer>(std::chrono::seconds(45));
+    timers.startTimer<EvtEndTimer>(std::chrono::seconds(15));
     connect_to_server();
 }
 

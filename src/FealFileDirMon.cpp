@@ -101,9 +101,9 @@ feal::errenum feal::FileDirMonGeneric::remove(handle_t wnum)
 feal::errenum feal::FileDirMonGeneric::close_and_reset(void)
 {
     errenum res = FEAL_OK;
+#if defined (__linux__)
     close(genfd);
     genfd = FEAL_INVALID_HANDLE;
-#if defined (__linux__)
     close(epfd);
     epfd = -1;
 #else

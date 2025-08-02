@@ -23,7 +23,7 @@ void ActorsManager::startActor(void)
 {
     printf("ActorsManager startActor\n");
     feal::startAll(actors);
-    timers.startTimer<EventTimerShutdown>(std::chrono::seconds(180));
+    timers.startTimer<EventTimerShutdown>(std::chrono::seconds(15));
 }
 
 void ActorsManager::pauseActor(void)

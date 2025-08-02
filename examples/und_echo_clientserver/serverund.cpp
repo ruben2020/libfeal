@@ -24,7 +24,7 @@ void Serverund::initActor(void)
 void Serverund::startActor(void)
 {
     printf("Serverund::startActor\n");
-    timers.startTimer<EvtEndTimer>(std::chrono::seconds(80));
+    timers.startTimer<EvtEndTimer>(std::chrono::seconds(15));
     start_listening();
 }
 

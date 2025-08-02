@@ -23,7 +23,7 @@ void Fiforeader::initActor(void)
 void Fiforeader::startActor(void)
 {
     printf("Fiforeader::startActor\n");
-    timers.startTimer<EvtEndTimer>(std::chrono::seconds(80));
+    timers.startTimer<EvtEndTimer>(std::chrono::seconds(10));
     open_for_reading();
 }
 

@@ -29,7 +29,7 @@ void ActorA::initActor(void)
 void ActorA::startActor(void)
 {
     printf("ActorA::startActor\n");
-    timers.startTimer<EvtEndTimer>(std::chrono::seconds(20));
+    timers.startTimer<EvtEndTimer>(std::chrono::seconds(15));
     timers.startTimer<EvtDelayTimer>(std::chrono::seconds(2));
     FILE *fp = fopen(FILETOMONITOR1, "w");
     if (fp != NULL)

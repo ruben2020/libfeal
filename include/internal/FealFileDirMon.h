@@ -32,11 +32,11 @@ errenum close_and_reset(void);
 protected:
 
 std::thread FileDirMonThread;
-handle_t genfd = FEAL_INVALID_HANDLE;
 
 #if defined (__linux__)
 const unsigned int max_events = 64;
 int epfd = -1;
+handle_t genfd = FEAL_INVALID_HANDLE;
 
 #else
 const unsigned int max_events = 64;
