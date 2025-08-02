@@ -159,7 +159,7 @@ void feal::DescMonGeneric::fdmonLoop(void)
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
                 continue;
             }
-            FEALDEBUGLOG("select dgramLoop");
+            FEALDEBUGLOG("select fdmonLoop");
             break;
         }
         for (int i = 0; i < max_events; i++)
@@ -168,7 +168,7 @@ void feal::DescMonGeneric::fdmonLoop(void)
             if (FD_ISSET(sockread[i], &ReadSet))
             {
                 nfds--;
-                numbytes = recvfrom(sockfd, buf, sizeof(buf), 
+                numbytes = recvfrom(sockread[i], buf, sizeof(buf), 
                     MSG_PEEK, nullptr, nullptr);
                 if ((numbytes == SOCKET_ERROR)&&(WSAGetLastError() != WSAEWOULDBLOCK))
                 {
