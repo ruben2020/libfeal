@@ -117,7 +117,7 @@ void feal::BaseStream::do_connect_ok(void)
     EV_SET(change_event, sockfd, EVFILT_READ, EV_ADD | EV_ENABLE | EV_CLEAR, 0, 0, 0);
     if (kevent(kq, (const struct kevent	*) change_event, 1, nullptr, 0, nullptr) == -1)
     {
-        printf("do_connect_ok err %d\n", errno);
+        FEALDEBUGLOG("do_connect_ok err");
     }
     else connected_to_server(sockfd);
 }

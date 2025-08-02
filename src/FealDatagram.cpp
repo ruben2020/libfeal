@@ -341,7 +341,7 @@ void feal::DatagramGeneric::dgramLoop(void)
     EV_SET(change_event, sockfd, EVFILT_READ, EV_ADD | EV_ENABLE | EV_CLEAR, 0, 0, 0);
     if (kevent(kq, (const struct kevent	*) change_event, 1, nullptr, 0, nullptr) == -1)
     {
-        printf("kevent err %d\n", errno);
+        FEALDEBUGLOG("kevent EVFILT_READ err");
     }
     for (;;)
     {

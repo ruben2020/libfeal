@@ -60,12 +60,12 @@ feal::errenum feal::DescMonGeneric::add(handle_t fd)
     EV_SET(change_event, fd, EVFILT_READ , EV_ADD | EV_ENABLE | EV_CLEAR, 0, 0, 0);
     if (kevent(kq, (const struct kevent	*) change_event, 1, nullptr, 0, nullptr) == -1)
     {
-        FEALDEBUGLOG("kevent err %d\n", errno);
+        FEALDEBUGLOG("kevent EVFILT_READ err");
     }
     EV_SET(change_event, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE | EV_CLEAR, 0, 0, 0);
     if (kevent(kq, (const struct kevent	*) change_event, 1, nullptr, 0, nullptr) == -1)
     {
-        FEALDEBUGLOG("kevent err %d\n", errno);
+        FEALDEBUGLOG("kevent EVFILT_WRITE err");
     }
 #endif
     return res;
@@ -95,12 +95,12 @@ feal::errenum feal::DescMonGeneric::remove(handle_t fd)
     EV_SET(change_event, fd, EVFILT_READ , EV_DELETE | EV_DISABLE, 0, 0, 0);
     if (kevent(kq, (const struct kevent	*) change_event, 1, nullptr, 0, nullptr) == -1)
     {
-        FEALDEBUGLOG("kevent err %d\n", errno);
+        FEALDEBUGLOG("kevent err EVFILT_READ");
     }
     EV_SET(change_event, fd, EVFILT_WRITE, EV_DELETE | EV_DISABLE, 0, 0, 0);
     if (kevent(kq, (const struct kevent	*) change_event, 1, nullptr, 0, nullptr) == -1)
     {
-        FEALDEBUGLOG("kevent err %d\n", errno);
+        FEALDEBUGLOG("kevent err EVFILT_WRITE");
     }
 #endif
     return res;
@@ -159,7 +159,7 @@ void feal::DescMonGeneric::fdmonLoop(void)
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
                 continue;
             }
-            FEALDEBUGLOG("select dgramLoop nfds=%d, err=%d\n", nfds, wsaerr);
+            FEALDEBUGLOG("select dgramLoop");
             break;
         }
         for (int i = 0; i < max_events; i++)
