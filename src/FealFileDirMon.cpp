@@ -63,7 +63,7 @@ feal::errenum feal::FileDirMonGeneric::add(const char *s, flags_t mask, handle_t
     setnonblocking(wn);
     struct kevent change_event[2];
     memset(&change_event, 0, sizeof(change_event));
-    EV_SET(change_event, wn, EVFILT_VNODE , EV_ADD | EV_ENABLE | EV_CLEAR, fdmask, 0, 0);
+    EV_SET(change_event, wn, EVFILT_VNODE , EV_ADD | EV_ENABLE | EV_CLEAR, mask, 0, 0);
     if (kevent(kq, (const struct kevent	*) change_event, 1, nullptr, 0, nullptr) == -1)
     {
         res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
