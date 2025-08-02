@@ -24,16 +24,15 @@ FileDirMonGeneric& operator= ( const FileDirMonGeneric & ) = default;
 
 void shutdownTool(void);
 
-errenum monitor(const char *s, flags_t mask);
+errenum start_monitoring(void);
+errenum add(const char *s, flags_t mask, handle_t* wnum);
+errenum remove(handle_t wnum);
 errenum close_and_reset(void);
 
 protected:
 
 std::thread FileDirMonThread;
 handle_t genfd = FEAL_INVALID_HANDLE;
-handle_t genwd = FEAL_INVALID_HANDLE;
-flags_t fdmask = 0;
-std::string fdname;
 
 #if defined (__linux__)
 const unsigned int max_events = 64;
@@ -44,6 +43,8 @@ const unsigned int max_events = 64;
 int kq = -1;
 #endif
 
+void init(void);
+
 virtual void receiveEventReadAvail(errenum errnum, handle_t fd, int datalen, flags_t flags1);
 virtual void receiveEventDescErr(errenum errnum, handle_t fd, int datalen, flags_t flags1);
 
@@ -51,9 +52,8 @@ private:
 
 static void fdmonLoopLauncher(FileDirMonGeneric *p);
 void fdmonLoop(void);
-void close_fd(void);
 void fd_error(void);
-void fd_read_avail(flags_t flags1);
+void fd_read_avail(handle_t fd1, flags_t flags1);
 
 };
 
@@ -71,6 +71,7 @@ void init(Y* p)
 {
     actorptr = p;
     p->addTool(this);
+    FileDirMonGeneric::init();
 }
 
 template<typename T>

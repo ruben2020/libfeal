@@ -40,8 +40,8 @@ void ActorA::startActor(void)
     }
     wd = inotify_add_watch(fd, "/tmp/test_inotifymon.txt", IN_CLOSE_WRITE);
     printf("Watch descriptor for IN_CLOSE_WRITE for /tmp/test_inotifymon.txt = %d\n", wd);
-    dmon.add(fd);
     dmon.start_monitoring();
+    dmon.add(fd);
 }
 
 void ActorA::pauseActor(void)

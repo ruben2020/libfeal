@@ -39,6 +39,8 @@ feal::FileDirMon<ActorA> fdmon;
 
 private:
 int n = 0;
+int wnum1 = -1;
+int wnum2 = -1;
 
 };
 
