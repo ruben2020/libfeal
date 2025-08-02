@@ -82,4 +82,30 @@ int feal::datareadavaillen(handle_t fd)
     return ret;
 }
 
+#if defined (__linux__)
+int feal::epoll_ctl_add(int epfd, handle_t fd, uint32_t events)
+{
+    struct epoll_event ev;
+    ev.events = events;
+    ev.data.fd = fd;
+    return epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &ev);
+}
+
+int feal::epoll_ctl_mod(int epfd, handle_t fd, uint32_t events)
+{
+    struct epoll_event ev;
+    ev.events = events;
+    ev.data.fd = fd;
+    return epoll_ctl(epfd, EPOLL_CTL_MOD, fd, &ev);
+}
+
+int feal::epoll_ctl_del(int epfd, handle_t fd)
+{
+    struct epoll_event ev;
+    ev.events = 0;
+    ev.data.fd = fd;
+    return epoll_ctl(epfd, EPOLL_CTL_DEL, fd, &ev);
+}
+#endif
+
 

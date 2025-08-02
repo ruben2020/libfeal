@@ -76,11 +76,6 @@ void close_sock(void);
 void sock_error(void);
 void sock_read_avail(void);
 void sock_write_avail(void);
-#if defined (__linux__)
-static int epoll_ctl_add(int epfd, handle_t fd, uint32_t events);
-static int epoll_ctl_mod(int epfd, handle_t fd, uint32_t events);
-#endif
-
 
 };
 

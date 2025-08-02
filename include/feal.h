@@ -30,10 +30,10 @@
 #include "internal/FealDatagram.h"
 #include "internal/FealBaseSignal.h"
 #include "internal/FealSignal.h"
+#include "internal/FealDescMon.h"
 #ifndef _WIN32
 #include "internal/FealReader.h"
 #include "internal/FealFifoReader.h"
-#include "internal/FealDescMon.h"
 #include "internal/FealFileDirMon.h"
 #endif
 

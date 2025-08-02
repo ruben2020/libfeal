@@ -10,8 +10,9 @@
 #include "ActorA.h"
 
 
-#define DOWNLOADURL "https://raw.githubusercontent.com/ruben2020/libfeal/refs/heads/master/NOTICE"
-//#define DOWNLOADURL "http://httpforever.com/"
+#define DOWNLOADURL1 "https://raw.githubusercontent.com/ruben2020/libfeal/refs/heads/master/NOTICE"
+#define DOWNLOADURL2 "http://httpforever.com/"
+#define DOWNLOADURL3 "https://www.wikipedia.org/"
 
 void ActorA::initActor(void)
 {
@@ -26,14 +27,17 @@ void ActorA::initActor(void)
 void ActorA::startActor(void)
 {
     printf("ActorA::startActor\n");
+    dmon.start_monitoring();
     curl_global_init(CURL_GLOBAL_ALL);
     multi = curl_multi_init();
     curl_multi_setopt(multi, CURLMOPT_SOCKETFUNCTION, cb_socket);
     curl_multi_setopt(multi, CURLMOPT_SOCKETDATA, this);
     curl_multi_setopt(multi, CURLMOPT_TIMERFUNCTION, cb_timeout);
     curl_multi_setopt(multi, CURLMOPT_TIMERDATA, this);
-    add_download(DOWNLOADURL, 1);
-    timers.startTimer<EvtCurlTimer>(std::chrono::seconds(2));
+    add_download(DOWNLOADURL1, 1);
+    add_download(DOWNLOADURL2, 2);
+    add_download(DOWNLOADURL3, 3);
+    timers.startTimer<EvtCurlTimer>(std::chrono::seconds(1));
 }
 
 void ActorA::pauseActor(void)
@@ -58,6 +62,15 @@ void ActorA::handleEvent(std::shared_ptr<EvtCurlTimer> pevt)
     check_multi_info();
 }
 
+void ActorA::handleEvent(std::shared_ptr<EvtEndTimer> pevt)
+{
+    if (!pevt) return;
+    printf("ActorA::EvtEndTimer\n");
+    dmon.close_and_reset();
+    timers.stopTimer<EvtCurlTimer>();
+    shutdown();
+}
+
 void ActorA::handleEvent(std::shared_ptr<EvtCurlMReadAvail> pevt)
 {
     int running_handles;
@@ -65,7 +78,7 @@ void ActorA::handleEvent(std::shared_ptr<EvtCurlMReadAvail> pevt)
     if (!pevt) return;
     printf("ActorA::EvtCurlMReadAvail\n");
     flags |= CURL_CSELECT_IN;
-    curl_multi_socket_action(multi, sockfd, flags,
+    curl_multi_socket_action(multi, pevt->fd, flags,
                            &running_handles);
     check_multi_info();
 }
@@ -77,7 +90,7 @@ void ActorA::handleEvent(std::shared_ptr<EvtCurlMWriteAvail> pevt)
     if (!pevt) return;
     printf("ActorA::EvtCurlMWriteAvail\n");
     flags |= CURL_CSELECT_OUT;
-    curl_multi_socket_action(multi, sockfd, flags,
+    curl_multi_socket_action(multi, pevt->fd, flags,
                            &running_handles);
     check_multi_info();
 }
@@ -89,27 +102,30 @@ void ActorA::handleEvent(std::shared_ptr<EvtCurlMErr> pevt)
     if (!pevt) return;
     printf("ActorA::EvtCurlMErr\n");
     flags |= CURL_CSELECT_ERR;
-    curl_multi_socket_action(multi, sockfd, flags,
+    curl_multi_socket_action(multi, pevt->fd, flags,
                            &running_handles);
     check_multi_info();
 }
 
 void ActorA::add_download(const char *url, int num)
 {
-    char filename[50];
+    char filename[100];
     FILE *file;
     CURL *handle;
  
     printf("ActorA::add_download\n");
-    snprintf(filename, 50, "/tmp/%d.download", num);
- 
+#if defined (_WIN32)
+    snprintf(filename, 100, "C:\\Users\\AppData\\Local\\Temp\\%d.download", num);
+#else
+    snprintf(filename, 100, "/tmp/%d.download", num);
+#endif
+
     file = fopen(filename, "wb");
     if(!file) {
       fprintf(stderr, "Error opening %s\n", filename);
       return;
     }
-    fpdownload = file;
- 
+    
     handle = curl_easy_init();
     curl_easy_setopt(handle, CURLOPT_WRITEDATA, file);
     curl_easy_setopt(handle, CURLOPT_PRIVATE, file);
@@ -118,6 +134,7 @@ void ActorA::add_download(const char *url, int num)
     //curl_easy_setopt(handle, CURLOPT_VERBOSE, 1L);
     curl_multi_add_handle(multi, handle);
     fprintf(stderr, "Added download %s -> %s\n", url, filename);
+    remaining++;
 }
 
 int ActorA::cb_socket(CURL *easy, curl_socket_t s, int action,
@@ -133,18 +150,20 @@ int ActorA::cb_socket(CURL *easy, curl_socket_t s, int action,
     case CURL_POLL_OUT:
     case CURL_POLL_INOUT:
         printf("CURL_POLL_INOUT\n");
-        if (act->active_state == false) return 1;
         curl_context = socketp ?
           (struct curl_context *) socketp : act->create_curl_context(s, act);
         curl_multi_assign(act->multi, s, (void *) curl_context);
-        act->sockfd = curl_context->sockfd;
-        act->dmon.monitor(curl_context->sockfd);
+        act->dmon.add(curl_context->sockfd);
         break;
     case CURL_POLL_REMOVE:
         printf("CURL_POLL_REMOVE\n");
-        act->dmon.close_and_reset();
-        curl_multi_assign(act->multi, s, NULL);
-        free(socketp);
+        if (socketp)
+        {
+            curl_context = (struct curl_context *) socketp;
+            act->dmon.remove(curl_context->sockfd);
+            curl_multi_assign(act->multi, s, NULL);
+            free(socketp);
+        }
         break;
     default:
         printf("CURL_POLL DEFAULT\n");    
@@ -183,16 +202,19 @@ void ActorA::check_multi_info(void)
         {
             case CURLMSG_DONE:
                 printf("CURLMSG_DONE\n");
+                remaining--;
                 easy_handle = message->easy_handle;
                 curl_easy_getinfo(easy_handle, CURLINFO_EFFECTIVE_URL, &done_url);
                 curl_easy_getinfo(easy_handle, CURLINFO_PRIVATE, &file);
+                fclose(file);
                 printf("%s DONE\n", done_url);
- 
                 curl_multi_remove_handle(multi, easy_handle);
                 curl_easy_cleanup(easy_handle);
-                fclose(file);
-                dmon.close_and_reset();
-                shutdown();
+                if (remaining <= 0)
+                {
+                    curl_multi_cleanup(multi);
+                    timers.startTimer<EvtEndTimer>(std::chrono::seconds(3));
+                }
                 break;
  
             default:

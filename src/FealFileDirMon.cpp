@@ -150,24 +150,6 @@ void feal::FileDirMonGeneric::close_fd(void)
 #endif
 }
 
-#if defined (__linux__)
-int feal::FileDirMonGeneric::epoll_ctl_add(int epfd, handle_t fd, uint32_t events)
-{
-    struct epoll_event ev;
-    ev.events = events;
-    ev.data.fd = fd;
-    return epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &ev);
-}
-
-int feal::FileDirMonGeneric::epoll_ctl_mod(int epfd, handle_t fd, uint32_t events)
-{
-    struct epoll_event ev;
-    ev.events = events;
-    ev.data.fd = fd;
-    return epoll_ctl(epfd, EPOLL_CTL_MOD, fd, &ev);
-}
-#endif
-
 void feal::FileDirMonGeneric::fd_error(void)
 {
     receiveEventDescErr(FEAL_OK, FEAL_INVALID_HANDLE, -1, 0);

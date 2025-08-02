@@ -10,27 +10,108 @@ void feal::DescMonGeneric::shutdownTool(void)
     close_and_reset();
 }
 
-feal::errenum feal::DescMonGeneric::monitor(handle_t fd)
+void feal::DescMonGeneric::init(void)
+{
+#if defined (_WIN32)
+    active = true;
+    for (int j=0; j < max_events; j++)
+    {
+        sockread[j]  = INVALID_SOCKET;
+        sockwrite[j] = INVALID_SOCKET;
+    }
+#elif defined (__linux__)
+    epfd = epoll_create(1);
+#else
+    kq = kqueue();
+#endif
+}
+
+feal::errenum feal::DescMonGeneric::start_monitoring(void)
 {
     errenum res = FEAL_OK;
     if (DescMonThread.joinable()) return res;
-    genfd = fd;
-    if (genfd == FEAL_INVALID_HANDLE)
-    {
-        res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
-        return res;
-    }
-    setnonblocking(genfd);
     DescMonThread = std::thread(&fdmonLoopLauncher, this);
+    return res;
+}
+
+feal::errenum feal::DescMonGeneric::add(handle_t fd)
+{
+    errenum res = FEAL_OK;
+    setnonblocking(fd);
+#if defined (_WIN32)
+    for (int j=0; j < max_events; j++)
+    {
+        if (sockread[j] == INVALID_SOCKET)
+        {
+            sockread[j]  = fd;
+            sockwrite[j] = fd;
+            break;
+        }
+    }
+#elif defined (__linux__)
+    if (epoll_ctl_add(epfd, fd, 
+        (EPOLLIN | EPOLLOUT | EPOLLET | EPOLLRDHUP | EPOLLHUP)) == -1)
+    {
+        FEALDEBUGLOG("epoll_ctl error");
+    }
+#else
+    struct kevent change_event[2];
+    memset(&change_event, 0, sizeof(change_event));
+    EV_SET(change_event, fd, EVFILT_READ , EV_ADD | EV_ENABLE | EV_CLEAR, 0, 0, 0);
+    if (kevent(kq, (const struct kevent	*) change_event, 1, nullptr, 0, nullptr) == -1)
+    {
+        FEALDEBUGLOG("kevent err %d\n", errno);
+    }
+    EV_SET(change_event, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE | EV_CLEAR, 0, 0, 0);
+    if (kevent(kq, (const struct kevent	*) change_event, 1, nullptr, 0, nullptr) == -1)
+    {
+        FEALDEBUGLOG("kevent err %d\n", errno);
+    }
+#endif
+    return res;
+}
+
+feal::errenum feal::DescMonGeneric::remove(handle_t fd)
+{
+    errenum res = FEAL_OK;
+#if defined (_WIN32)
+    for (int j=0; j < max_events; j++)
+    {
+        if (sockread[j] == fd)
+        {
+            sockread[j]  = INVALID_SOCKET;
+            sockwrite[j] = INVALID_SOCKET;
+            break;
+        }
+    }
+#elif defined (__linux__)
+    if (epoll_ctl_del(epfd, fd) == -1)
+    {
+        FEALDEBUGLOG("epoll_ctl error");
+    }
+#else
+    struct kevent change_event[2];
+    memset(&change_event, 0, sizeof(change_event));
+    EV_SET(change_event, fd, EVFILT_READ , EV_DELETE | EV_DISABLE, 0, 0, 0);
+    if (kevent(kq, (const struct kevent	*) change_event, 1, nullptr, 0, nullptr) == -1)
+    {
+        FEALDEBUGLOG("kevent err %d\n", errno);
+    }
+    EV_SET(change_event, fd, EVFILT_WRITE, EV_DELETE | EV_DISABLE, 0, 0, 0);
+    if (kevent(kq, (const struct kevent	*) change_event, 1, nullptr, 0, nullptr) == -1)
+    {
+        FEALDEBUGLOG("kevent err %d\n", errno);
+    }
+#endif
     return res;
 }
 
 feal::errenum feal::DescMonGeneric::close_and_reset(void)
 {
     errenum res = FEAL_OK;
-    close(genfd);
-    genfd = FEAL_INVALID_HANDLE;
-#if defined (__linux__)
+#if defined (_WIN32)
+    active = false;
+#elif defined (__linux__)
     close(epfd);
     epfd = -1;
 #else
@@ -48,19 +129,72 @@ void feal::DescMonGeneric::fdmonLoopLauncher(feal::DescMonGeneric *p)
 
 void feal::DescMonGeneric::fdmonLoop(void)
 {
-#if defined (__linux__)
+#if defined (_WIN32)
     int nfds = 0;
-    struct epoll_event events[max_events];
-    epfd = epoll_create(1);
-    if (epoll_ctl_add(epfd, genfd, 
-        (EPOLLIN | EPOLLOUT | EPOLLET | EPOLLRDHUP | EPOLLHUP)) == -1)
-    {
-        FEALDEBUGLOG("epoll_ctl error");
-        return;
-    }
+    ssize_t numbytes;
+    int wsaerr;
+    struct timeval tv;
+    char buf[100];
+    tv.tv_sec = 0;
+    tv.tv_usec = 500000; // 500ms
+    FD_SET ReadSet;
+    FD_SET WriteSet;
     for (;;)
     {
-        if ((genfd == -1)||(epfd == -1)) break;
+        if (active == false) break;
+        FD_ZERO(&ReadSet);
+        FD_ZERO(&WriteSet);
+        for (int j=0; j < max_events; j++)
+        {
+            if (sockread[j]  != INVALID_SOCKET) FD_SET(sockread[j],  &ReadSet);
+            if (sockwrite[j] != INVALID_SOCKET) FD_SET(sockwrite[j], &WriteSet);
+        }
+        nfds = select(0, &ReadSet, &WriteSet, nullptr, &tv);
+        if (nfds == 0) continue; // timeout
+        if (nfds == SOCKET_ERROR)
+        {
+            wsaerr = WSAGetLastError();
+            if (wsaerr == WSAEINVAL)
+            {
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                continue;
+            }
+            FEALDEBUGLOG("select dgramLoop nfds=%d, err=%d\n", nfds, wsaerr);
+            break;
+        }
+        for (int i = 0; i < max_events; i++)
+        {
+            if (nfds <= 0) break;
+            if (FD_ISSET(sockread[i], &ReadSet))
+            {
+                nfds--;
+                numbytes = recvfrom(sockfd, buf, sizeof(buf), 
+                    MSG_PEEK, nullptr, nullptr);
+                if ((numbytes == SOCKET_ERROR)&&(WSAGetLastError() != WSAEWOULDBLOCK))
+                {
+                    fd_error(sockread[i]);
+                    break;
+                }
+                else
+                {
+                    fd_read_avail(sockread[i]);
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                }
+            }
+            if (FD_ISSET(sockwrite[i], &WriteSet))
+            {
+                nfds--;
+                fd_write_avail(sockwrite[i]);
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            }
+        }
+    }
+#elif defined (__linux__)
+    int nfds = 0;
+    struct epoll_event events[max_events];
+    for (;;)
+    {
+        if (epfd == -1) break;
         nfds = epoll_wait(epfd, events, max_events, 500);
         if (nfds == -1)
         {
@@ -71,15 +205,16 @@ void feal::DescMonGeneric::fdmonLoop(void)
         {
             if ((events[i].events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR)) != 0)
             {
-                fd_error();
+                fd_error(events[i].data.fd);
+                break;
             }
             if ((events[i].events & EPOLLIN) == EPOLLIN)
             {
-                fd_read_avail();
+                fd_read_avail(events[i].data.fd);
             }
             if ((events[i].events & EPOLLOUT) == EPOLLOUT)
             {
-                fd_write_avail();
+                fd_write_avail(events[i].data.fd);
             }
         }
     }
@@ -91,20 +226,9 @@ void feal::DescMonGeneric::fdmonLoop(void)
     memset(&event, 0, sizeof(event));
     tims.tv_sec = 0;
     tims.tv_nsec = 500000000; // 500ms
-    kq = kqueue();
-    EV_SET(change_event, genfd, EVFILT_READ , EV_ADD | EV_ENABLE | EV_CLEAR, 0, 0, 0);
-    if (kevent(kq, (const struct kevent	*) change_event, 1, nullptr, 0, nullptr) == -1)
-    {
-        printf("kevent err %d\n", errno);
-    }
-    EV_SET(change_event, genfd, EVFILT_WRITE, EV_ADD | EV_ENABLE | EV_CLEAR, 0, 0, 0);
-    if (kevent(kq, (const struct kevent	*) change_event, 1, nullptr, 0, nullptr) == -1)
-    {
-        printf("kevent err %d\n", errno);
-    }
     for (;;)
     {
-        if ((genfd == -1)||(kq == -1)) break;
+        if (kq == -1) break;
         nevts = kevent(kq, nullptr, 0, event, max_events - 1, (const struct timespec *) &tims);
         if (nevts == 0) continue;
         if (nevts == -1) break;
@@ -112,67 +236,35 @@ void feal::DescMonGeneric::fdmonLoop(void)
         {
             if ((event[i].flags & (EV_EOF | EV_ERROR)) != 0)
             {
-                close_fd();
-                fd_error();
+                fd_error(event[i].ident);
                 break;
             }
             if ((event[i].filter & EVFILT_READ) == EVFILT_READ)
             {
-                fd_read_avail();
+                fd_read_avail(event[i].ident);
             }
             if ((event[i].filter & EVFILT_WRITE) == EVFILT_WRITE)
             {
-                fd_write_avail();
+                fd_write_avail(event[i].ident);
             }
         }
     }
 #endif
 }
 
-void feal::DescMonGeneric::close_fd(void)
+void feal::DescMonGeneric::fd_error(handle_t fd)
 {
-    close(genfd);
-    genfd = FEAL_INVALID_HANDLE;
-#if defined (__linux__)
-    close(epfd);
-    epfd = -1;
-#else
-    close(kq);
-    kq = -1;
-#endif
+    receiveEventDescErr(FEAL_OK, fd, -1);
 }
 
-#if defined (__linux__)
-int feal::DescMonGeneric::epoll_ctl_add(int epfd, handle_t fd, uint32_t events)
+void feal::DescMonGeneric::fd_read_avail(handle_t fd)
 {
-    struct epoll_event ev;
-    ev.events = events;
-    ev.data.fd = fd;
-    return epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &ev);
+    receiveEventReadAvail(FEAL_OK, fd, datareadavaillen(fd));
 }
 
-int feal::DescMonGeneric::epoll_ctl_mod(int epfd, handle_t fd, uint32_t events)
+void feal::DescMonGeneric::fd_write_avail(handle_t fd)
 {
-    struct epoll_event ev;
-    ev.events = events;
-    ev.data.fd = fd;
-    return epoll_ctl(epfd, EPOLL_CTL_MOD, fd, &ev);
-}
-#endif
-
-void feal::DescMonGeneric::fd_error(void)
-{
-    receiveEventDescErr(FEAL_OK, FEAL_INVALID_HANDLE, -1);
-}
-
-void feal::DescMonGeneric::fd_read_avail(void)
-{
-    receiveEventReadAvail(FEAL_OK, genfd, datareadavaillen(genfd));
-}
-
-void feal::DescMonGeneric::fd_write_avail(void)
-{
-    receiveEventWriteAvail(FEAL_OK, genfd, -1);
+    receiveEventWriteAvail(FEAL_OK, fd, -1);
 }
 
 void feal::DescMonGeneric::receiveEventReadAvail(errenum errnum, handle_t fd, int datalen)

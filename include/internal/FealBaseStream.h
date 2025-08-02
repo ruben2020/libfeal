@@ -70,8 +70,6 @@ handle_t sockexcpt[FEALBASESTREAM_MAXEVENTS];
 #elif defined (__linux__)
 const unsigned int max_events = 64;
 int epfd = -1;
-static int epoll_ctl_add(int epfd, handle_t fd, uint32_t events);
-static int epoll_ctl_mod(int epfd, handle_t fd, uint32_t events);
 #else
 
 const unsigned int max_events = 64;

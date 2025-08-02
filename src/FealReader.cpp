@@ -136,24 +136,6 @@ void feal::ReaderGeneric::close_handle(void)
 #endif
 }
 
-#if defined (__linux__)
-int feal::ReaderGeneric::epoll_ctl_add(int epfd, handle_t fd, uint32_t events)
-{
-    struct epoll_event ev;
-    ev.events = events;
-    ev.data.fd = fd;
-    return epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &ev);
-}
-
-int feal::ReaderGeneric::epoll_ctl_mod(int epfd, handle_t fd, uint32_t events)
-{
-    struct epoll_event ev;
-    ev.events = events;
-    ev.data.fd = fd;
-    return epoll_ctl(epfd, EPOLL_CTL_MOD, fd, &ev);
-}
-#endif
-
 void feal::ReaderGeneric::handle_error(void)
 {
     receiveEventSockErr(FEAL_OK, FEAL_INVALID_HANDLE, -1);

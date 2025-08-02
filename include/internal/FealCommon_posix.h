@@ -242,6 +242,12 @@ int  setnonblocking(handle_t fd[2]);
 int  setipv6only(handle_t fd);
 int  datareadavaillen(handle_t fd);
 
+#if defined (__linux__)
+int epoll_ctl_add(int epfd, handle_t fd, uint32_t events);
+int epoll_ctl_mod(int epfd, handle_t fd, uint32_t events);
+int epoll_ctl_del(int epfd, handle_t fd);
+#endif
+
 }
 
 #endif // _FEAL_COMMON_POSIX_H

@@ -53,12 +53,6 @@ void close_handle(void);
 void handle_error(void);
 void handle_read_avail(void);
 
-#if defined (__linux__)
-static int epoll_ctl_add(int epfd, handle_t fd, uint32_t events);
-static int epoll_ctl_mod(int epfd, handle_t fd, uint32_t events);
-#endif
-
-
 };
 
 

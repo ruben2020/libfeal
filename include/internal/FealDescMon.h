@@ -24,15 +24,23 @@ DescMonGeneric& operator= ( const DescMonGeneric & ) = default;
 
 void shutdownTool(void);
 
-errenum monitor(handle_t fd);
+errenum start_monitoring(void);
+errenum add(handle_t fd);
+errenum remove(handle_t fd);
 errenum close_and_reset(void);
 
 protected:
 
 std::thread DescMonThread;
-handle_t genfd = FEAL_INVALID_HANDLE;
 
-#if defined (__linux__)
+#if defined (_WIN32)
+#define FEALDGRAM_MAXEVENTS  (FD_SETSIZE > 64 ? 64 : FD_SETSIZE)
+const int max_events = FEALDGRAM_MAXEVENTS;
+handle_t sockread[FEALDGRAM_MAXEVENTS];
+handle_t sockwrite[FEALDGRAM_MAXEVENTS];
+std::atomic_bool active = true;
+
+#elif defined (__linux__)
 const unsigned int max_events = 64;
 int epfd = -1;
 
@@ -40,6 +48,8 @@ int epfd = -1;
 const unsigned int max_events = 64;
 int kq = -1;
 #endif
+
+void init(void);
 
 virtual void receiveEventReadAvail(errenum errnum, handle_t fd, int datalen);
 virtual void receiveEventWriteAvail(errenum errnum, handle_t fd, int datalen);
@@ -49,15 +59,9 @@ private:
 
 static void fdmonLoopLauncher(DescMonGeneric *p);
 void fdmonLoop(void);
-void close_fd(void);
-void fd_error(void);
-void fd_read_avail(void);
-void fd_write_avail(void);
-#if defined (__linux__)
-static int epoll_ctl_add(int epfd, handle_t fd, uint32_t events);
-static int epoll_ctl_mod(int epfd, handle_t fd, uint32_t events);
-#endif
-
+void fd_error(handle_t fd);
+void fd_read_avail(handle_t fd);
+void fd_write_avail(handle_t fd);
 
 };
 
@@ -75,6 +79,7 @@ void init(Y* p)
 {
     actorptr = p;
     p->addTool(this);
+    DescMonGeneric::init();
 }
 
 template<typename T>

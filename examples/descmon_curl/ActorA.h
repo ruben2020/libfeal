@@ -36,6 +36,7 @@ void pauseActor(void);
 void shutdownActor(void);
 
 void handleEvent(std::shared_ptr<EvtCurlTimer> pevt);
+void handleEvent(std::shared_ptr<EvtEndTimer> pevt);
 void handleEvent(std::shared_ptr<EvtCurlMReadAvail> pevt);
 void handleEvent(std::shared_ptr<EvtCurlMWriteAvail> pevt);
 void handleEvent(std::shared_ptr<EvtCurlMErr> pevt);
@@ -51,10 +52,7 @@ feal::DescMon<ActorA> dmon;
 
 private:
 CURLM *multi = nullptr;
-feal::handle_t sockfd;
-FILE *fpdownload = nullptr;
-std::atomic_bool active_state = true;
-
+std::atomic_int remaining = 0;
 void add_download(const char *url, int num);
 void check_multi_info(void);
 struct curl_context *create_curl_context(curl_socket_t sockfd,

@@ -9,6 +9,12 @@
 
 #include "ActorA.h"
 
+#if defined (_WIN32)
+#define FILETOMONITOR "C:\\Users\\AppData\\Local\\Temp\\test_filedirmon.txt"
+#else
+#define FILETOMONITOR "/tmp/test_filedirmon.txt"
+#endif
+
 void ActorA::initActor(void)
 {
     printf("ActorA::initActor\n");
@@ -23,13 +29,13 @@ void ActorA::startActor(void)
     printf("ActorA::startActor\n");
     timers.startTimer<EvtEndTimer>(std::chrono::seconds(20));
     timers.startTimer<EvtDelayTimer>(std::chrono::seconds(2));
-    FILE *fp = fopen("/tmp/test_filedirmon.txt", "w");
+    FILE *fp = fopen(FILETOMONITOR, "w");
     if (fp != NULL)
     {
         fprintf(fp, "%d\n", n++);
         fclose(fp);
     }
-    fdmon.monitor("/tmp/test_filedirmon.txt", FEAL_FDM_CLOSE_WRITE);
+    fdmon.monitor(FILETOMONITOR, FEAL_FDM_CLOSE_WRITE);
 }
 
 void ActorA::pauseActor(void)
@@ -57,7 +63,7 @@ void ActorA::handleEvent(std::shared_ptr<EvtDelayTimer> pevt)
 {
     if (!pevt) return;
     printf("ActorA::EvtDelayTimer\n");
-    FILE *fp = fopen("/tmp/test_filedirmon.txt", "w");
+    FILE *fp = fopen(FILETOMONITOR, "w");
     if (fp != NULL)
     {
         fprintf(fp, "%d\n", n++);
@@ -72,8 +78,8 @@ void ActorA::handleEvent(std::shared_ptr<EvtFDMReadAvail> pevt)
     printf("ActorA::EvtFDMReadAvail\n");
     printf("filedirmon event for event %s\n", 
         (pevt->flags && FEAL_FDM_CLOSE_WRITE == FEAL_FDM_CLOSE_WRITE ? "FEAL_FDM_CLOSE_WRITE" : "something else"));
-    printf("File contents of /tmp/test_filedirmon.txt: ");
-    FILE *fp = fopen("/tmp/test_filedirmon.txt", "r");
+    printf("File contents of %s: ", FILETOMONITOR);
+    FILE *fp = fopen(FILETOMONITOR, "r");
     if (fp != NULL)
     {
         int val=0;

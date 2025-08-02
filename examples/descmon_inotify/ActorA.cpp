@@ -40,7 +40,8 @@ void ActorA::startActor(void)
     }
     wd = inotify_add_watch(fd, "/tmp/test_inotifymon.txt", IN_CLOSE_WRITE);
     printf("Watch descriptor for IN_CLOSE_WRITE for /tmp/test_inotifymon.txt = %d\n", wd);
-    dmon.monitor(fd);
+    dmon.add(fd);
+    dmon.start_monitoring();
 }
 
 void ActorA::pauseActor(void)
@@ -61,6 +62,7 @@ void ActorA::handleEvent(std::shared_ptr<EvtEndTimer> pevt)
     printf("ActorA::EvtEndTimer Elapsed\n");
     timers.stopTimer<EvtDelayTimer>();
     inotify_rm_watch(fd, wd);
+    dmon.remove(fd);
     dmon.close_and_reset();
     shutdown();
 }

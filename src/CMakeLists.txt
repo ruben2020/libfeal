@@ -22,11 +22,11 @@ set( FEAL_LIB_SRCS
      FealBaseStream.cpp
      FealStream.cpp
      FealDatagram.cpp
+     FealDescMon.cpp
   )
 
 set( FEAL_LIB_UNIX_SRCS 
      FealReader.cpp
-     FealDescMon.cpp
      FealFileDirMon.cpp
   )
 
