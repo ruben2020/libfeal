@@ -29,7 +29,7 @@ void ActorA::initActor(void)
 void ActorA::startActor(void)
 {
     printf("ActorA::startActor\n");
-    timers.startTimer<EvtEndTimer>(std::chrono::seconds(15));
+    timers.startTimer<EvtEndTimer>(std::chrono::seconds(10));
     timers.startTimer<EvtDelayTimer>(std::chrono::seconds(2));
     FILE *fp = fopen(FILETOMONITOR1, "w");
     if (fp != NULL)
@@ -95,9 +95,7 @@ void ActorA::handleEvent(std::shared_ptr<EvtFDMReadAvail> pevt)
     if (!pevt) return;
     printf("ActorA::EvtFDMReadAvail\n");
     std::string fn;
-    if      (pevt->fd == wnum1) fn = FILETOMONITOR1;
-    else if (pevt->fd == wnum2) fn = FILETOMONITOR2;
-    else fn = "Unknown file";
+    fn = fdmon.get_filename(pevt->fd);
     printf("filedirmon event for file %s for event %s\n", 
         fn.c_str(),
         (pevt->flags && FEAL_FDM_CLOSE_WRITE == FEAL_FDM_CLOSE_WRITE ? "FEAL_FDM_CLOSE_WRITE" : "something else"));

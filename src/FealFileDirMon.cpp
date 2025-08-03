@@ -43,7 +43,7 @@ feal::errenum feal::FileDirMonGeneric::start_monitoring(void)
 feal::errenum feal::FileDirMonGeneric::add(const char *s, flags_t mask, handle_t *wnum)
 {
     errenum res = FEAL_OK;
-    handle_t wn;
+    handle_t wn = FEAL_INVALID_HANDLE;
 #if defined (__linux__)
     wn = inotify_add_watch(genfd, s, mask);
     if (wnum) *wnum = wn;
@@ -70,6 +70,10 @@ feal::errenum feal::FileDirMonGeneric::add(const char *s, flags_t mask, handle_t
         return res;
     }
 #endif
+    if (wn != FEAL_INVALID_HANDLE)
+    {
+        fnmap[wn] = std::string(s);
+    }
     return res;
 }
 
@@ -95,7 +99,25 @@ feal::errenum feal::FileDirMonGeneric::remove(handle_t wnum)
     }
     close(wnum);
 #endif
+    if (wnum != FEAL_INVALID_HANDLE)
+    {
+        fnmap.erase(wnum);
+    }
     return res;
+}
+
+std::string feal::FileDirMonGeneric::get_filename(handle_t wnum)
+{
+    std::string fn;
+    if (fnmap.find(wnum) != fnmap.end())
+    {
+        fn = fnmap[wnum];
+    }
+    else
+    {
+        fn = "unknown";
+    }
+    return fn;
 }
 
 feal::errenum feal::FileDirMonGeneric::close_and_reset(void)
@@ -110,6 +132,7 @@ feal::errenum feal::FileDirMonGeneric::close_and_reset(void)
     close(kq);
     kq = -1;
 #endif
+    fnmap.clear();
     if (FileDirMonThread.joinable()) FileDirMonThread.join();
     return res;
 }
