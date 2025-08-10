@@ -31,3 +31,8 @@ if (CURL_EX)
 add_subdirectory( "promise_curl" )
 add_subdirectory( "descmon_curl" )
 endif (CURL_EX)
+
+if (OPENSSL_EX)
+add_subdirectory( "tls_echo_clientserver_openssl" )
+endif (OPENSSL_EX)
+

@@ -31,6 +31,12 @@ void feal::BaseStream::serverLoop(void)
         FEALDEBUGLOG("kevent error");
         return;
     }
+    EV_SET(change_event, sockfd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, 0);
+    if (kevent(kq, (const struct kevent	*) change_event, 1, nullptr, 0, nullptr) == -1)
+    {
+        FEALDEBUGLOG("kevent error");
+        return;
+    }
     for (;;)
     {
         nevts = kevent(kq, nullptr, 0, event, max_events - 1, (const struct timespec *) &tims);
@@ -62,8 +68,8 @@ void feal::BaseStream::serverLoop(void)
             if ((event[i].filter & EVFILT_WRITE) == EVFILT_WRITE)
             {
                 client_write_avail((int) event[i].ident);
-                EV_SET(change_event, event[i].ident, EVFILT_WRITE, EV_DELETE, 0, 0, 0);
-                kevent(kq, (const struct kevent	*) change_event, 1, nullptr, 0, nullptr);
+                /*EV_SET(change_event, event[i].ident, EVFILT_WRITE, EV_DELETE, 0, 0, 0);
+                kevent(kq, (const struct kevent	*) change_event, 1, nullptr, 0, nullptr);*/
             }
         }
     }
@@ -73,6 +79,8 @@ int feal::BaseStream::do_client_read_start(feal::handle_t client_sockfd)
 {
     struct kevent change_event[2];
     memset(&change_event, 0, sizeof(change_event));
+    EV_SET(change_event, sockfd, EVFILT_WRITE, EV_ADD | EV_ENABLE | EV_CLEAR, 0, 0, 0);
+    kevent(kq, (const struct kevent	*) change_event, 1, nullptr, 0, nullptr);
     EV_SET(change_event, client_sockfd, EVFILT_READ, EV_ADD | EV_ENABLE | EV_CLEAR, 0, 0, 0);
     return kevent(kq, (const struct kevent	*) change_event, 1, nullptr, 0, nullptr);
 }
@@ -114,6 +122,8 @@ void feal::BaseStream::do_connect_ok(void)
     memset(&change_event, 0, sizeof(change_event));
     waitingforconn = false;
     kq = kqueue();
+    EV_SET(change_event, sockfd, EVFILT_WRITE, EV_ADD | EV_ENABLE | EV_CLEAR, 0, 0, 0);
+    kevent(kq, (const struct kevent	*) change_event, 1, nullptr, 0, nullptr);
     EV_SET(change_event, sockfd, EVFILT_READ, EV_ADD | EV_ENABLE | EV_CLEAR, 0, 0, 0);
     if (kevent(kq, (const struct kevent	*) change_event, 1, nullptr, 0, nullptr) == -1)
     {
@@ -167,8 +177,8 @@ void feal::BaseStream::connectLoop(void)
                 {
                     connection_write_avail();
                 }
-                EV_SET(change_event, sockfd, EVFILT_WRITE, EV_DELETE, 0, 0, 0);
-                kevent(kq, (const struct kevent	*) change_event, 1, nullptr, 0, nullptr);
+                /*EV_SET(change_event, sockfd, EVFILT_WRITE, EV_DELETE, 0, 0, 0);
+                kevent(kq, (const struct kevent	*) change_event, 1, nullptr, 0, nullptr);*/
             }
         }
     }

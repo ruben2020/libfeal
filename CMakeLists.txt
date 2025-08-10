@@ -6,9 +6,11 @@
 cmake_minimum_required(VERSION 3.16.0)
 project(feal)
 
-option(CURL_EX "libCurl example" OFF)
+option(CURL_EX    "libCurl example" OFF)
+option(OPENSSL_EX "OpenSSL example" OFF)
 
 MESSAGE("-- libCurl = " ${CURL_EX})
+MESSAGE("-- OpenSSL = " ${OPENSSL_EX})
 
 # C++17 required
 SET( CMAKE_CXX_STANDARD 17 )

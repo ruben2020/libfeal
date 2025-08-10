@@ -106,7 +106,7 @@ feal::errenum feal::FileDirMonGeneric::remove(handle_t wnum)
     return res;
 }
 
-std::string feal::FileDirMonGeneric::get_filename(handle_t wnum)
+std::string feal::FileDirMonGeneric::get_filepath(handle_t wnum)
 {
     std::string fn;
     if (fnmap.find(wnum) != fnmap.end())

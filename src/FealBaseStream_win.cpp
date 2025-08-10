@@ -105,6 +105,15 @@ int feal::BaseStream::do_client_read_start(feal::handle_t client_sockfd)
             break;
         }
     }
+    for (int i=1; i < max_events; i++)
+    {
+        if (sockwrite[i] == client_sockfd) break;
+        if (sockwrite[i] == INVALID_SOCKET)
+        {
+            sockwrite[i] = client_sockfd;
+            break;
+        }
+    }
     return 0;
 }
 
@@ -116,6 +125,14 @@ int feal::BaseStream::do_client_shutdown(feal::handle_t client_sockfd)
         if (sockread[i] == client_sockfd)
         {
             sockread[i] = INVALID_SOCKET;
+            break;
+        }
+    }
+    for (int i=1; i < max_events; i++)
+    {
+        if (sockwrite[i] == client_sockfd)
+        {
+            sockwrite[i] = INVALID_SOCKET;
             break;
         }
     }
@@ -172,6 +189,7 @@ void feal::BaseStream::do_connect_ok(void)
     }
     waitingforconn = false;
     sockread[0] = sockfd;
+    sockwrite[0] = sockfd;
     sockexcpt[0] = sockfd;
     connected_to_server(sockfd);
 }
@@ -179,14 +197,6 @@ void feal::BaseStream::do_connect_ok(void)
 void feal::BaseStream::do_send_avail_notify(feal::handle_t fd)
 {
     printf("do_send_avail_notify %ld\n", (long int) fd);
-    for (int i=1; i < max_events; i++)
-    {
-        if (sockwrite[i] == INVALID_SOCKET)
-        {
-            sockwrite[i] = fd;
-            break;
-        }
-    }
 }
 
 void feal::BaseStream::connectLoop(void)
