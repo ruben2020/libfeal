@@ -25,9 +25,9 @@ void Server::initActor(void)
 void Server::startActor(void)
 {
     printf("Server::startActor\n");
-    timers.startTimer<EvtEndTimer>(std::chrono::seconds(15));
-    setup_sslctx();
-    start_server();
+    timers.startTimer<EvtEndTimer>(std::chrono::seconds(30));
+    if (setup_sslctx() > 0) start_server();
+    else shutdown();
 }
 
 void Server::pauseActor(void)
@@ -165,7 +165,7 @@ void Server::handleEvent(std::shared_ptr<EvtSigInt> pevt)
     shutdown();
 }
 
-void Server::setup_sslctx(void)
+int Server::setup_sslctx(void)
 {
     // Source code copied from:
     // https://github.com/openssl/openssl/blob/master/demos/guide/tls-server-block.c
@@ -174,28 +174,32 @@ void Server::setup_sslctx(void)
     ctx = SSL_CTX_new(TLS_server_method());
     if (ctx == nullptr)
     {
-        printf("Failed to create server SSL_CTX");
+        printf("Failed to create server SSL_CTX\n");
+        return -1;
     }
 
     if (!SSL_CTX_set_min_proto_version(ctx, TLS1_2_VERSION))
     {
         SSL_CTX_free(ctx);
-        printf("Failed to set the minimum TLS protocol version");
+        printf("Failed to set the minimum TLS protocol version\n");
+        return -1;
     }
     opts  = SSL_OP_IGNORE_UNEXPECTED_EOF;
     opts |= SSL_OP_NO_RENEGOTIATION;
     opts |= SSL_OP_CIPHER_SERVER_PREFERENCE;
     SSL_CTX_set_options(ctx, opts);
 
-    if (SSL_CTX_use_certificate_chain_file(ctx, "servercert.pem") <= 0) 
+    if (SSL_CTX_use_certificate_chain_file(ctx, "server.crt") <= 0) 
     {
         SSL_CTX_free(ctx);
-        printf("Failed to load the server certificate chain file");
+        printf("Failed to load the server certificate chain file\n");
+        return -1;
     }
-    if (SSL_CTX_use_PrivateKey_file(ctx, "serverkey.pem", SSL_FILETYPE_PEM) <= 0) {
+    if (SSL_CTX_use_PrivateKey_file(ctx, "server.key", SSL_FILETYPE_PEM) <= 0) {
         SSL_CTX_free(ctx);
         printf("Error loading the server private key file"
-                  "possible key/cert mismatch???");
+                  "possible key/cert mismatch???\n");
+        return -1;
     }
 
     SSL_CTX_set_session_id_context(ctx, cache_id, sizeof(cache_id));
@@ -203,4 +207,5 @@ void Server::setup_sslctx(void)
     SSL_CTX_sess_set_cache_size(ctx, 1024);
     SSL_CTX_set_timeout(ctx, 3600);
     SSL_CTX_set_verify(ctx, SSL_VERIFY_NONE, NULL);
+    return 1;
 }

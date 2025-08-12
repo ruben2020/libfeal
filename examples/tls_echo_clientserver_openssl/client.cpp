@@ -21,14 +21,16 @@ void Client::initActor(void)
     stream.subscribeConnectionShutdown<EvtConnectionShutdown>();
     signal.init(this);
     signal.registerSignal<EvtSigInt>(SIGINT);
+    memset(&buf, 0, sizeof(buf));
+    snprintf(buf, sizeof(buf), "Initial Hello from Client");
 }
 
 void Client::startActor(void)
 {
     printf("Client::startActor\n");
-    timers.startTimer<EvtEndTimer>(std::chrono::seconds(15));
-    setup_sslctx();
-    connect_to_server();
+    timers.startTimer<EvtEndTimer>(std::chrono::seconds(30));
+    if (setup_sslctx() > 0) connect_to_server();
+    else shutdown();
 }
 
 void Client::pauseActor(void)
@@ -60,14 +62,15 @@ void Client::connect_to_server(void)
 
 void Client::send_something(void)
 {
-    if ((!sslwrite_want_read)&&(!sslwrite_want_write))
-        perform_write();
+    //if ((!sslwrite_want_read)&&(!sslwrite_want_write))
+    perform_write(1);
 }
 
 void Client::handleEvent(std::shared_ptr<EvtEndTimer> pevt)
 {
     if (!pevt) return;
     printf("Client::EvtEndTimer Elapsed\n");
+    SSL_shutdown(ssl);
     if (ssl) SSL_free(ssl);
     if (ctx) SSL_CTX_free(ctx);
     if (bio) BIO_free(bio);
@@ -100,6 +103,9 @@ void Client::handleEvent(std::shared_ptr<EvtConnectedToServer> pevt)
         BIO_free(bio);
     }
     SSL_set_bio(ssl, bio, bio);
+    SSL_set_connect_state(ssl);
+    SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);
+    SSL_set_read_ahead(ssl, 1);
     ssl_connect();
 }
 
@@ -113,7 +119,7 @@ void Client::handleEvent(std::shared_ptr<EvtDataReadAvail> pevt)
     }
     else if (sslwrite_want_read)
     {
-        perform_write();
+        perform_write(1);
     }
     else
     {
@@ -136,7 +142,11 @@ void Client::handleEvent(std::shared_ptr<EvtDataWriteAvail> pevt)
     }
     if (sslwrite_want_write)
     {
-        perform_write();
+        perform_write(1);
+    }
+    else
+    {
+        perform_write(0);
     }
 }
 
@@ -145,6 +155,7 @@ void Client::handleEvent(std::shared_ptr<EvtConnectionShutdown> pevt)
     if (!pevt) return;
     printf("Client::EvtConnectionShutdown\n");
     timers.stopTimer<EvtDelayTimer>();
+    SSL_shutdown(ssl);
     if (ssl) SSL_free(ssl);
     if (bio) BIO_free(bio);
     stream.disconnect_and_reset();
@@ -157,6 +168,7 @@ void Client::handleEvent(std::shared_ptr<EvtSigInt> pevt)
     printf("Client::EvtSigInt (signum=%d, sicode=%d)\n", 
         pevt.get()->signo, pevt.get()->sicode);
     timers.stopTimer<EvtEndTimer>();
+    SSL_shutdown(ssl);
     if (ssl) SSL_free(ssl);
     if (ctx) SSL_CTX_free(ctx);
     if (bio) BIO_free(bio);
@@ -193,17 +205,23 @@ int Client::ssl_connect(void)
     {
         printf("SSL handshake with server successfully completed!\n ");
         send_something();
+        //timers.startTimer<EvtDelayTimer>(std::chrono::seconds(2));
+
     }
     return ret;
 }
 
 int Client::perform_read(void)
 {
+    printf("perform_read\n");
     memset(&buf, 0, sizeof(buf));
     size_t bytes;
-    int ret;
+    int ret = 0;
     sslread_want_write = false;
+    //ret = SSL_peek_ex(ssl, buf, sizeof(buf), &bytes);
+    //if (SSL_has_pending(ssl) == 0) return 0;
     ret = SSL_read_ex(ssl, buf, sizeof(buf), &bytes);
+    printf("ret value SSL_read_ex = %d\n", ret);
     if (ret > 0)
     {
         printf("Received %ld bytes \"%s\"\n", bytes, buf);
@@ -223,6 +241,7 @@ int Client::perform_read(void)
         else
         {
             printf("Fatal error doing SSL_read_ex\n");
+            SSL_shutdown(ssl);
             if (ssl) SSL_free(ssl);
             if (bio) BIO_free(bio);
         }
@@ -230,17 +249,22 @@ int Client::perform_read(void)
     return ret;
 }
 
-int Client::perform_write(void)
+int Client::perform_write(int num)
 {
+    printf("perform_write(%d)\n", num);
     size_t bytes;
     int ret;
     memset(&buf, 0, sizeof(buf));
-    snprintf(buf, sizeof(buf), "Client %d", n++);
+    snprintf(buf, sizeof(buf), "Client %d", n);
+    if (num != 0) n++;
     sslwrite_want_read = false;
     sslwrite_want_write = false;
-    ret = SSL_write_ex(ssl, buf, MIN(strlen(buf) + 1, sizeof(buf)), &bytes);
+    if (num == 0) ret = SSL_write_ex(ssl, buf, 0, &bytes);
+    else ret = SSL_write_ex(ssl, buf, MIN(strlen(buf) + 1, sizeof(buf)), &bytes);
+    printf("ret value SSL_write_ex = %d\n", ret);
     if (ret > 0)
     {
+        if (bytes > 0)
         printf("Sent %ld bytes \"%s\"\n", bytes, buf);
     }
     else
@@ -258,6 +282,7 @@ int Client::perform_write(void)
         else
         {
             printf("Fatal error doing SSL_write_ex\n");
+            SSL_shutdown(ssl);
             if (ssl) SSL_free(ssl);
             if (bio) BIO_free(bio);
         }
@@ -265,7 +290,7 @@ int Client::perform_write(void)
     return ret;
 }
 
-void Client::setup_sslctx(void)
+int Client::setup_sslctx(void)
 {
     // Source code copied from:
     // https://github.com/openssl/openssl/blob/master/demos/guide/tls-client-block.c
@@ -273,21 +298,25 @@ void Client::setup_sslctx(void)
     ctx = SSL_CTX_new(TLS_client_method());
     if (ctx == nullptr)
     {
-        printf("Failed to create client SSL_CTX");
+        printf("Failed to create client SSL_CTX\n");
+        return -1;
     }
 
     if (!SSL_CTX_set_min_proto_version(ctx, TLS1_2_VERSION))
     {
         SSL_CTX_free(ctx);
-        printf("Failed to set the minimum TLS protocol version");
+        printf("Failed to set the minimum TLS protocol version\n");
+        return -1;
     }
     SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, NULL);
 
-    if (SSL_CTX_load_verify_file(ctx, "servercert.pem") <= 0) 
+    if (SSL_CTX_load_verify_file(ctx, "server.crt") <= 0) 
     {
         SSL_CTX_free(ctx);
-        printf("Failed to load the certificate chain file");
+        printf("Failed to load the certificate chain file\n");
+        return -1;
     }
+    return 1;
 
 }
 

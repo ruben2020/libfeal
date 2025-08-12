@@ -53,7 +53,7 @@ void handleEvent(std::shared_ptr<EvtDataWriteAvail> pevt);
 void handleEvent(std::shared_ptr<EvtClientShutdown> pevt);
 
 private:
-char buf[50];
+char buf[20000];
 feal::Stream<Server>* stream = nullptr;
 feal::handle_t sockfd = -1;
 std::string addrstr;
@@ -64,10 +64,11 @@ bool sslaccept_want_read = false;
 bool sslaccept_want_write = false;
 bool sslread_want_write = false;
 bool sslwrite_want_read = false;
+bool sslwrite_want_write = false;
 
 int ssl_accept(void);
 int perform_read(void);
-int perform_write(void);
+int perform_write(int num);
 
 
 };

@@ -55,7 +55,7 @@ private:
 std::map<feal::handle_t, std::shared_ptr<ClientHandler>> mapch;
 SSL_CTX *ctx = nullptr;
 
-void setup_sslctx(void);
+int setup_sslctx(void);
 
 };
 

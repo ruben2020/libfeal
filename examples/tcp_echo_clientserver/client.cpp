@@ -119,7 +119,7 @@ void Client::handleEvent(std::shared_ptr<EvtDataWriteAvail> pevt)
 {
     if (!pevt) return;
     printf("Client::EvtDataWriteAvail\n");
-    send_something();
+    //send_something();
 }
 
 void Client::handleEvent(std::shared_ptr<EvtConnectionShutdown> pevt)

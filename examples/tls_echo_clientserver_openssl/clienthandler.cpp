@@ -22,6 +22,8 @@ void ClientHandler::setParam(feal::Stream<Server>* p, feal::handle_t fd, char *s
 void ClientHandler::initActor(void)
 {
     printf("ClientHandler(%ld)::initActor\n", (long int) sockfd);
+    memset(&buf, 0, sizeof(buf));
+    snprintf(buf, sizeof(buf), "Initial Hello from Server");
     client_bio = BIO_new_socket(sockfd, BIO_NOCLOSE);
     if ((ssl = SSL_new(ctx)) == NULL)
     {
@@ -29,6 +31,9 @@ void ClientHandler::initActor(void)
         BIO_free(client_bio);
     }
     SSL_set_bio(ssl, client_bio, client_bio);
+    SSL_set_accept_state(ssl);
+    SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);
+    SSL_set_read_ahead(ssl, 1);
 }
 
 void ClientHandler::startActor(void)
@@ -64,7 +69,7 @@ void ClientHandler::handleEvent(std::shared_ptr<EvtDataReadAvail> pevt)
     }
     else if (sslwrite_want_read)
     {
-        perform_write();
+        perform_write(1);
     }
     else
     {
@@ -84,9 +89,13 @@ void ClientHandler::handleEvent(std::shared_ptr<EvtDataWriteAvail> pevt)
     {
         perform_read();
     }
+    else if (sslwrite_want_write)
+    {
+        perform_write(1);
+    }
     else
     {
-        perform_write();
+        perform_write(0);
     }
 }
 
@@ -94,8 +103,9 @@ void ClientHandler::handleEvent(std::shared_ptr<EvtClientShutdown> pevt)
 {
     if (!pevt) return;
     printf("ClientHandler(%ld)::EvtClientShutdown\n", (long int) sockfd);
-    SSL_free(ssl);
-    BIO_free(client_bio);
+    SSL_shutdown(ssl);
+    if (ssl) SSL_free(ssl);
+    if (client_bio) BIO_free(client_bio);
     std::shared_ptr<EvtClientDisconnected> pevt2 = std::make_shared<EvtClientDisconnected>();
     pevt2.get()->fd = sockfd;
     publishEvent(pevt2);
@@ -122,8 +132,8 @@ int ClientHandler::ssl_accept(void)
         else
         {
             printf("Fatal error performing SSL handshake with client\n");
-            SSL_free(ssl);
-            BIO_free(client_bio);
+            if (ssl) SSL_free(ssl);
+            if (client_bio) BIO_free(client_bio);
         }
     }
     else printf("SSL handshake with client successfully completed!\n ");
@@ -132,15 +142,19 @@ int ClientHandler::ssl_accept(void)
 
 int ClientHandler::perform_read(void)
 {
+    printf("perform_read\n");
     memset(&buf, 0, sizeof(buf));
     size_t bytes;
-    int ret;
+    int ret = 0;
     sslread_want_write = false;
+    //ret = SSL_peek_ex(ssl, buf, sizeof(buf), &bytes);
+    //if (SSL_has_pending(ssl) == 0) return 0;
     ret = SSL_read_ex(ssl, buf, sizeof(buf), &bytes);
+    printf("ret value SSL_read_ex = %d\n", ret);
     if (ret > 0)
     {
         printf("Received %ld bytes \"%s\" from %s\n", bytes, buf, addrstr.c_str());
-        perform_write();
+        perform_write(1);
     }
     else
     {
@@ -156,21 +170,26 @@ int ClientHandler::perform_read(void)
         else
         {
             printf("Fatal error doing SSL_read_ex\n");
-            SSL_free(ssl);
-            BIO_free(client_bio);
+            SSL_shutdown(ssl);
+            if (ssl) SSL_free(ssl);
+            if (client_bio) BIO_free(client_bio);
         }
     }
     return ret;
 }
 
-int ClientHandler::perform_write(void)
+int ClientHandler::perform_write(int num)
 {
+    printf("perform_write(%d)\n", num);
     size_t bytes;
     int ret;
     sslwrite_want_read = false;
-    ret = SSL_write_ex(ssl, buf, MIN(strlen(buf) + 1, sizeof(buf)), &bytes);
+    if (num == 0) ret = SSL_write_ex(ssl, buf, 0, &bytes);
+    else ret = SSL_write_ex(ssl, buf, MIN(strlen(buf) + 1, sizeof(buf)), &bytes);
+    printf("ret value SSL_write_ex = %d\n", ret);
     if (ret > 0)
     {
+        if (bytes > 0)
         printf("Sent %ld bytes \"%s\" to %s\n", bytes, buf, addrstr.c_str());
     }
     else
@@ -183,12 +202,14 @@ int ClientHandler::perform_write(void)
         else if (SSL_get_error(ssl, ret) == SSL_ERROR_WANT_WRITE)
         {
             printf("SSL_write_ex error SSL_ERROR_WANT_WRITE\n");
+            sslwrite_want_write = true;
         }
         else
         {
             printf("Fatal error doing SSL_write_ex\n");
-            SSL_free(ssl);
-            BIO_free(client_bio);
+            SSL_shutdown(ssl);
+            if (ssl) SSL_free(ssl);
+            if (client_bio) BIO_free(client_bio);
         }
     }
     return ret;

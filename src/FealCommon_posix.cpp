@@ -43,12 +43,9 @@ int feal::ipaddr_feal2posix(feal::ipaddr* fa, sockaddr_ip* su)
 
 int feal::setnonblocking(handle_t fd)
 {
-	if (fcntl(fd, F_SETFD, fcntl(fd, F_GETFD, 0) | O_NONBLOCK) ==
-	    -1)
-    {
-		return -1;
-	}
-	return 0;
+    int flags = fcntl(fd, F_GETFL, 0);
+    if (flags == -1) return -1;
+    return fcntl(fd, F_SETFL, flags | O_NONBLOCK);
 }
 
 int feal::setnonblocking(handle_t fd[2])

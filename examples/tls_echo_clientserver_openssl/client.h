@@ -51,7 +51,7 @@ virtual void connect_to_server(void);
 
 private:
 int n=0;
-char buf[50];
+char buf[20000];
 SSL_CTX *ctx = nullptr;
 SSL *ssl = nullptr;
 BIO *bio = nullptr;
@@ -61,11 +61,11 @@ bool sslread_want_write = false;
 bool sslwrite_want_read = false;
 bool sslwrite_want_write = false;
 
-void setup_sslctx(void);
+int setup_sslctx(void);
 void send_something(void);
 int ssl_connect(void);
 int perform_read(void);
-int perform_write(void);
+int perform_write(int num);
 
 
 };
