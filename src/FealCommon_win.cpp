@@ -86,7 +86,7 @@ int feal::ipaddr_feal2posix(feal::ipaddr* fa, sockaddr_ip* su)
     return res;
 }
 
-int feal::setnonblocking(handle_t fd)
+int feal::set_nonblocking(handle_t fd)
 {
     ULONG NonBlock = 1;
     if (ioctlsocket(fd, FIONBIO, &NonBlock) == SOCKET_ERROR)
@@ -96,7 +96,7 @@ int feal::setnonblocking(handle_t fd)
    return 0;
 }
 
-int feal::setipv6only(handle_t fd)
+int feal::set_ipv6only(handle_t fd)
 {
     int on = 1;
     if (setsockopt(fd, IPPROTO_IPV6, IPV6_V6ONLY,
@@ -105,6 +105,13 @@ int feal::setipv6only(handle_t fd)
         return SOCKET_ERROR;
     }
     return 0;
+}
+
+int feal::set_reuseaddr(handle_t fd, bool enable)
+{
+    char opt = enable ? 1 : 0;
+    return setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, 
+            (const char *) &opt, (int) sizeof(opt));
 }
 
 int feal::datareadavaillen(handle_t fd)

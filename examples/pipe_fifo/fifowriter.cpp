@@ -52,7 +52,7 @@ void Fifowriter::open_for_writing(void)
         timers.startTimer<EvtDelayTimer>(std::chrono::seconds(2));
         return;
     }
-    feal::setnonblocking(fifofd);
+    feal::set_nonblocking(fifofd);
 }
 
 void Fifowriter::send_something(void)

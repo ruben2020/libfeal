@@ -37,7 +37,7 @@ feal::errenum feal::DescMonGeneric::start_monitoring(void)
 feal::errenum feal::DescMonGeneric::add(handle_t fd)
 {
     errenum res = FEAL_OK;
-    setnonblocking(fd);
+    set_nonblocking(fd);
 #if defined (_WIN32)
     for (int j=0; j < max_events; j++)
     {

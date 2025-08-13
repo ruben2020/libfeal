@@ -52,6 +52,7 @@ void Server::start_server(void)
     serveraddr.port = 11001;
     strcpy(serveraddr.addr, "127.0.0.1");
     printf("Starting Server on 127.0.0.1:11001\n");
+    stream.set_reuseaddr(true);
     feal::errenum se = stream.create_and_bind(&serveraddr);
     if (se != feal::FEAL_OK)
     {

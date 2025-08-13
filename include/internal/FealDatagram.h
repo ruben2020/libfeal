@@ -43,6 +43,8 @@ errenum send_to(void *buf, uint32_t len, int32_t* bytes,
 
 errenum close_and_reset(void);
 
+void set_reuseaddr(bool enable);
+
 protected:
 
 std::thread datagramThread;
@@ -68,6 +70,8 @@ virtual void receiveEventWriteAvail(errenum errnum, handle_t fd, int datalen);
 virtual void receiveEventSockErr(errenum errnum, handle_t fd, int datalen);
 
 private:
+
+bool reuseaddr = false;
 
 static void dgramLoopLauncher(DatagramGeneric *p);
 void dgramLoop(void);

@@ -237,10 +237,12 @@ typedef struct {
 
 void ipaddr_posix2feal(sockaddr_ip* su, ipaddr* fa);
 int  ipaddr_feal2posix(ipaddr* fa, sockaddr_ip* su);
-int  setnonblocking(handle_t fd);
-int  setnonblocking(handle_t fd[2]);
-int  setipv6only(handle_t fd);
+int  set_nonblocking(handle_t fd);
+int  set_nonblocking(handle_t fd[2]);
+int  set_ipv6only(handle_t fd);
+int  set_reuseaddr(handle_t fd, bool enable);
 int  datareadavaillen(handle_t fd);
+feal::errenum getpeereid(feal::handle_t fd, uid_t* euid, gid_t* egid);
 
 #if defined (__linux__)
 int epoll_ctl_add(int epfd, handle_t fd, uint32_t events);

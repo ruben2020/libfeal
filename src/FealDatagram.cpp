@@ -19,6 +19,11 @@ void feal::DatagramGeneric::shutdownTool(void)
     close_and_reset();
 }
 
+void feal::DatagramGeneric::set_reuseaddr(bool enable)
+{
+    reuseaddr = enable;
+}
+
 feal::errenum feal::DatagramGeneric::create_sock(feal::family_t fam)
 {
     errenum res = FEAL_OK;
@@ -29,7 +34,8 @@ feal::errenum feal::DatagramGeneric::create_sock(feal::family_t fam)
         res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
         return res;
     }
-    setnonblocking(sockfd);
+    feal::set_reuseaddr(sockfd, reuseaddr);
+    set_nonblocking(sockfd);
     datagramThread = std::thread(&dgramLoopLauncher, this);
     return res;
 }
@@ -50,7 +56,7 @@ feal::errenum feal::DatagramGeneric::bind_sock(feal::ipaddr* fa)
     socklen_t length = sizeof(su.in);
     if (fa->family == feal::ipaddr::INET6)
     {
-        setipv6only(sockfd);
+        set_ipv6only(sockfd);
         length = sizeof(su.in6);
     }
     ret = bind(sockfd, &(su.sa), length);

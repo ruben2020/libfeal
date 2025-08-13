@@ -41,7 +41,6 @@ void shutdownTool(void);
 errenum create_and_bind(struct sockaddr_un* su);
 errenum getpeername(struct sockaddr_un* su, handle_t fd = -1);
 errenum getpeereid(uid_t* euid, gid_t* egid);
-static errenum getpeereid(handle_t fd, uid_t* euid, gid_t* egid);
 #endif
 
 errenum create_and_bind(feal::ipaddr* fa);
@@ -51,11 +50,14 @@ errenum disconnect_client(handle_t client_sockfd);
 errenum disconnect_and_reset(void);
 errenum getpeername(feal::ipaddr* fa, handle_t fd = FEAL_INVALID_HANDLE);
 
+void set_reuseaddr(bool enable);
+
 protected:
 
 std::thread serverThread;
 std::thread connectThread;
 std::map<handle_t, clientst> mapReaders;
+bool reuseaddr = false;
 
 static void serverLoopLauncher(StreamGeneric *p);
 static void connectLoopLauncher(StreamGeneric *p);
@@ -171,7 +173,7 @@ errenum create_and_connect(feal::ipaddr* fa)
         res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
         return res;
     }
-    setnonblocking(sockfd);
+    set_nonblocking(sockfd);
     socklen_t length = sizeof(su.in);
     if (fa->family == feal::ipaddr::INET6)
     {
@@ -212,7 +214,7 @@ errenum create_and_connect(struct sockaddr_un* su)
         res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
         return res;
     }
-    setnonblocking(sockfd);
+    set_nonblocking(sockfd);
     socklen_t length = sizeof(su->sun_family) + strlen(su->sun_path) + 1;
     ret = connect(sockfd, (const struct sockaddr*) su, length);
     if ((ret == FEAL_HANDLE_ERROR) &&
@@ -275,7 +277,7 @@ errenum registerClient(T* p, handle_t client_sockfd)
     if (it == mapReaders.end())
     {
         mapReaders[client_sockfd] = cst;
-        setnonblocking(client_sockfd);
+        set_nonblocking(client_sockfd);
         if (do_client_read_start(client_sockfd) == -1)
             res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
     }

@@ -40,7 +40,7 @@ void Serveruns::print_client_address(feal::handle_t fd)
 {
     uid_t euid=0;
     gid_t egid=0;
-    stream.getpeereid(fd, &euid, &egid);
+    feal::getpeereid(fd, &euid, &egid);
     printf("Credentials from getpeerid: euid=%ld, egid=%ld\n",
         (long) euid, (long) egid);
 }
@@ -50,7 +50,7 @@ void Serveruns::get_client_address(feal::handle_t fd, char* addr, int addrbuflen
 
     uid_t euid=0;
     gid_t egid=0;
-    stream.getpeereid(fd, &euid, &egid);
+    feal::getpeereid(fd, &euid, &egid);
     if (addr) snprintf(addr, addrbuflen, "euid=%ld, egid=%ld",
                 (long) euid, (long) egid);
 }

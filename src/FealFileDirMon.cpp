@@ -20,7 +20,7 @@ void feal::FileDirMonGeneric::init(void)
         FEALDEBUGLOG("FileDirMonGeneric::init inotify_init");
         return;
     }
-    setnonblocking(genfd);
+    set_nonblocking(genfd);
     if (epoll_ctl_add(epfd, genfd, 
         (EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP)) == -1)
     {
@@ -60,7 +60,7 @@ feal::errenum feal::FileDirMonGeneric::add(const char *s, flags_t mask, handle_t
         res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
         return res;
     }
-    setnonblocking(wn);
+    set_nonblocking(wn);
     struct kevent change_event[2];
     memset(&change_event, 0, sizeof(change_event));
     EV_SET(change_event, wn, EVFILT_VNODE , EV_ADD | EV_ENABLE | EV_CLEAR, mask, 0, 0);

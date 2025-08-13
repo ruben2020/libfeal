@@ -19,7 +19,7 @@ feal::errenum feal::ReaderGeneric::registerhandle(handle_t fd)
         res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
         return res;
     }
-    setnonblocking(fd);
+    set_nonblocking(fd);
     readerfd = fd;
     readerThread = std::thread(&readerLoopLauncher, this);
     return res;
