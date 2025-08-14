@@ -42,6 +42,16 @@ void Client::shutdownActor(void)
 {
     printf("Client::shutdownActor\n");
     feal::EventBus::getInstance().stopBus();
+    int ret = 0;
+    while (ret == 0) 
+    {
+        ret = SSL_shutdown(ssl);
+        printf("SSL_shutdown ret = %d\n", ret);
+    }
+    if (ssl) SSL_free(ssl);
+    if (bio) BIO_free(bio);
+    if (ctx) SSL_CTX_free(ctx);
+    stream.disconnect_and_reset();
     printf("Client shutdown complete\n");
 }
 
@@ -70,11 +80,6 @@ void Client::handleEvent(std::shared_ptr<EvtEndTimer> pevt)
 {
     if (!pevt) return;
     printf("Client::EvtEndTimer Elapsed\n");
-    SSL_shutdown(ssl);
-    if (ssl) SSL_free(ssl);
-    if (ctx) SSL_CTX_free(ctx);
-    if (bio) BIO_free(bio);
-    stream.disconnect_and_reset();
     shutdown();
 }
 
@@ -113,7 +118,7 @@ void Client::handleEvent(std::shared_ptr<EvtDataReadAvail> pevt)
 {
     if (!pevt) return;
     printf("Client::EvtDataReadAvail\n");
-    if (sslconnect_want_read)
+    if (sslconnect_pending)
     {
         ssl_connect();
     }
@@ -131,7 +136,7 @@ void Client::handleEvent(std::shared_ptr<EvtDataWriteAvail> pevt)
 {
     if (!pevt) return;
     printf("Client::EvtDataWriteAvail\n");
-    if (sslconnect_want_write)
+    if (sslconnect_pending)
     {
         ssl_connect();
         return;
@@ -155,7 +160,12 @@ void Client::handleEvent(std::shared_ptr<EvtConnectionShutdown> pevt)
     if (!pevt) return;
     printf("Client::EvtConnectionShutdown\n");
     timers.stopTimer<EvtDelayTimer>();
-    SSL_shutdown(ssl);
+    int ret = 0;
+    while (ret == 0) 
+    {
+        ret = SSL_shutdown(ssl);
+        printf("SSL_shutdown ret = %d\n", ret);
+    }
     if (ssl) SSL_free(ssl);
     if (bio) BIO_free(bio);
     stream.disconnect_and_reset();
@@ -168,31 +178,25 @@ void Client::handleEvent(std::shared_ptr<EvtSigInt> pevt)
     printf("Client::EvtSigInt (signum=%d, sicode=%d)\n", 
         pevt.get()->signo, pevt.get()->sicode);
     timers.stopTimer<EvtEndTimer>();
-    SSL_shutdown(ssl);
-    if (ssl) SSL_free(ssl);
-    if (ctx) SSL_CTX_free(ctx);
-    if (bio) BIO_free(bio);
-    stream.disconnect_and_reset();
     shutdown();
 }
 
 int Client::ssl_connect(void)
 {
     int ret;
-    sslconnect_want_read = false;
-    sslconnect_want_write = false;
+    sslconnect_pending = false;
     ret = SSL_connect(ssl);
     if (ret <= 0)
     {
         if (SSL_get_error(ssl, ret) == SSL_ERROR_WANT_READ)
         {
             printf("SSL_connect error SSL_ERROR_WANT_READ\n");
-            sslconnect_want_read = true;
+            sslconnect_pending = true;
         }
         else if (SSL_get_error(ssl, ret) == SSL_ERROR_WANT_WRITE)
         {
             printf("SSL_connect error SSL_ERROR_WANT_WRITE\n");
-            sslconnect_want_write = true;
+            sslconnect_pending = true;
         }
         else
         {
@@ -241,7 +245,12 @@ int Client::perform_read(void)
         else
         {
             printf("Fatal error doing SSL_read_ex\n");
-            SSL_shutdown(ssl);
+            int ret = 0;
+            while (ret == 0) 
+            {
+                ret = SSL_shutdown(ssl);
+                printf("SSL_shutdown ret = %d\n", ret);
+            }
             if (ssl) SSL_free(ssl);
             if (bio) BIO_free(bio);
         }
@@ -282,7 +291,12 @@ int Client::perform_write(int num)
         else
         {
             printf("Fatal error doing SSL_write_ex\n");
-            SSL_shutdown(ssl);
+            int ret = 0;
+            while (ret == 0) 
+            {
+                ret = SSL_shutdown(ssl);
+                printf("SSL_shutdown ret = %d\n", ret);
+            }
             if (ssl) SSL_free(ssl);
             if (bio) BIO_free(bio);
         }

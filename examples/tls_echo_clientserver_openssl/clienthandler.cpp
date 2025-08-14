@@ -56,6 +56,14 @@ void ClientHandler::pauseActor(void)
 void ClientHandler::shutdownActor(void)
 {
     printf("ClientHandler(%ld)::shutdownActor\n", (long int) sockfd);
+    int ret = 0;
+    while (ret == 0) 
+    {
+        ret = SSL_shutdown(ssl);
+        printf("SSL_shutdown ret = %d\n", ret);
+    }
+    if (ssl) SSL_free(ssl);
+    if (client_bio) BIO_free(client_bio);
     stream->disconnect_client(sockfd);
 }
 
@@ -63,7 +71,7 @@ void ClientHandler::handleEvent(std::shared_ptr<EvtDataReadAvail> pevt)
 {
     printf("ClientHandler(%ld)::EvtDataReadAvail\n", (long int) sockfd);
     if ((!pevt)||(!stream)) return;
-    if (sslaccept_want_read)
+    if (sslaccept_pending)
     {
         ssl_accept();
     }
@@ -81,7 +89,7 @@ void ClientHandler::handleEvent(std::shared_ptr<EvtDataWriteAvail> pevt)
 {
     if ((!pevt)||(!stream)) return;
     printf("ClientHandler(%ld)::EvtDataWriteAvail\n", (long int) sockfd);
-    if (sslaccept_want_write)
+    if (sslaccept_pending)
     {
         ssl_accept();
     }
@@ -114,20 +122,19 @@ void ClientHandler::handleEvent(std::shared_ptr<EvtClientShutdown> pevt)
 int ClientHandler::ssl_accept(void)
 {
     int ret;
-    sslaccept_want_read = false;
-    sslaccept_want_write = false;
+    sslaccept_pending = false;
     ret = SSL_accept(ssl);
     if (ret <= 0)
     {
         if (SSL_get_error(ssl, ret) == SSL_ERROR_WANT_READ)
         {
             printf("SSL_accept error SSL_ERROR_WANT_READ\n");
-            sslaccept_want_read = true;
+            sslaccept_pending = true;
         }
         else if (SSL_get_error(ssl, ret) == SSL_ERROR_WANT_WRITE)
         {
             printf("SSL_accept error SSL_ERROR_WANT_WRITE\n");
-            sslaccept_want_write = true;
+            sslaccept_pending = true;
         }
         else
         {
@@ -147,8 +154,6 @@ int ClientHandler::perform_read(void)
     size_t bytes;
     int ret = 0;
     sslread_want_write = false;
-    //ret = SSL_peek_ex(ssl, buf, sizeof(buf), &bytes);
-    //if (SSL_has_pending(ssl) == 0) return 0;
     ret = SSL_read_ex(ssl, buf, sizeof(buf), &bytes);
     printf("ret value SSL_read_ex = %d\n", ret);
     if (ret > 0)
@@ -170,7 +175,12 @@ int ClientHandler::perform_read(void)
         else
         {
             printf("Fatal error doing SSL_read_ex\n");
-            SSL_shutdown(ssl);
+            int ret = 0;
+            while (ret == 0) 
+            {
+                ret = SSL_shutdown(ssl);
+                printf("SSL_shutdown ret = %d\n", ret);
+            }
             if (ssl) SSL_free(ssl);
             if (client_bio) BIO_free(client_bio);
         }
@@ -184,6 +194,7 @@ int ClientHandler::perform_write(int num)
     size_t bytes;
     int ret;
     sslwrite_want_read = false;
+    sslwrite_want_write = false;
     if (num == 0) ret = SSL_write_ex(ssl, buf, 0, &bytes);
     else ret = SSL_write_ex(ssl, buf, MIN(strlen(buf) + 1, sizeof(buf)), &bytes);
     printf("ret value SSL_write_ex = %d\n", ret);
@@ -207,7 +218,12 @@ int ClientHandler::perform_write(int num)
         else
         {
             printf("Fatal error doing SSL_write_ex\n");
-            SSL_shutdown(ssl);
+            int ret = 0;
+            while (ret == 0) 
+            {
+                ret = SSL_shutdown(ssl);
+                printf("SSL_shutdown ret = %d\n", ret);
+            }
             if (ssl) SSL_free(ssl);
             if (client_bio) BIO_free(client_bio);
         }

@@ -43,6 +43,7 @@ void Server::shutdownActor(void)
     {
         it->second.get()->shutdown();
     }
+    if (ctx) SSL_CTX_free(ctx);
     mapch.clear();
     stream.disconnect_and_reset();
 }
