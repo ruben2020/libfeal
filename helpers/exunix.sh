@@ -53,12 +53,14 @@ echo =================================
 echo Running curlmulti ...
 ./build/examples/descmon_curl/fealcurlmulti
 echo =================================
-echo Running tls openssl IPv4...
+echo Running tls openssl IPv4 ...
 cp ./examples/tls_echo_clientserver_openssl/server.key ./build/examples/tls_echo_clientserver_openssl/
 cp ./examples/tls_echo_clientserver_openssl/server.crt ./build/examples/tls_echo_clientserver_openssl/
-./build/examples/tls_echo_clientserver_openssl/fealtlsclient &
-./build/examples/tls_echo_clientserver_openssl/fealtlsserver
+cd ./build/examples/tls_echo_clientserver_openssl
+./fealtlsclient &
+./fealtlsserver
 echo =================================
-echo Running tls openssl IPv6...
-./build/examples/tls_echo_clientserver_openssl/fealtlsclient6 &
-./build/examples/tls_echo_clientserver_openssl/fealtlsserver6
+echo Running tls openssl IPv6 ...
+./fealtlsclient6 &
+./fealtlsserver6
+cd ../../..
