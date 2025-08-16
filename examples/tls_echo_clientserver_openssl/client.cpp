@@ -42,15 +42,11 @@ void Client::shutdownActor(void)
 {
     printf("Client::shutdownActor\n");
     feal::EventBus::getInstance().stopBus();
-    int ret = 0;
-    while (ret == 0) 
-    {
-        ret = SSL_shutdown(ssl);
-        printf("SSL_shutdown ret = %d\n", ret);
-    }
     if (ssl) SSL_free(ssl);
-    if (bio) BIO_free(bio);
     if (ctx) SSL_CTX_free(ctx);
+    ssl = nullptr;
+    bio = nullptr;
+    ctx = nullptr;
     stream.disconnect_and_reset();
     printf("Client shutdown complete\n");
 }
@@ -72,7 +68,6 @@ void Client::connect_to_server(void)
 
 void Client::send_something(void)
 {
-    //if ((!sslwrite_want_read)&&(!sslwrite_want_write))
     perform_write(1);
 }
 
@@ -80,7 +75,7 @@ void Client::handleEvent(std::shared_ptr<EvtEndTimer> pevt)
 {
     if (!pevt) return;
     printf("Client::EvtEndTimer Elapsed\n");
-    shutdown();
+    perform_sslshutdown();
 }
 
 void Client::handleEvent(std::shared_ptr<EvtDelayTimer> pevt)
@@ -106,12 +101,13 @@ void Client::handleEvent(std::shared_ptr<EvtConnectedToServer> pevt)
     {
         printf("Error creating SSL handle for new connection");
         BIO_free(bio);
+        bio = nullptr;
     }
     SSL_set_bio(ssl, bio, bio);
     SSL_set_connect_state(ssl);
     SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);
     SSL_set_read_ahead(ssl, 1);
-    ssl_connect();
+    perform_sslconnect();
 }
 
 void Client::handleEvent(std::shared_ptr<EvtDataReadAvail> pevt)
@@ -120,7 +116,7 @@ void Client::handleEvent(std::shared_ptr<EvtDataReadAvail> pevt)
     printf("Client::EvtDataReadAvail\n");
     if (sslconnect_pending)
     {
-        ssl_connect();
+        perform_sslconnect();
     }
     else if (sslwrite_want_read)
     {
@@ -138,7 +134,7 @@ void Client::handleEvent(std::shared_ptr<EvtDataWriteAvail> pevt)
     printf("Client::EvtDataWriteAvail\n");
     if (sslconnect_pending)
     {
-        ssl_connect();
+        perform_sslconnect();
         return;
     }
     if (sslread_want_write)
@@ -160,15 +156,10 @@ void Client::handleEvent(std::shared_ptr<EvtConnectionShutdown> pevt)
     if (!pevt) return;
     printf("Client::EvtConnectionShutdown\n");
     timers.stopTimer<EvtDelayTimer>();
-    int ret = 0;
-    while (ret == 0) 
-    {
-        ret = SSL_shutdown(ssl);
-        printf("SSL_shutdown ret = %d\n", ret);
-    }
-    if (ssl) SSL_free(ssl);
-    if (bio) BIO_free(bio);
     stream.disconnect_and_reset();
+    if (ssl) SSL_free(ssl);
+    ssl = nullptr;
+    bio = nullptr;
     timers.startTimer<EvtRetryTimer>(std::chrono::seconds(5));
 }
 
@@ -178,13 +169,18 @@ void Client::handleEvent(std::shared_ptr<EvtSigInt> pevt)
     printf("Client::EvtSigInt (signum=%d, sicode=%d)\n", 
         pevt.get()->signo, pevt.get()->sicode);
     timers.stopTimer<EvtEndTimer>();
-    shutdown();
-}
+    perform_sslshutdown();
+    }
 
-int Client::ssl_connect(void)
+int Client::perform_sslconnect(void)
 {
     int ret;
     sslconnect_pending = false;
+    if (ssl == nullptr)
+    {
+        printf("ssl not a valid pointer\n");
+        return 0;
+    }
     ret = SSL_connect(ssl);
     if (ret <= 0)
     {
@@ -202,14 +198,14 @@ int Client::ssl_connect(void)
         {
             printf("Fatal error performing SSL handshake with server\n");
             if (ssl) SSL_free(ssl);
-            if (bio) BIO_free(bio);
+            ssl = nullptr;
+            bio = nullptr;
         }
     }
     else
     {
         printf("SSL handshake with server successfully completed!\n ");
         send_something();
-        //timers.startTimer<EvtDelayTimer>(std::chrono::seconds(2));
 
     }
     return ret;
@@ -218,12 +214,15 @@ int Client::ssl_connect(void)
 int Client::perform_read(void)
 {
     printf("perform_read\n");
+    if (ssl == nullptr)
+    {
+        printf("ssl not a valid pointer\n");
+        return 0;
+    }
     memset(&buf, 0, sizeof(buf));
     size_t bytes;
     int ret = 0;
     sslread_want_write = false;
-    //ret = SSL_peek_ex(ssl, buf, sizeof(buf), &bytes);
-    //if (SSL_has_pending(ssl) == 0) return 0;
     ret = SSL_read_ex(ssl, buf, sizeof(buf), &bytes);
     printf("ret value SSL_read_ex = %d\n", ret);
     if (ret > 0)
@@ -242,17 +241,14 @@ int Client::perform_read(void)
             printf("SSL_read_ex error SSL_ERROR_WANT_WRITE\n");
             sslread_want_write = true;
         }
+        else if (SSL_get_error(ssl, ret) == SSL_ERROR_ZERO_RETURN)
+        {
+            printf("SSL_read_ex error SSL_ERROR_ZERO_RETURN\n");
+            perform_sslshutdown();
+        }
         else
         {
             printf("Fatal error doing SSL_read_ex\n");
-            int ret = 0;
-            while (ret == 0) 
-            {
-                ret = SSL_shutdown(ssl);
-                printf("SSL_shutdown ret = %d\n", ret);
-            }
-            if (ssl) SSL_free(ssl);
-            if (bio) BIO_free(bio);
         }
     }
     return ret;
@@ -261,6 +257,16 @@ int Client::perform_read(void)
 int Client::perform_write(int num)
 {
     printf("perform_write(%d)\n", num);
+    if (sslshutdown_pending || sslshutdown_complete)
+    {
+        printf("No more writing because SSL connection has been shutdown\n");
+        return 0;
+    }
+    if (ssl == nullptr)
+    {
+        printf("ssl not a valid pointer\n");
+        return 0;
+    }
     size_t bytes;
     int ret;
     memset(&buf, 0, sizeof(buf));
@@ -291,15 +297,36 @@ int Client::perform_write(int num)
         else
         {
             printf("Fatal error doing SSL_write_ex\n");
-            int ret = 0;
-            while (ret == 0) 
-            {
-                ret = SSL_shutdown(ssl);
-                printf("SSL_shutdown ret = %d\n", ret);
-            }
-            if (ssl) SSL_free(ssl);
-            if (bio) BIO_free(bio);
         }
+    }
+    return ret;
+}
+
+int Client::perform_sslshutdown(void)
+{
+    int ret;
+    if (ssl == nullptr)
+    {
+        printf("ssl not a valid pointer\n");
+        return 0;
+    }
+    sslshutdown_pending = false;
+    sslshutdown_complete = false;
+    ret = SSL_shutdown(ssl);
+    if (ret >= 1)
+    {
+        sslshutdown_complete = true;
+        printf("SSL_shutdown successfully completed, ret = 1\n");
+        shutdown();
+    }
+    else if (ret == 0)
+    {
+        sslshutdown_pending = true;
+        printf("SSL_shutdown pending, ret = 0\n");
+    }
+    else if (ret <= -1)
+    {
+        printf("SSL_shutdown failed, ret = -1\n");
     }
     return ret;
 }

@@ -29,6 +29,8 @@ else(  )
     set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall")
 endif( )
 
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -ggdb")
+
 add_subdirectory( "src" )
 add_subdirectory( "test" )
 add_subdirectory( "examples" )

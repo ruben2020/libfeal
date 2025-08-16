@@ -69,7 +69,7 @@ jobs:
         if: startsWith(matrix.config.name, 'Ubuntu-latest')
         run: |
           sudo apt-get update
-          sudo apt-get install build-essential g++ clang git cmake ninja-build libcurl4 libcurl4-openssl-dev
+          sudo apt-get install build-essential g++ clang git cmake ninja-build libcurl4 libcurl4-openssl-dev openssl libssl-dev
           uname -a
           lsb_release -a
           gcc -v && g++ -v
@@ -80,6 +80,8 @@ jobs:
         if: startsWith(matrix.config.name, 'macOS Clang')
         run: |
           brew install ninja
+          brew install openssl@3
+          brew install curl
           clang -v
           cmake --version
           ninja --version
@@ -93,12 +95,12 @@ jobs:
         uses: vmactions/freebsd-vm@v1
         with:
           usesh: true
-          prepare: pkg install -y ninja cmake llvm curl
+          prepare: pkg install -y ninja cmake llvm curl openssl
           run: |
             freebsd-version
             uname -mrs
             pwd
-            cmake -G Ninja -DCURL_EX=ON -S . -B build
+            cmake -G Ninja -DCURL_EX=ON -DOPENSSL_EX=ON -S . -B build
             cmake --build build
             sh ./helpers/exunix.sh
 
@@ -107,13 +109,13 @@ jobs:
         run: |
           export CC=clang
           export CXX=clang++
-          cmake -G Ninja -DCURL_EX=ON -S . -B build
+          cmake -G Ninja -DCURL_EX=ON -DOPENSSL_EX=ON -S . -B build
           cmake --build build
 
       - name: Configure CMake and Build with Clang on MacOS
         if: contains(matrix.config.name, 'macOS')
         run: |
-          cmake -G Ninja -DCURL_EX=ON -S . -B build
+          cmake -G Ninja -DCURL_EX=ON -DOPENSSL_EX=ON -S . -B build
           cmake --build build
 
       - name: Configure CMake and Build with GCC on Linux
@@ -121,7 +123,7 @@ jobs:
         run: |
           export CC=gcc
           export CXX=g++
-          cmake -G Ninja -DCURL_EX=ON -S . -B build
+          cmake -G Ninja -DCURL_EX=ON -DOPENSSL_EX=ON -S . -B build
           cmake --build build
 
       - name: Configure CMake and Build with GCC on Windows

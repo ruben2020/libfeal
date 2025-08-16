@@ -32,6 +32,7 @@ private:
 FEAL_EVENT_DEFAULT_DECLARE(EvtDataReadAvail, EventComm)
 FEAL_EVENT_DEFAULT_DECLARE(EvtDataWriteAvail, EventComm)
 FEAL_EVENT_DEFAULT_DECLARE(EvtClientShutdown, EventComm)
+FEAL_EVENT_DEFAULT_DECLARE(EvtClientSSLShutdown, EventComm)
 
 
 class ClientHandler : public feal::Actor
@@ -51,6 +52,7 @@ void shutdownActor(void);
 void handleEvent(std::shared_ptr<EvtDataReadAvail> pevt);
 void handleEvent(std::shared_ptr<EvtDataWriteAvail> pevt);
 void handleEvent(std::shared_ptr<EvtClientShutdown> pevt);
+void handleEvent(std::shared_ptr<EvtClientSSLShutdown> pevt);
 
 private:
 char buf[20000];
@@ -64,12 +66,13 @@ bool sslaccept_pending = false;
 bool sslread_want_write = false;
 bool sslwrite_want_read = false;
 bool sslwrite_want_write = false;
+bool sslshutdown_pending = false;
+bool sslshutdown_complete = false;
 
-int ssl_accept(void);
+int perform_sslaccept(void);
 int perform_read(void);
 int perform_write(int num);
-
-
+int perform_sslshutdown(void);
 };
 
 

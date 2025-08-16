@@ -46,6 +46,19 @@ echo =================================
 echo Running uns ...
 ./build/examples/uns_echo_clientserver/fealunsclient &
 ./build/examples/uns_echo_clientserver/fealunsserver
+echo =================================
 echo Running filedirmon ...
 ./build/examples/filedirmon/fealfiledirmon
-
+echo =================================
+echo Running curlmulti ...
+./build/examples/descmon_curl/fealcurlmulti
+echo =================================
+echo Running tls openssl IPv4...
+cp ./examples/tls_echo_clientserver_openssl/server.key ./build/examples/tls_echo_clientserver_openssl/
+cp ./examples/tls_echo_clientserver_openssl/server.crt ./build/examples/tls_echo_clientserver_openssl/
+./build/examples/tls_echo_clientserver_openssl/fealtlsclient &
+./build/examples/tls_echo_clientserver_openssl/fealtlsserver
+echo =================================
+echo Running tls openssl IPv6...
+./build/examples/tls_echo_clientserver_openssl/fealtlsclient6 &
+./build/examples/tls_echo_clientserver_openssl/fealtlsserver6

@@ -77,7 +77,8 @@ void Server::handleEvent(std::shared_ptr<EvtEndTimer> pevt)
 {
     if (!pevt ) return;
     printf("Server::EvtEndTimer Elapsed\n");
-    shutdown();
+    std::shared_ptr<EvtClientSSLShutdown> pevt2 = std::make_shared<EvtClientSSLShutdown>();
+    publishEvent(pevt2);
 }
 
 void Server::handleEvent(std::shared_ptr<EvtRetryTimer> pevt)
@@ -156,6 +157,7 @@ void Server::handleEvent(std::shared_ptr<EvtClientDisconnected> pevt)
         it->second.get()->shutdown();
     }
     mapch.erase(pevt.get()->fd);
+    if (mapch.empty()) shutdown();
 }
 
 void Server::handleEvent(std::shared_ptr<EvtSigInt> pevt)
@@ -164,7 +166,8 @@ void Server::handleEvent(std::shared_ptr<EvtSigInt> pevt)
     printf("Server::EvtSigInt (signum=%d, sicode=%d)\n", 
         pevt.get()->signo, pevt.get()->sicode);
     timers.stopTimer<EvtEndTimer>();
-    shutdown();
+    std::shared_ptr<EvtClientSSLShutdown> pevt2 = std::make_shared<EvtClientSSLShutdown>();
+    publishEvent(pevt2);
 }
 
 int Server::setup_sslctx(void)

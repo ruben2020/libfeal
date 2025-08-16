@@ -59,13 +59,15 @@ bool sslconnect_pending = false;
 bool sslread_want_write = false;
 bool sslwrite_want_read = false;
 bool sslwrite_want_write = false;
+bool sslshutdown_pending = false;
+bool sslshutdown_complete = false;
 
 int setup_sslctx(void);
 void send_something(void);
-int ssl_connect(void);
+int perform_sslconnect(void);
 int perform_read(void);
 int perform_write(int num);
-
+int perform_sslshutdown(void);
 
 };
 
