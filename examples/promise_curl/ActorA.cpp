@@ -57,10 +57,10 @@ void ActorA::handleEvent(std::shared_ptr<EvtCurlPromiseComplete> pevt)
 {
     if (!pevt) return;
     printf("ActorA EvtCurlPromiseComplete\n");
-    printf("Results back from curl:\n Download %s (%lu bytes)\n",
+    printf("Results back from curl:\n Download %s (%lld bytes)\n",
         ((EvtCurlPromiseComplete*) pevt.get())->success ? 
             "successful" : "not successful",
-        ((EvtCurlPromiseComplete*) pevt.get())->bytes);
+        (long long) ((EvtCurlPromiseComplete*) pevt.get())->bytes);
     if (curl_work_thread.joinable()) curl_work_thread.join();
     std::shared_ptr<feal::Event> pevt2 = std::make_shared<EvtWorkDone>();
     publishEvent(pevt2);

@@ -49,20 +49,21 @@ void Server::start_server(void)
 {
     feal::ipaddr serveraddr;
     serveraddr.family = feal::ipaddr::INET;
-    serveraddr.port = 11001;
+    serveraddr.port = 55001;
     strcpy(serveraddr.addr, "127.0.0.1");
-    printf("Starting Server on 127.0.0.1:11001\n");
+    printf("Starting Server on 127.0.0.1:%d\n", serveraddr.port);
+    stream.set_reuseaddr(true);
     feal::errenum se = stream.create_and_bind(&serveraddr);
     if (se != feal::FEAL_OK)
     {
-        printf("Error binding to 127.0.0.1:11001  err %d\n", se);
+        printf("Error binding to 127.0.0.1:%d  err %d\n", serveraddr.port, se);
         timers.startTimer<EvtRetryTimer>(std::chrono::seconds(5));
         return;
     }
     se = stream.listen();
     if (se != feal::FEAL_OK)
     {
-        printf("Error listening to 127.0.0.1:11001  err %d\n", se);
+        printf("Error listening to 127.0.0.1:%d  err %d\n", serveraddr.port, se);
         timers.startTimer<EvtRetryTimer>(std::chrono::seconds(5));
         return;
     }
@@ -87,7 +88,7 @@ void Server::handleEvent(std::shared_ptr<EvtIncomingConn> pevt)
 {
     if (!pevt ) return;
     printf("Server::EvtIncomingConn\n");
-    printf("Incoming connection, client socket: %ld\n", (long int) pevt.get()->fd);
+    printf("Incoming connection, client socket: %lld\n", (long long int) pevt.get()->fd);
     if (pevt.get()-> errnum != feal::FEAL_OK)
     {
     	printf("Error1 %d\n", pevt.get()-> errnum);
@@ -114,12 +115,12 @@ void Server::print_client_address(feal::handle_t fd)
     se = stream.getpeername(&fa, fd);
     if (se == feal::FEAL_OK)
     {
-        printf("ClientHandler(%ld): %s addr %s port %d\n",
-            (long int) fd, (fa.family == feal::ipaddr::INET ? "IPv4" : "IPv6"), fa.addr, fa.port);
+        printf("ClientHandler(%lld): %s addr %s port %d\n",
+            (long long int) fd, (fa.family == feal::ipaddr::INET ? "IPv4" : "IPv6"), fa.addr, fa.port);
     }
     else if ((se != feal::FEAL_ENOTCONN)&&(se != feal::FEAL_ENOTSOCK))
     {
-        printf("Error2 %d, fd=%ld\n", se, (long int) fd);
+        printf("Error2 %d, fd=%lld\n", se, (long long int) fd);
     }
 }
 

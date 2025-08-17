@@ -34,11 +34,11 @@ errenum open_pipe_for_reading(const char *pathname);
 errenum registerhandle(handle_t fd);
 
 #if defined (__linux__)
-const unsigned int max_events = 64;
+#define FEALREADER_MAXEVENTS 64
 int epfd = -1;
 
 #else
-const unsigned int max_events = 64;
+#define FEALREADER_MAXEVENTS 64
 int kq = -1;
 #endif
 

@@ -41,26 +41,23 @@ int feal::ipaddr_feal2posix(feal::ipaddr* fa, sockaddr_ip* su)
     return res;
 }
 
-int feal::setnonblocking(handle_t fd)
+int feal::set_nonblocking(handle_t fd)
 {
-	if (fcntl(fd, F_SETFD, fcntl(fd, F_GETFD, 0) | O_NONBLOCK) ==
-	    -1)
-    {
-		return -1;
-	}
-	return 0;
+    int flags = fcntl(fd, F_GETFL, 0);
+    if (flags == -1) return -1;
+    return fcntl(fd, F_SETFL, flags | O_NONBLOCK);
 }
 
-int feal::setnonblocking(handle_t fd[2])
+int feal::set_nonblocking(handle_t fd[2])
 {
     int ret1 = 0;
     int ret2 = 0;
-    ret1 = feal::setnonblocking(fd[0]);
-    ret2 = feal::setnonblocking(fd[1]);
+    ret1 = feal::set_nonblocking(fd[0]);
+    ret2 = feal::set_nonblocking(fd[1]);
     return (ret1 < 0 ? ret1 : ret2);
 }
 
-int feal::setipv6only(handle_t fd)
+int feal::set_ipv6only(handle_t fd)
 {
     int on = 1;
     if (setsockopt(fd, IPPROTO_IPV6, IPV6_V6ONLY,
@@ -69,6 +66,13 @@ int feal::setipv6only(handle_t fd)
         return -1;
     }
     return 0;
+}
+
+int feal::set_reuseaddr(handle_t fd, bool enable)
+{
+    int opt = enable ? 1 : 0;
+    return setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, 
+            &opt, sizeof(opt));
 }
 
 int feal::datareadavaillen(handle_t fd)
@@ -80,6 +84,31 @@ int feal::datareadavaillen(handle_t fd)
             ret = len;
         }
     return ret;
+}
+
+feal::errenum feal::getpeereid(feal::handle_t fd, uid_t* euid, gid_t* egid)
+{
+    errenum res = FEAL_OK;
+    int ret;
+#if defined (__linux__)
+    socklen_t len;
+    struct ucred ucred;
+    len = sizeof(struct ucred);
+    ret = getsockopt(fd, SOL_SOCKET, SO_PEERCRED, &ucred, &len);
+    if (ret != FEAL_HANDLE_ERROR)
+    {
+        *euid = (uid_t) ucred.uid;
+        *egid = (gid_t) ucred.gid;
+    }
+#else
+    ret = ::getpeereid(fd, euid, egid);
+#endif
+    if (ret == FEAL_HANDLE_ERROR)
+    {
+        res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
+        return res;
+    }
+    return res;
 }
 
 #if defined (__linux__)

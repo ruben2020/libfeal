@@ -18,16 +18,16 @@ void feal::BaseStream::connection_shutdown(void){}
 void feal::BaseStream::serverLoop(void)
 {
     int nfds = 0;
-    struct epoll_event events[max_events];
+    struct epoll_event events[FEALBASESTREAM_MAXEVENTS];
     epfd = epoll_create(1);
-    if (epoll_ctl_add(epfd, sockfd, (EPOLLIN | EPOLLRDHUP | EPOLLHUP)) == -1)
+    if (epoll_ctl_add(epfd, sockfd, (EPOLLIN | EPOLLRDHUP | EPOLLHUP | EPOLLOUT)) == -1)
     {
         FEALDEBUGLOG("epoll_ctl_add error");
         return;
     }
     for (;;)
     {
-        nfds = epoll_wait(epfd, events, max_events, 500);
+        nfds = epoll_wait(epfd, events, FEALBASESTREAM_MAXEVENTS, 500);
         if (nfds == -1)
         {
             if (errno == EINTR) continue;
@@ -59,8 +59,8 @@ void feal::BaseStream::serverLoop(void)
             if ((events[i].events & EPOLLOUT) == EPOLLOUT)
             {
                 client_write_avail(events[i].data.fd);
-                epoll_ctl_mod(epfd, events[i].data.fd, 
-                    (EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP));
+                /*epoll_ctl_mod(epfd, events[i].data.fd, 
+                    (EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP));*/
             }
         }
     }
@@ -69,7 +69,7 @@ void feal::BaseStream::serverLoop(void)
 int feal::BaseStream::do_client_read_start(feal::handle_t client_sockfd)
 {
     return epoll_ctl_add(epfd, client_sockfd, 
-        (EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP));
+        (EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP | EPOLLOUT));
 }
 
 int feal::BaseStream::do_client_shutdown(feal::handle_t client_sockfd)
@@ -110,7 +110,7 @@ void feal::BaseStream::do_connect_ok(void)
     epfd = epoll_create(1);
     waitingforconn = false;
     if (epoll_ctl_add(epfd, sockfd, 
-        (EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP)) == -1)
+        (EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP | EPOLLOUT)) == -1)
     {
         FEALDEBUGLOG("epoll_ctl error");
         return;
@@ -131,10 +131,10 @@ void feal::BaseStream::do_send_avail_notify(feal::handle_t fd)
 void feal::BaseStream::connectLoop(void)
 {
     int nfds = 0;
-    struct epoll_event events[max_events];
+    struct epoll_event events[FEALBASESTREAM_MAXEVENTS];
     for (;;)
     {
-        nfds = epoll_wait(epfd, events, max_events, 500);
+        nfds = epoll_wait(epfd, events, FEALBASESTREAM_MAXEVENTS, 500);
         if (nfds == -1)
         {
             if (errno == EINTR) continue;
@@ -163,8 +163,8 @@ void feal::BaseStream::connectLoop(void)
                 {
                     connection_write_avail();
                 }
-                epoll_ctl_mod(epfd, sockfd, 
-                    (EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP));
+                /*epoll_ctl_mod(epfd, sockfd, 
+                    (EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP));*/
             }
         }
     }

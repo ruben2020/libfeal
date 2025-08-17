@@ -21,6 +21,11 @@ void feal::StreamGeneric::shutdownTool(void)
     disconnect_and_reset();
 }
 
+void feal::StreamGeneric::set_reuseaddr(bool enable)
+{
+    reuseaddr = enable;
+}
+
 feal::errenum feal::StreamGeneric::create_and_bind(feal::ipaddr* fa)
 {
     errenum res = FEAL_OK;
@@ -43,10 +48,11 @@ feal::errenum feal::StreamGeneric::create_and_bind(feal::ipaddr* fa)
     socklen_t length = sizeof(su.in);
     if (fa->family == feal::ipaddr::INET6)
     {
-        setipv6only(sockfd);
+        set_ipv6only(sockfd);
         length = sizeof(su.in6);
     }
-    setnonblocking(sockfd);
+    feal::set_reuseaddr(sockfd, reuseaddr);
+    set_nonblocking(sockfd);
     ret = ::bind(sockfd, &(su.sa), length);
     if (ret == FEAL_HANDLE_ERROR)
     {
@@ -68,9 +74,10 @@ feal::errenum feal::StreamGeneric::create_and_bind(struct sockaddr_un* su)
         res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
         return res;
     }
-    setnonblocking(sockfd);
+    feal::set_reuseaddr(sockfd, reuseaddr);
+    set_nonblocking(sockfd);
     socklen_t length = sizeof(su->sun_family) + strlen(su->sun_path) + 1;
-    ret = bind(sockfd, (const struct sockaddr*) su, length);
+    ret = ::bind(sockfd, (const struct sockaddr*) su, length);
     if (ret == FEAL_HANDLE_ERROR)
     {
         res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
@@ -174,32 +181,7 @@ feal::errenum feal::StreamGeneric::getpeername(struct sockaddr_un* su, feal::han
 
 feal::errenum feal::StreamGeneric::getpeereid(uid_t* euid, gid_t* egid)
 {
-    return getpeereid(sockfd, euid, egid);
-}
-
-feal::errenum feal::StreamGeneric::getpeereid(feal::handle_t fd, uid_t* euid, gid_t* egid)
-{
-    errenum res = FEAL_OK;
-    int ret;
-#if defined (__linux__)
-    socklen_t len;
-    struct ucred ucred;
-    len = sizeof(struct ucred);
-    ret = getsockopt(fd, SOL_SOCKET, SO_PEERCRED, &ucred, &len);
-    if (ret != FEAL_HANDLE_ERROR)
-    {
-        *euid = (uid_t) ucred.uid;
-        *egid = (gid_t) ucred.gid;
-    }
-#else
-    ret = ::getpeereid(fd, euid, egid);
-#endif
-    if (ret == FEAL_HANDLE_ERROR)
-    {
-        res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
-        return res;
-    }
-    return res;
+    return feal::getpeereid(sockfd, euid, egid);
 }
 #endif
 

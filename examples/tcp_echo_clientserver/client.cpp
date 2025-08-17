@@ -46,13 +46,13 @@ void Client::connect_to_server(void)
 {
     feal::ipaddr serveraddr;
     serveraddr.family = feal::ipaddr::INET;
-    serveraddr.port = 11001;
+    serveraddr.port = 55001;
     strcpy(serveraddr.addr, "127.0.0.1");
-    printf("Trying to connect to 127.0.0.1:11001\n");
+    printf("Trying to connect to 127.0.0.1:%d\n", serveraddr.port);
     feal::errenum se = stream.create_and_connect(&serveraddr);
     if (se != feal::FEAL_OK)
     {
-        printf("Error connecting to 127.0.0.1:11001  err %d\n", se);
+        printf("Error connecting to 127.0.0.1:%d  err %d\n", serveraddr.port, se);
         timers.startTimer<EvtRetryTimer>(std::chrono::seconds(5));
     }
 }
@@ -111,7 +111,7 @@ void Client::handleEvent(std::shared_ptr<EvtDataReadAvail> pevt)
     memset(&buf, 0, sizeof(buf));
     feal::errenum se = stream.recv((void*) buf, sizeof(buf), &bytes);
     if (se != feal::FEAL_OK) printf("Error receiving: %d\n", se);
-    else printf("Received %d bytes: \"%s\"\n", bytes, buf);
+    else printf("Received %lld bytes: \"%s\"\n", (long long int) bytes, buf);
     timers.startTimer<EvtDelayTimer>(std::chrono::seconds(2));
 }
 
@@ -119,7 +119,7 @@ void Client::handleEvent(std::shared_ptr<EvtDataWriteAvail> pevt)
 {
     if (!pevt) return;
     printf("Client::EvtDataWriteAvail\n");
-    send_something();
+    //send_something();
 }
 
 void Client::handleEvent(std::shared_ptr<EvtConnectionShutdown> pevt)

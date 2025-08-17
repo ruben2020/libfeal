@@ -154,8 +154,9 @@ int inet_pton(int af, const char *src, void *dst);
 const char * inet_ntop(int af, const void *src, char *dst, socklen_t size);
 void ipaddr_posix2feal(sockaddr_ip* su, ipaddr* fa);
 int  ipaddr_feal2posix(ipaddr* fa, sockaddr_ip* su);
-int  setnonblocking(handle_t fd);
-int  setipv6only(handle_t fd);
+int  set_nonblocking(handle_t fd);
+int  set_ipv6only(handle_t fd);
+int  set_reuseaddr(handle_t fd, bool enable);
 int  datareadavaillen(handle_t fd);
 
 }

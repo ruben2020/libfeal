@@ -51,7 +51,7 @@ void ActorA::forkChild(int childnum, const char* medium)
             break;
     }
     if (ret == -1) printf("Error creating socket/ pipe\n");
-    feal::setnonblocking(fd);
+    feal::set_nonblocking(fd);
     p = fork();
     if (p < 0)
     {

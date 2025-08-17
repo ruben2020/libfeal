@@ -44,7 +44,7 @@ void Server::start_listening(void)
     feal::ipaddr serveraddr;
     feal::errenum se;
     serveraddr.family = feal::ipaddr::INET;
-    serveraddr.port = 12001;
+    serveraddr.port = 56001;
     strcpy(serveraddr.addr, "127.0.0.1");
     se = dgram.create_sock((feal::family_t) serveraddr.family);
     if (se != feal::FEAL_OK)
@@ -90,7 +90,7 @@ void Server::handleEvent(std::shared_ptr<EvtDgramReadAvail> pevt)
     feal::ipaddr recvaddr;
     feal::errenum se = dgram.recv_from((void*) buf, sizeof(buf), &bytes, &recvaddr);
     if (se != feal::FEAL_OK) printf("Error receiving: %d\n", se);
-    else printf("Received %d bytes: \"%s\" from %s:%d\n", bytes, buf, recvaddr.addr, recvaddr.port);
+    else printf("Received %lld bytes: \"%s\" from %s:%d\n", (long long int) bytes, buf, recvaddr.addr, recvaddr.port);
     printf("Sending back \"%s\" to %s:%d\n", buf, recvaddr.addr, recvaddr.port);
     se = dgram.send_to((void*) buf, MIN(strlen(buf) + 1, sizeof(buf)), &bytes, &recvaddr);
     if (se != feal::FEAL_OK) printf("Error sending back \"%s\" to %s:%d\n", buf, recvaddr.addr, recvaddr.port);

@@ -43,7 +43,7 @@ void Client::send_to_server(void)
 {
     feal::errenum se;
     serveraddr.family = feal::ipaddr::INET;
-    serveraddr.port = 12001;
+    serveraddr.port = 56001;
     strcpy(serveraddr.addr, "127.0.0.1");
     se = dgram.create_sock((feal::family_t) serveraddr.family);
     if (se != feal::FEAL_OK) printf("create sock: %d\n", se);
@@ -88,14 +88,14 @@ void Client::handleEvent(std::shared_ptr<EvtDgramReadAvail> pevt)
     feal::ipaddr recvaddr;
     feal::errenum se = dgram.recv_from((void*) buf, sizeof(buf), &bytes, &recvaddr);
     if (se != feal::FEAL_OK) printf("Error receiving: %d\n", se);
-    else printf("Received %d bytes: \"%s\" from %s:%d\n", bytes, buf, recvaddr.addr, recvaddr.port);
+    else printf("Received %lld bytes: \"%s\" from %s:%d\n", (long long int) bytes, buf, recvaddr.addr, recvaddr.port);
 }
 
 void Client::handleEvent(std::shared_ptr<EvtDgramWriteAvail> pevt)
 {
     if (!pevt) return;
     printf("Client::EvtDgramWriteAvail\n");
-    send_something();
+    //send_something();
 }
 
 void Client::handleEvent(std::shared_ptr<EvtSockErr> pevt)

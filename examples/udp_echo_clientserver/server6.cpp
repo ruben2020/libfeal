@@ -12,7 +12,7 @@ void Server6::start_listening(void)
     feal::ipaddr serveraddr;
     feal::errenum se;
     serveraddr.family = feal::ipaddr::INET6;
-    serveraddr.port = 12001;
+    serveraddr.port = 56002;
     strcpy(serveraddr.addr, "::1");
     se = dgram.create_sock((feal::family_t) serveraddr.family);
     if (se != feal::FEAL_OK)

@@ -20,7 +20,7 @@ void feal::FileDirMonGeneric::init(void)
         FEALDEBUGLOG("FileDirMonGeneric::init inotify_init");
         return;
     }
-    setnonblocking(genfd);
+    set_nonblocking(genfd);
     if (epoll_ctl_add(epfd, genfd, 
         (EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP)) == -1)
     {
@@ -60,7 +60,7 @@ feal::errenum feal::FileDirMonGeneric::add(const char *s, flags_t mask, handle_t
         res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
         return res;
     }
-    setnonblocking(wn);
+    set_nonblocking(wn);
     struct kevent change_event[2];
     memset(&change_event, 0, sizeof(change_event));
     EV_SET(change_event, wn, EVFILT_VNODE , EV_ADD | EV_ENABLE | EV_CLEAR, mask, 0, 0);
@@ -106,7 +106,7 @@ feal::errenum feal::FileDirMonGeneric::remove(handle_t wnum)
     return res;
 }
 
-std::string feal::FileDirMonGeneric::get_filename(handle_t wnum)
+std::string feal::FileDirMonGeneric::get_filepath(handle_t wnum)
 {
     std::string fn;
     if (fnmap.find(wnum) != fnmap.end())
@@ -146,7 +146,7 @@ void feal::FileDirMonGeneric::fdmonLoop(void)
 {
 #if defined (__linux__)
     int nfds = 0;
-    struct epoll_event events[max_events];
+    struct epoll_event events[FILEDIRMON_MAXEVENTS];
     size_t bufsize = sizeof(struct inotify_event) + NAME_MAX + 1;
     struct inotify_event* event = new struct inotify_event[bufsize / sizeof(struct inotify_event)];
     ssize_t bytesread;
@@ -154,7 +154,7 @@ void feal::FileDirMonGeneric::fdmonLoop(void)
     for (;;)
     {
         if (epfd == -1) break;
-        nfds = epoll_wait(epfd, events, max_events, 500);
+        nfds = epoll_wait(epfd, events, FILEDIRMON_MAXEVENTS, 500);
         if (nfds == -1)
         {
             if (errno == EINTR) continue;
@@ -184,7 +184,7 @@ void feal::FileDirMonGeneric::fdmonLoop(void)
 #else
     int nevts = 0;
     struct timespec tims;
-    struct kevent change_event[2], event[max_events];
+    struct kevent change_event[2], event[FILEDIRMON_MAXEVENTS];
     memset(&change_event, 0, sizeof(change_event));
     memset(&event, 0, sizeof(event));
     tims.tv_sec = 0;
@@ -192,7 +192,7 @@ void feal::FileDirMonGeneric::fdmonLoop(void)
     for (;;)
     {
         if (kq == -1) break;
-        nevts = kevent(kq, nullptr, 0, event, max_events - 1, (const struct timespec *) &tims);
+        nevts = kevent(kq, nullptr, 0, event, FILEDIRMON_MAXEVENTS - 1, (const struct timespec *) &tims);
         if (nevts == 0) continue;
         if (nevts == -1) break;
         for (int i = 0; i < nevts; i++)

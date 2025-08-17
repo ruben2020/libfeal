@@ -43,6 +43,8 @@ errenum send_to(void *buf, uint32_t len, int32_t* bytes,
 
 errenum close_and_reset(void);
 
+void set_reuseaddr(bool enable);
+
 protected:
 
 std::thread datagramThread;
@@ -50,16 +52,15 @@ handle_t sockfd = FEAL_INVALID_HANDLE;
 
 #if defined (_WIN32)
 #define FEALDGRAM_MAXEVENTS  (FD_SETSIZE > 64 ? 64 : FD_SETSIZE)
-const int max_events = FEALDGRAM_MAXEVENTS;
 handle_t sockread[FEALDGRAM_MAXEVENTS];
 handle_t sockwrite[FEALDGRAM_MAXEVENTS];
 
 #elif defined (__linux__)
-const unsigned int max_events = 64;
+#define FEALDGRAM_MAXEVENTS 64
 int epfd = -1;
 
 #else
-const unsigned int max_events = 64;
+#define FEALDGRAM_MAXEVENTS 64
 int kq = -1;
 #endif
 
@@ -68,6 +69,8 @@ virtual void receiveEventWriteAvail(errenum errnum, handle_t fd, int datalen);
 virtual void receiveEventSockErr(errenum errnum, handle_t fd, int datalen);
 
 private:
+
+bool reuseaddr = false;
 
 static void dgramLoopLauncher(DatagramGeneric *p);
 void dgramLoop(void);

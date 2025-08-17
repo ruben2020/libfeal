@@ -92,7 +92,7 @@ void Serverund::handleEvent(std::shared_ptr<EvtDgramReadAvail> pevt)
     socklen_t recvaddr_len = sizeof(recvaddr);
     feal::errenum se = dgram.recv_from((void*) buf, sizeof(buf), &bytes, &recvaddr, &recvaddr_len);
     if (se != feal::FEAL_OK) printf("Error receiving: %d\n", se);
-    else printf("Received %d bytes: \"%s\" from %s\n", bytes, buf, recvaddr.sun_path);
+    else printf("Received %lld bytes: \"%s\" from %s\n", (long long int) bytes, buf, recvaddr.sun_path);
     printf("Sending back \"%s\" to %s\n", buf, recvaddr.sun_path);
     se = dgram.send_to((void*) buf, MIN(strlen(buf) + 1, sizeof(buf)), &bytes, &recvaddr, recvaddr_len);
     if (se != feal::FEAL_OK) printf("Error sending back \"%s\" to %s\n", buf, recvaddr.sun_path);

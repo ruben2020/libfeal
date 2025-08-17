@@ -62,17 +62,16 @@ private:
 
 #if defined (_WIN32)
 #define FEALBASESTREAM_MAXEVENTS       (FD_SETSIZE > 64 ? 64 : FD_SETSIZE)
-const int max_events = FEALBASESTREAM_MAXEVENTS;
 handle_t sockread[FEALBASESTREAM_MAXEVENTS];
 handle_t sockwrite[FEALBASESTREAM_MAXEVENTS];
 handle_t sockexcpt[FEALBASESTREAM_MAXEVENTS];
 
 #elif defined (__linux__)
-const unsigned int max_events = 64;
+#define FEALBASESTREAM_MAXEVENTS 64
 int epfd = -1;
 #else
 
-const unsigned int max_events = 64;
+#define FEALBASESTREAM_MAXEVENTS 64
 int kq = -1;
 #endif
 

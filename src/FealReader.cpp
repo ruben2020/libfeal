@@ -19,7 +19,7 @@ feal::errenum feal::ReaderGeneric::registerhandle(handle_t fd)
         res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
         return res;
     }
-    setnonblocking(fd);
+    set_nonblocking(fd);
     readerfd = fd;
     readerThread = std::thread(&readerLoopLauncher, this);
     return res;
@@ -52,7 +52,8 @@ void feal::ReaderGeneric::readerLoop(void)
 {
 #if defined (__linux__)
     int nfds = 0;
-    struct epoll_event events[max_events];
+    struct epoll_event events[FEALREADER_MAXEVENTS
+];
     epfd = epoll_create(1);
     if (epoll_ctl_add(epfd, readerfd, 
         (EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP)) == -1)
@@ -63,7 +64,8 @@ void feal::ReaderGeneric::readerLoop(void)
     for (;;)
     {
         if ((readerfd == -1)||(epfd == -1)) break;
-        nfds = epoll_wait(epfd, events, max_events, 500);
+        nfds = epoll_wait(epfd, events, FEALREADER_MAXEVENTS
+, 500);
         if (nfds == -1)
         {
             if (errno == EINTR) continue;
@@ -87,7 +89,8 @@ void feal::ReaderGeneric::readerLoop(void)
 #else
     int nevts = 0;
     struct timespec tims;
-    struct kevent change_event[2], event[max_events];
+    struct kevent change_event[2], event[FEALREADER_MAXEVENTS
+];
     memset(&change_event, 0, sizeof(change_event));
     memset(&event, 0, sizeof(event));
     tims.tv_sec = 0;
@@ -101,7 +104,8 @@ void feal::ReaderGeneric::readerLoop(void)
     for (;;)
     {
         if ((readerfd == -1)||(kq == -1)) break;
-        nevts = kevent(kq, nullptr, 0, event, max_events - 1, (const struct timespec *) &tims);
+        nevts = kevent(kq, nullptr, 0, event, FEALREADER_MAXEVENTS
+ - 1, (const struct timespec *) &tims);
         if (nevts == 0) continue;
         if (nevts == -1) break;
         for (int i = 0; i < nevts; i++)

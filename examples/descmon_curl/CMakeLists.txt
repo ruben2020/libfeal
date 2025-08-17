@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 #
 
-cmake_minimum_required(VERSION 3.16.0)
+cmake_minimum_required(VERSION 3.20.0)
 project(curlmulti)
 
 find_package(CURL REQUIRED) 

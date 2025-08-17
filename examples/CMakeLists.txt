@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 #
 
-cmake_minimum_required(VERSION 3.16.0)
+cmake_minimum_required(VERSION 3.20.0)
 project(fealexamples)
 
 add_subdirectory( "actors_and_timers" )
@@ -31,3 +31,8 @@ if (CURL_EX)
 add_subdirectory( "promise_curl" )
 add_subdirectory( "descmon_curl" )
 endif (CURL_EX)
+
+if (OPENSSL_EX)
+add_subdirectory( "tls_echo_clientserver_openssl" )
+endif (OPENSSL_EX)
+

@@ -127,14 +127,14 @@ void Clientund::handleEvent(std::shared_ptr<EvtDgramReadAvail> pevt)
     feal::errenum se = dgram.recv_from((void*) buf,
         sizeof(buf), &bytes, &recvaddr, &recvaddr_len);
     if (se != feal::FEAL_OK) printf("Error receiving: %d\n", se);
-    else printf("Received %d bytes: \"%s\" from %s\n", bytes, buf, recvaddr.sun_path);
+    else printf("Received %lld bytes: \"%s\" from %s\n", (long long int) bytes, buf, recvaddr.sun_path);
 }
 
 void Clientund::handleEvent(std::shared_ptr<EvtDgramWriteAvail> pevt)
 {
     if (!pevt) return;
     printf("Clientund::EvtDgramWriteAvail\n");
-    send_something();
+    //send_something();
 }
 
 void Clientund::handleEvent(std::shared_ptr<EvtSockErr> pevt)

@@ -52,7 +52,7 @@ void Fifowriter::open_for_writing(void)
         timers.startTimer<EvtDelayTimer>(std::chrono::seconds(2));
         return;
     }
-    feal::setnonblocking(fifofd);
+    feal::set_nonblocking(fifofd);
 }
 
 void Fifowriter::send_something(void)
@@ -63,7 +63,7 @@ void Fifowriter::send_something(void)
     snprintf(buf, sizeof(buf), "Fifowriter %d", n++);
     printf("Trying to send \"%s\" to %s\n", buf, FIFOPATH);
     bytes = write(fifofd, buf, strlen(buf) + 2);
-    if (bytes > 0) printf ("Wrote %ld bytes\n", bytes);
+    if (bytes > 0) printf ("Wrote %lld bytes\n", (long long) bytes);
     else
     {
         printf("Error writing with errno %d\n", errno);

@@ -14,7 +14,7 @@ void feal::DescMonGeneric::init(void)
 {
 #if defined (_WIN32)
     active = true;
-    for (int j=0; j < max_events; j++)
+    for (int j=0; j < FEALDESCMON_MAXEVENTS; j++)
     {
         sockread[j]  = INVALID_SOCKET;
         sockwrite[j] = INVALID_SOCKET;
@@ -37,9 +37,9 @@ feal::errenum feal::DescMonGeneric::start_monitoring(void)
 feal::errenum feal::DescMonGeneric::add(handle_t fd)
 {
     errenum res = FEAL_OK;
-    setnonblocking(fd);
+    set_nonblocking(fd);
 #if defined (_WIN32)
-    for (int j=0; j < max_events; j++)
+    for (int j=0; j < FEALDESCMON_MAXEVENTS; j++)
     {
         if (sockread[j] == INVALID_SOCKET)
         {
@@ -75,7 +75,7 @@ feal::errenum feal::DescMonGeneric::remove(handle_t fd)
 {
     errenum res = FEAL_OK;
 #if defined (_WIN32)
-    for (int j=0; j < max_events; j++)
+    for (int j=0; j < FEALDESCMON_MAXEVENTS; j++)
     {
         if (sockread[j] == fd)
         {
@@ -144,7 +144,7 @@ void feal::DescMonGeneric::fdmonLoop(void)
         if (active == false) break;
         FD_ZERO(&ReadSet);
         FD_ZERO(&WriteSet);
-        for (int j=0; j < max_events; j++)
+        for (int j=0; j < FEALDESCMON_MAXEVENTS; j++)
         {
             if (sockread[j]  != INVALID_SOCKET) FD_SET(sockread[j],  &ReadSet);
             if (sockwrite[j] != INVALID_SOCKET) FD_SET(sockwrite[j], &WriteSet);
@@ -162,7 +162,7 @@ void feal::DescMonGeneric::fdmonLoop(void)
             FEALDEBUGLOG("select fdmonLoop");
             break;
         }
-        for (int i = 0; i < max_events; i++)
+        for (int i = 0; i < FEALDESCMON_MAXEVENTS; i++)
         {
             if (nfds <= 0) break;
             if (FD_ISSET(sockread[i], &ReadSet))
@@ -191,11 +191,11 @@ void feal::DescMonGeneric::fdmonLoop(void)
     }
 #elif defined (__linux__)
     int nfds = 0;
-    struct epoll_event events[max_events];
+    struct epoll_event events[FEALDESCMON_MAXEVENTS];
     for (;;)
     {
         if (epfd == -1) break;
-        nfds = epoll_wait(epfd, events, max_events, 500);
+        nfds = epoll_wait(epfd, events, FEALDESCMON_MAXEVENTS, 500);
         if (nfds == -1)
         {
             if (errno == EINTR) continue;
@@ -221,7 +221,7 @@ void feal::DescMonGeneric::fdmonLoop(void)
 #else
     int nevts = 0;
     struct timespec tims;
-    struct kevent change_event[2], event[max_events];
+    struct kevent change_event[2], event[FEALDESCMON_MAXEVENTS];
     memset(&change_event, 0, sizeof(change_event));
     memset(&event, 0, sizeof(event));
     tims.tv_sec = 0;
@@ -229,7 +229,7 @@ void feal::DescMonGeneric::fdmonLoop(void)
     for (;;)
     {
         if (kq == -1) break;
-        nevts = kevent(kq, nullptr, 0, event, max_events - 1, (const struct timespec *) &tims);
+        nevts = kevent(kq, nullptr, 0, event, FEALDESCMON_MAXEVENTS - 1, (const struct timespec *) &tims);
         if (nevts == 0) continue;
         if (nevts == -1) break;
         for (int i = 0; i < nevts; i++)

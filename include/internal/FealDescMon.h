@@ -34,18 +34,17 @@ protected:
 std::thread DescMonThread;
 
 #if defined (_WIN32)
-#define FEALDGRAM_MAXEVENTS  (FD_SETSIZE > 64 ? 64 : FD_SETSIZE)
-const int max_events = FEALDGRAM_MAXEVENTS;
-handle_t sockread[FEALDGRAM_MAXEVENTS];
-handle_t sockwrite[FEALDGRAM_MAXEVENTS];
+#define FEALDESCMON_MAXEVENTS  (FD_SETSIZE > 64 ? 64 : FD_SETSIZE)
+handle_t sockread[FEALDESCMON_MAXEVENTS];
+handle_t sockwrite[FEALDESCMON_MAXEVENTS];
 std::atomic_bool active = true;
 
 #elif defined (__linux__)
-const unsigned int max_events = 64;
+#define FEALDESCMON_MAXEVENTS 64
 int epfd = -1;
 
 #else
-const unsigned int max_events = 64;
+#define FEALDESCMON_MAXEVENTS 64
 int kq = -1;
 #endif
 

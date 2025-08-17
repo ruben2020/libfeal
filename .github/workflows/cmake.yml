@@ -27,13 +27,13 @@ jobs:
             cc: "gcc",
             cxx: "g++",
           }
-        - {
-            name: "Ubuntu-latest Clang",
-            os: ubuntu-latest,
-            build_type: "Debug",
-            cc: "clang",
-            cxx: "clang++"
-          }
+#        - {
+#            name: "Ubuntu-latest Clang",
+#            os: ubuntu-latest,
+#            build_type: "Debug",
+#            cc: "clang",
+#            cxx: "clang++"
+#          }
         - {
             name: "Windows MinGW",
             os: windows-latest,
@@ -69,7 +69,7 @@ jobs:
         if: startsWith(matrix.config.name, 'Ubuntu-latest')
         run: |
           sudo apt-get update
-          sudo apt-get install build-essential g++ clang git cmake ninja-build libcurl4 libcurl4-openssl-dev
+          sudo apt-get install build-essential g++ clang git cmake ninja-build libcurl4 libcurl4-openssl-dev openssl libssl-dev
           uname -a
           lsb_release -a
           gcc -v && g++ -v
@@ -80,25 +80,35 @@ jobs:
         if: startsWith(matrix.config.name, 'macOS Clang')
         run: |
           brew install ninja
+          brew install openssl@3
+          brew install curl
           clang -v
           cmake --version
           ninja --version
 
-      - name: Install ninja on Windows
+#      - name: Install ninja on Windows
+#        if: startsWith(matrix.config.name, 'Windows MinGW')
+#        uses: seanmiddleditch/gha-setup-ninja@master
+
+      - name: Install dependencies on Windows
         if: startsWith(matrix.config.name, 'Windows MinGW')
-        uses: seanmiddleditch/gha-setup-ninja@master
+        shell: powershell
+        run: |
+            choco install -y --no-progress ninja
+            choco install -y --no-progress curl
+            choco install -y --no-progress openssl
 
       - name: Install dependencies, make and run on FreeBSD
         if: contains(matrix.config.name, 'FreeBSD')
         uses: vmactions/freebsd-vm@v1
         with:
           usesh: true
-          prepare: pkg install -y ninja cmake llvm curl
+          prepare: pkg install -y ninja cmake llvm curl openssl
           run: |
             freebsd-version
             uname -mrs
             pwd
-            cmake -G Ninja -DCURL_EX=ON -S . -B build
+            cmake -G Ninja -DCURL_EX=ON -DOPENSSL_EX=ON -S . -B build
             cmake --build build
             sh ./helpers/exunix.sh
 
@@ -107,13 +117,13 @@ jobs:
         run: |
           export CC=clang
           export CXX=clang++
-          cmake -G Ninja -DCURL_EX=ON -S . -B build
+          cmake -G Ninja -DCURL_EX=ON -DOPENSSL_EX=ON -S . -B build
           cmake --build build
 
       - name: Configure CMake and Build with Clang on MacOS
         if: contains(matrix.config.name, 'macOS')
         run: |
-          cmake -G Ninja -DCURL_EX=ON -S . -B build
+          cmake -G Ninja -DCURL_EX=ON -DOPENSSL_EX=ON -S . -B build
           cmake --build build
 
       - name: Configure CMake and Build with GCC on Linux
@@ -121,18 +131,18 @@ jobs:
         run: |
           export CC=gcc
           export CXX=g++
-          cmake -G Ninja -DCURL_EX=ON -S . -B build
+          cmake -G Ninja -DCURL_EX=ON -DOPENSSL_EX=ON -S . -B build
           cmake --build build
 
       - name: Configure CMake and Build with GCC on Windows
         if: startsWith(matrix.config.name, 'Windows MinGW')
-        shell: cmd
-        run: call "helpers/buildwingithub.bat"
+        shell: powershell
+        run: . "helpers/buildwingithub.ps1"
 
       - name: Run some examples on Windows
         if: startsWith(matrix.config.name, 'Windows MinGW')
-        shell: cmd
-        run: call "helpers/exwingithub.bat"
+        shell: powershell
+        run: . "helpers/exwingithub.ps1"
           
       - name: Run some examples on Linux, MacOS and Unix
         if: contains(matrix.config.name, 'GCC')

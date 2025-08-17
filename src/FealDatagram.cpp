@@ -19,6 +19,11 @@ void feal::DatagramGeneric::shutdownTool(void)
     close_and_reset();
 }
 
+void feal::DatagramGeneric::set_reuseaddr(bool enable)
+{
+    reuseaddr = enable;
+}
+
 feal::errenum feal::DatagramGeneric::create_sock(feal::family_t fam)
 {
     errenum res = FEAL_OK;
@@ -29,7 +34,8 @@ feal::errenum feal::DatagramGeneric::create_sock(feal::family_t fam)
         res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
         return res;
     }
-    setnonblocking(sockfd);
+    feal::set_reuseaddr(sockfd, reuseaddr);
+    set_nonblocking(sockfd);
     datagramThread = std::thread(&dgramLoopLauncher, this);
     return res;
 }
@@ -50,7 +56,7 @@ feal::errenum feal::DatagramGeneric::bind_sock(feal::ipaddr* fa)
     socklen_t length = sizeof(su.in);
     if (fa->family == feal::ipaddr::INET6)
     {
-        setipv6only(sockfd);
+        set_ipv6only(sockfd);
         length = sizeof(su.in6);
     }
     ret = bind(sockfd, &(su.sa), length);
@@ -198,7 +204,7 @@ feal::errenum feal::DatagramGeneric::close_and_reset(void)
     CLOSESOCKET(sockfd);
     sockfd = FEAL_INVALID_HANDLE;
 #if defined (_WIN32)
-    for (int j=0; j < max_events; j++)
+    for (int j=0; j < FEALDGRAM_MAXEVENTS; j++)
     {
         sockread[j]  = INVALID_SOCKET;
         sockwrite[j] = INVALID_SOCKET;
@@ -231,7 +237,7 @@ void feal::DatagramGeneric::dgramLoop(void)
     tv.tv_usec = 500000; // 500ms
     FD_SET ReadSet;
     FD_SET WriteSet;
-    for (int j=0; j < max_events; j++)
+    for (int j=0; j < FEALDGRAM_MAXEVENTS; j++)
     {
         sockread[j]  = INVALID_SOCKET;
         sockwrite[j] = INVALID_SOCKET;
@@ -242,7 +248,7 @@ void feal::DatagramGeneric::dgramLoop(void)
         if (sockfd == INVALID_SOCKET) break;
         FD_ZERO(&ReadSet);
         FD_ZERO(&WriteSet);
-        for (int j=0; j < max_events; j++)
+        for (int j=0; j < FEALDGRAM_MAXEVENTS; j++)
         {
             if (sockread[j]  != INVALID_SOCKET) FD_SET(sockread[j],  &ReadSet);
             if (sockwrite[j] != INVALID_SOCKET) FD_SET(sockwrite[j], &WriteSet);
@@ -261,7 +267,7 @@ void feal::DatagramGeneric::dgramLoop(void)
             printf("select dgramLoop nfds=%d, err=%d\n", nfds, wsaerr);
             break;
         }
-        for (int i = 0; i < max_events; i++)
+        for (int i = 0; i < FEALDGRAM_MAXEVENTS; i++)
         {
             if (nfds <= 0) break;
             if (FD_ISSET(sockread[i], &ReadSet))
@@ -292,7 +298,7 @@ void feal::DatagramGeneric::dgramLoop(void)
     }
 #elif defined (__linux__)
     int nfds = 0;
-    struct epoll_event events[max_events];
+    struct epoll_event events[FEALDGRAM_MAXEVENTS];
     epfd = epoll_create(1);
     if (epoll_ctl_add(epfd, sockfd, 
         (EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP)) == -1)
@@ -303,7 +309,7 @@ void feal::DatagramGeneric::dgramLoop(void)
     for (;;)
     {
         if ((sockfd == -1)||(epfd == -1)) break;
-        nfds = epoll_wait(epfd, events, max_events, 500);
+        nfds = epoll_wait(epfd, events, FEALDGRAM_MAXEVENTS, 500);
         if (nfds == -1)
         {
             if (errno == EINTR) continue;
@@ -332,7 +338,7 @@ void feal::DatagramGeneric::dgramLoop(void)
 #else
     int nevts = 0;
     struct timespec tims;
-    struct kevent change_event[2], event[max_events];
+    struct kevent change_event[2], event[FEALDGRAM_MAXEVENTS];
     memset(&change_event, 0, sizeof(change_event));
     memset(&event, 0, sizeof(event));
     tims.tv_sec = 0;
@@ -346,7 +352,7 @@ void feal::DatagramGeneric::dgramLoop(void)
     for (;;)
     {
         if ((sockfd == -1)||(kq == -1)) break;
-        nevts = kevent(kq, nullptr, 0, event, max_events - 1, (const struct timespec *) &tims);
+        nevts = kevent(kq, nullptr, 0, event, FEALDGRAM_MAXEVENTS - 1, (const struct timespec *) &tims);
         if (nevts == 0) continue;
         if (nevts == -1) break;
         for (int i = 0; i < nevts; i++)
@@ -378,7 +384,7 @@ void feal::DatagramGeneric::close_sock(void)
     CLOSESOCKET(sockfd);
     sockfd = FEAL_INVALID_HANDLE;
 #if defined (_WIN32)
-    for (int j=0; j < max_events; j++)
+    for (int j=0; j < FEALDGRAM_MAXEVENTS; j++)
     {
         sockread[j]  = INVALID_SOCKET;
         sockwrite[j] = INVALID_SOCKET;

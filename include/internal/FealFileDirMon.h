@@ -27,7 +27,7 @@ void shutdownTool(void);
 errenum start_monitoring(void);
 errenum add(const char *s, flags_t mask, handle_t* wnum);
 errenum remove(handle_t wnum);
-std::string get_filename(handle_t wnum);
+std::string get_filepath(handle_t wnum);
 errenum close_and_reset(void);
 
 protected:
@@ -35,12 +35,12 @@ protected:
 std::thread FileDirMonThread;
 
 #if defined (__linux__)
-const unsigned int max_events = 64;
+#define FILEDIRMON_MAXEVENTS 64
 int epfd = -1;
 handle_t genfd = FEAL_INVALID_HANDLE;
 
 #else
-const unsigned int max_events = 64;
+#define FILEDIRMON_MAXEVENTS 64
 int kq = -1;
 #endif
 

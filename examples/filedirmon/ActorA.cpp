@@ -95,7 +95,7 @@ void ActorA::handleEvent(std::shared_ptr<EvtFDMReadAvail> pevt)
     if (!pevt) return;
     printf("ActorA::EvtFDMReadAvail\n");
     std::string fn;
-    fn = fdmon.get_filename(pevt->fd);
+    fn = fdmon.get_filepath(pevt->fd);
     printf("filedirmon event for file %s for event %s\n", 
         fn.c_str(),
         (pevt->flags && FEAL_FDM_CLOSE_WRITE == FEAL_FDM_CLOSE_WRITE ? "FEAL_FDM_CLOSE_WRITE" : "something else"));
