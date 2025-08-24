@@ -7,6 +7,7 @@
 #include <cstring>
 #include "client.h"
 
+#define SERVERPORT 55001
 #define MIN(a,b) (a<b ? a : b)
 
 
@@ -44,15 +45,18 @@ void Client::shutdownActor(void)
 
 void Client::connect_to_server(void)
 {
-    feal::ipaddr serveraddr;
-    serveraddr.family = feal::ipaddr::INET;
-    serveraddr.port = 55001;
-    strcpy(serveraddr.addr, "127.0.0.1");
-    printf("Trying to connect to 127.0.0.1:%d\n", serveraddr.port);
-    feal::errenum se = stream.create_and_connect(&serveraddr);
+    feal::handle_t fd;
+    fd = socket(AF_INET, SOCK_STREAM, 0);
+    feal::sockaddr_all sall;
+    memset(&sall, 0, sizeof(sall));
+    sall.in.sin_family = AF_INET;
+    sall.in.sin_port = htons(SERVERPORT);
+    feal::inet_pton(AF_INET, "127.0.0.1", &(sall.in.sin_addr));
+    printf("Trying to connect to 127.0.0.1:%d\n", SERVERPORT);
+    feal::errenum se = stream.connect(fd, &sall, sizeof(sall));
     if (se != feal::FEAL_OK)
     {
-        printf("Error connecting to 127.0.0.1:%d  err %d\n", serveraddr.port, se);
+        printf("Error connecting to 127.0.0.1:%d  err %d\n", SERVERPORT, se);
         timers.startTimer<EvtRetryTimer>(std::chrono::seconds(5));
     }
 }

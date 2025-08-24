@@ -42,21 +42,26 @@ void Serverund::shutdownActor(void)
 
 void Serverund::start_listening(void)
 {
-    struct sockaddr_un serveraddr;
+    feal::handle_t fd;
+    fd = socket(AF_UNIX, SOCK_DGRAM, 0);
+    feal::sockaddr_all serveraddr;
+    memset(&serveraddr, 0, sizeof(serveraddr));
     feal::errenum se;
-    serveraddr.sun_family = AF_UNIX;
-    strcpy(serveraddr.sun_path, SERVERPATH);
+    serveraddr.un.sun_family = AF_UNIX;
+    strcpy(serveraddr.un.sun_path, SERVERPATH);
     unlink(SERVERPATH);
-    se = dgram.create_sock((feal::family_t) serveraddr.sun_family);
+    se = dgram.monitor_sock(fd);
     if (se != feal::FEAL_OK)
     {
         printf("create sock: %d\n", se);
         timers.startTimer<EvtRetryTimer>(std::chrono::seconds(5));
         return;
     }
-    se = dgram.bind_sock(&serveraddr);
-    if (se != feal::FEAL_OK)
+    feal::socklen_t length = sizeof(serveraddr.un.sun_family) + strlen(serveraddr.un.sun_path) + 1;
+    int ret = bind(fd, &(serveraddr.sa), length);
+    if (ret != feal::FEAL_OK)
     {
+        se = static_cast<feal::errenum>(FEAL_GETHANDLEERRNO);
         printf("bind sock: %d\n", se);
         timers.startTimer<EvtRetryTimer>(std::chrono::seconds(5));
         return;
@@ -85,17 +90,19 @@ void Serverund::handleEvent(std::shared_ptr<EvtDgramReadAvail> pevt)
 {
     if (!pevt) return;
     printf("Serverund::EvtDgramReadAvail\n");
-    char buf[30];
+    char buf[50];
     int32_t bytes;
     memset(&buf, 0, sizeof(buf));
-    struct sockaddr_un recvaddr;
-    socklen_t recvaddr_len = sizeof(recvaddr);
-    feal::errenum se = dgram.recv_from((void*) buf, sizeof(buf), &bytes, &recvaddr, &recvaddr_len);
+    feal::sockaddr_all recvaddr;
+    memset(&recvaddr, 0, sizeof(recvaddr));
+    socklen_t recvaddr_len;
+    feal::errenum se = dgram.recvfrom((void*) buf, sizeof(buf), &bytes, &recvaddr, &recvaddr_len);
     if (se != feal::FEAL_OK) printf("Error receiving: %d\n", se);
-    else printf("Received %lld bytes: \"%s\" from %s\n", (long long int) bytes, buf, recvaddr.sun_path);
-    printf("Sending back \"%s\" to %s\n", buf, recvaddr.sun_path);
-    se = dgram.send_to((void*) buf, MIN(strlen(buf) + 1, sizeof(buf)), &bytes, &recvaddr, recvaddr_len);
-    if (se != feal::FEAL_OK) printf("Error sending back \"%s\" to %s\n", buf, recvaddr.sun_path);
+    else printf("Received %lld bytes: \"%s\" from %s\n", (long long int) bytes, buf, recvaddr.un.sun_path);
+    printf("Sending back \"%s\" to %s\n", buf, recvaddr.un.sun_path);
+    recvaddr_len = sizeof(recvaddr.un.sun_family) + strlen(recvaddr.un.sun_path) + 1;
+    se = dgram.sendto((void*) buf, MIN(strlen(buf) + 1, sizeof(buf)), &bytes, &recvaddr, recvaddr_len);
+    if (se != feal::FEAL_OK) printf("Error sending back \"%s\" to %s\n", buf, recvaddr.un.sun_path);
 }
 
 void Serverund::handleEvent(std::shared_ptr<EvtDgramWriteAvail> pevt)

@@ -38,7 +38,7 @@ protected:
 
 feal::Timers<Clientund> timers;
 feal::Datagram<Clientund> dgram;
-struct sockaddr_un serveraddr;
+feal::sockaddr_all serveraddr;
 virtual void send_to_server(void);
 
 private:

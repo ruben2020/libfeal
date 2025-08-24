@@ -38,7 +38,8 @@ protected:
 
 feal::Timers<Client> timers;
 feal::Datagram<Client> dgram;
-feal::ipaddr serveraddr;
+feal::sockaddr_all serveraddr;
+feal::socklen_t serverport;
 virtual void send_to_server(void);
 
 private:

@@ -24,26 +24,15 @@ DatagramGeneric& operator= ( const DatagramGeneric & ) = default;
 
 void shutdownTool(void);
 
-errenum create_sock(family_t fam);
-errenum bind_sock(feal::ipaddr* fa);
-errenum recv_from(void *buf, 
-    uint32_t len, int32_t* bytes, feal::ipaddr* src);
-errenum send_to(void *buf, uint32_t len, int32_t* bytes, 
-    feal::ipaddr* dest, bool confirm = false);
-
-#if defined(unix) || defined(__unix__) || defined(__unix) || defined(__APPLE__) || defined(__MACH__) || defined(__linux__)
-errenum bind_sock(struct sockaddr_un* su);
-errenum recv_from(void *buf, 
-    uint32_t len, int32_t* bytes,
-    struct sockaddr_un* src, socklen_t *srcaddrlen);
-errenum send_to(void *buf, uint32_t len, int32_t* bytes,
-    struct sockaddr_un* dest, socklen_t destaddrlen,
-    bool confirm = false);
-#endif
-
+errenum monitor_sock(handle_t fd);
+errenum recvfrom(void *buf, uint32_t len, int32_t* bytes, 
+        sockaddr_all* addr,
+        socklen_t* addrlen);
+errenum sendto(void *buf, uint32_t len, 
+    int32_t* bytes, const sockaddr_all* dest, 
+    socklen_t destlen, bool confirm = false);
 errenum close_and_reset(void);
 
-void set_reuseaddr(bool enable);
 
 protected:
 
@@ -70,7 +59,6 @@ virtual void receiveEventSockErr(errenum errnum, handle_t fd, int datalen);
 
 private:
 
-bool reuseaddr = false;
 
 static void dgramLoopLauncher(DatagramGeneric *p);
 void dgramLoop(void);

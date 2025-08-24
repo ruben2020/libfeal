@@ -37,27 +37,19 @@ StreamGeneric& operator= ( const StreamGeneric & ) = default;
 
 void shutdownTool(void);
 
-#if defined(unix) || defined(__unix__) || defined(__unix) || defined(__APPLE__) || defined(__MACH__) || defined(__linux__)
-errenum create_and_bind(struct sockaddr_un* su);
-errenum getpeername(struct sockaddr_un* su, handle_t fd = -1);
-errenum getpeereid(uid_t* euid, gid_t* egid);
-#endif
-
-errenum create_and_bind(feal::ipaddr* fa);
+errenum connect(handle_t fd, const sockaddr_all *addr,
+    socklen_t addrlen);
+errenum listen(handle_t fd, int backlog = 32);    
 errenum recv(void *buf, uint32_t len, int32_t* bytes, handle_t fd = FEAL_INVALID_HANDLE);
 errenum send(void *buf, uint32_t len, int32_t* bytes, handle_t fd = FEAL_INVALID_HANDLE);
 errenum disconnect_client(handle_t client_sockfd);
 errenum disconnect_and_reset(void);
-errenum getpeername(feal::ipaddr* fa, handle_t fd = FEAL_INVALID_HANDLE);
-
-void set_reuseaddr(bool enable);
 
 protected:
 
 std::thread serverThread;
 std::thread connectThread;
 std::map<handle_t, clientst> mapReaders;
-bool reuseaddr = false;
 
 static void serverLoopLauncher(StreamGeneric *p);
 static void connectLoopLauncher(StreamGeneric *p);
@@ -152,104 +144,6 @@ void subscribeConnectionShutdown()
     actorptr->addEvent(actorptr, inst);
     evtconnshutdown = std::make_shared<T>();
     EventBus::getInstance().registerEventCloner<T>();
-}
-
-errenum create_and_connect(feal::ipaddr* fa)
-{
-    errenum res = FEAL_OK;
-    int ret;
-    if (fa == nullptr) return res;
-    sockaddr_ip su;
-    memset(&su, 0, sizeof(su));
-    ret = ipaddr_feal2posix(fa, &su);
-    if (ret == FEAL_HANDLE_ERROR)
-    {
-        res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
-        return  res;
-    }
-    sockfd = socket(fa->family, SOCK_STREAM, 0);
-    if (sockfd == FEAL_INVALID_HANDLE)
-    {
-        res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
-        return res;
-    }
-    set_nonblocking(sockfd);
-    socklen_t length = sizeof(su.in);
-    if (fa->family == feal::ipaddr::INET6)
-    {
-        length = sizeof(su.in6);
-    }
-    ret = connect(sockfd, &(su.sa), length);
-    if ((ret == FEAL_HANDLE_ERROR) &&
-        (FEAL_GETHANDLEERRNO != FEAL_STREAM_EINPROGRESS))
-    {
-        res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
-        return res;
-    }
-    else if ((ret == FEAL_HANDLE_ERROR) &&
-        (FEAL_GETHANDLEERRNO == FEAL_STREAM_EINPROGRESS))
-    {
-        FEALDEBUGLOG("do_connect_in_progress");
-        do_connect_in_progress();
-    }
-    else if (ret == 0)
-    {
-        FEALDEBUGLOG("do_connect_ok");
-        do_connect_ok();
-    }
-    connectThread = std::thread(&connectLoopLauncher, this);
-    return res;
-}
-
-#if defined(unix) || defined(__unix__) || defined(__unix) || defined(__APPLE__) || defined(__MACH__) || defined(__linux__)
-errenum create_and_connect(struct sockaddr_un* su)
-{
-    errenum res = FEAL_OK;
-    if (connectThread.joinable()) return res;
-    int ret;
-    if (su == nullptr) return res;
-    sockfd = socket(su->sun_family, SOCK_STREAM, 0);
-    if (sockfd == FEAL_INVALID_HANDLE)
-    {
-        res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
-        return res;
-    }
-    set_nonblocking(sockfd);
-    socklen_t length = sizeof(su->sun_family) + strlen(su->sun_path) + 1;
-    ret = connect(sockfd, (const struct sockaddr*) su, length);
-    if ((ret == FEAL_HANDLE_ERROR) &&
-        (FEAL_GETHANDLEERRNO != FEAL_STREAM_EINPROGRESS))
-    {
-        res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
-        return res;
-    }
-    else if ((ret == FEAL_HANDLE_ERROR) &&
-        (FEAL_GETHANDLEERRNO == FEAL_STREAM_EINPROGRESS))
-    {
-        FEALDEBUGLOG("do_connect_in_progress");
-        do_connect_in_progress();
-    }
-    else if (ret == 0)
-    {
-        FEALDEBUGLOG("do_connect_ok");
-        do_connect_ok();
-    }
-    connectThread = std::thread(&connectLoopLauncher, this);
-    return res;
-}
-#endif
-
-errenum listen(int backlog = 32)
-{
-    errenum res = FEAL_OK;
-    if (serverThread.joinable()) return res;
-    if (::listen(sockfd, backlog) == FEAL_HANDLE_ERROR)
-        res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
-    else
-    {
-        serverThread = std::thread(&serverLoopLauncher, this);
-    }
-    return res;
 }
 
 template<class T, typename CRead, typename CWrite, typename CShutdown>

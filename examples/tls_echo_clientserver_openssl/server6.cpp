@@ -8,24 +8,32 @@
 #include "clienthandler.h"
 #include "server6.h"
 
+#define SERVERPORT 58103
+
 void Server6::start_server(void)
 {
-    feal::ipaddr serveraddr;
-    serveraddr.family = feal::ipaddr::INET6;
-    serveraddr.port = 58103;
-    strcpy(serveraddr.addr, "::1");
-    printf("Starting Server on ::1 port %d\n", serveraddr.port);
-    feal::errenum se = stream.create_and_bind(&serveraddr);
-    if (se != feal::FEAL_OK)
+    feal::handle_t fd;
+    fd = socket(AF_INET6, SOCK_STREAM, 0);
+    feal::sockaddr_all sall;
+    memset(&sall, 0, sizeof(sall));
+    sall.in6.sin6_family = AF_INET6;
+    sall.in6.sin6_port = htons(SERVERPORT);
+    feal::inet_pton(AF_INET6, "::1", &(sall.in6.sin6_addr));
+    feal::set_ipv6only(fd);
+    feal::set_reuseaddr(fd, true);
+    printf("Starting Server on 127.0.0.1:%d\n", SERVERPORT);
+    int ret = bind(fd, (sockaddr*) &(sall.in6), sizeof(sall.in6));
+    if (ret != feal::FEAL_OK)
     {
-        printf("Error binding to ::1 port %d  err %d\n", serveraddr.port, se);
+        printf("Error binding to 127.0.0.1:%d  err %d\n", SERVERPORT, 
+            static_cast<feal::errenum>(FEAL_GETHANDLEERRNO));
         timers.startTimer<EvtRetryTimer>(std::chrono::seconds(5));
         return;
     }
-    se = stream.listen();
+    feal::errenum se = stream.listen(fd);
     if (se != feal::FEAL_OK)
     {
-        printf("Error listening to ::1 port %d  err %d\n", serveraddr.port, se);
+        printf("Error listening to 127.0.0.1:%d  err %d\n", SERVERPORT, se);
         timers.startTimer<EvtRetryTimer>(std::chrono::seconds(5));
         return;
     }

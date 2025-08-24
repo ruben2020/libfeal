@@ -13,19 +13,25 @@
 
 void Serveruns::start_server(void)
 {
-    struct sockaddr_un serveraddr;
-    serveraddr.sun_family = AF_UNIX;
-    strcpy(serveraddr.sun_path, SERVERPATH);
+    feal::handle_t fd;
+    fd = socket(AF_UNIX, SOCK_STREAM, 0);
+    feal::set_reuseaddr(fd, true);
+    feal::sockaddr_all sall;
+    memset(&sall, 0, sizeof(sall));
+    sall.un.sun_family = AF_UNIX;
+    strcpy(sall.un.sun_path, SERVERPATH);
     unlink(SERVERPATH);
     printf("Starting Server on %s\n", SERVERPATH);
-    feal::errenum se = stream.create_and_bind(&serveraddr);
-    if (se != feal::FEAL_OK)
+    feal::socklen_t length = sizeof(sall.un.sun_family) + strlen(sall.un.sun_path) + 1;
+    int ret = bind(fd, &(sall.sa), length);
+    if (ret != feal::FEAL_OK)
     {
-        printf("Error binding to %s  err %d\n", SERVERPATH, se);
+        printf("Error binding to %s  err %d\n", SERVERPATH, 
+            static_cast<feal::errenum>(FEAL_GETHANDLEERRNO));
         timers.startTimer<EvtRetryTimer>(std::chrono::seconds(5));
         return;
     }
-    se = stream.listen();
+    feal::errenum se = stream.listen(fd);
     if (se != feal::FEAL_OK)
     {
         printf("Error listening to %s  err %d\n", SERVERPATH, se);

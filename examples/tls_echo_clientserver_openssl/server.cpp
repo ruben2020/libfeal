@@ -8,6 +8,8 @@
 #include "clienthandler.h"
 #include "server.h"
 
+#define SERVERPORT 57101
+
 static const unsigned char cache_id[] = "libfeal TLS Demo Server";
 
 void Server::initActor(void)
@@ -50,23 +52,27 @@ void Server::shutdownActor(void)
 
 void Server::start_server(void)
 {
-    feal::ipaddr serveraddr;
-    serveraddr.family = feal::ipaddr::INET;
-    serveraddr.port = 57101;
-    strcpy(serveraddr.addr, "127.0.0.1");
-    printf("Starting Server on 127.0.0.1:%d\n", serveraddr.port);
-    stream.set_reuseaddr(true);
-    feal::errenum se = stream.create_and_bind(&serveraddr);
-    if (se != feal::FEAL_OK)
+    feal::handle_t fd;
+    fd = socket(AF_INET, SOCK_STREAM, 0);
+    feal::sockaddr_all sall;
+    memset(&sall, 0, sizeof(sall));
+    sall.in.sin_family = AF_INET;
+    sall.in.sin_port = htons(SERVERPORT);
+    feal::inet_pton(AF_INET, "127.0.0.1", &(sall.in.sin_addr));
+    feal::set_reuseaddr(fd, true);
+    printf("Starting Server on 127.0.0.1:%d\n", SERVERPORT);
+    int ret = bind(fd, (sockaddr*) &(sall.in), sizeof(sall.in));
+    if (ret != feal::FEAL_OK)
     {
-        printf("Error binding to 127.0.0.1:%d  err %d\n", serveraddr.port, se);
+        printf("Error binding to 127.0.0.1:%d  err %d\n", SERVERPORT, 
+            static_cast<feal::errenum>(FEAL_GETHANDLEERRNO));
         timers.startTimer<EvtRetryTimer>(std::chrono::seconds(5));
         return;
     }
-    se = stream.listen();
+    feal::errenum se = stream.listen(fd);
     if (se != feal::FEAL_OK)
     {
-        printf("Error listening to 127.0.0.1:%d  err %d\n", serveraddr.port, se);
+        printf("Error listening to 127.0.0.1:%d  err %d\n", SERVERPORT, se);
         timers.startTimer<EvtRetryTimer>(std::chrono::seconds(5));
         return;
     }
@@ -114,13 +120,18 @@ void Server::handleEvent(std::shared_ptr<EvtIncomingConn> pevt)
 
 void Server::print_client_address(feal::handle_t fd)
 {
-    feal::errenum se = feal::FEAL_OK;
-    feal::ipaddr fa;
-    se = stream.getpeername(&fa, fd);
-    if (se == feal::FEAL_OK)
+    feal::sockaddr_all sall;
+    feal::socklen_t length = sizeof(sall);
+    char addrstr[INET6_ADDRSTRLEN];
+    int ret = ::getpeername(fd, &(sall.sa), &length);
+    feal::errenum se;
+    if (ret != feal::FEAL_OK) se = static_cast<feal::errenum>(FEAL_GETHANDLEERRNO);
+    if (ret == feal::FEAL_OK)
     {
+        feal::inet_ntop(sall.sa.sa_family, &(sall.sa), addrstr, INET6_ADDRSTRLEN);
         printf("ClientHandler(%lld): %s addr %s port %d\n",
-            (long long int) fd, (fa.family == feal::ipaddr::INET ? "IPv4" : "IPv6"), fa.addr, fa.port);
+            (long long int) fd, (sall.sa.sa_family == AF_INET ? "IPv4" : "IPv6"), addrstr,
+            ntohs(sall.sa.sa_family == AF_INET ? sall.in.sin_port : sall.in6.sin6_port));
     }
     else if ((se != feal::FEAL_ENOTCONN)&&(se != feal::FEAL_ENOTSOCK))
     {
@@ -130,13 +141,16 @@ void Server::print_client_address(feal::handle_t fd)
 
 void Server::get_client_address(feal::handle_t fd, char* addr, int addrbuflen)
 {
-    feal::errenum se = feal::FEAL_OK;
-    feal::ipaddr fa;
-    se = stream.getpeername(&fa, fd);
-    if ((se == feal::FEAL_OK)&&(addr))
+    feal::sockaddr_all sall;
+    feal::socklen_t length = sizeof(sall);
+    char addrstr[INET6_ADDRSTRLEN];
+    int ret = ::getpeername(fd, &(sall.sa), &length);
+    if ((ret == feal::FEAL_OK)&&(addr))
     {
+        feal::inet_ntop(sall.sa.sa_family, &(sall.sa), addrstr, INET6_ADDRSTRLEN);
         snprintf(addr, addrbuflen, "%s %s port %d",
-            (fa.family == feal::ipaddr::INET ? "IPv4" : "IPv6"), fa.addr, fa.port);
+            (sall.sa.sa_family == AF_INET ? "IPv4" : "IPv6"), addrstr, 
+            ntohs(sall.sa.sa_family == AF_INET ? sall.in.sin_port : sall.in6.sin6_port));
     }
 }
 

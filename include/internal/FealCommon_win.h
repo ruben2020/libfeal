@@ -118,10 +118,17 @@ typedef enum
 
 
 typedef SOCKET handle_t;
+typedef int socklen_t;
 #define FEAL_INVALID_HANDLE    (INVALID_SOCKET)
 #define FEAL_HANDLE_ERROR      (SOCKET_ERROR)
 #define FEAL_GETHANDLEERRNO    WSAGetLastError()
 #define FEAL_SHUT_RDWR         SD_BOTH
+
+typedef union {
+    struct sockaddr sa;
+    struct sockaddr_in in;
+    struct sockaddr_in6 in6;
+} sockaddr_all;
 
 #ifndef MSG_DONTWAIT
 #define MSG_DONTWAIT   (0)
@@ -131,29 +138,13 @@ typedef SOCKET handle_t;
 #define MSG_CONFIRM    (0)
 #endif
 
-typedef union sockaddr_ip {
-    struct sockaddr sa;
-    struct sockaddr_in in;
-    struct sockaddr_in6 in6;
-} sockaddr_ip;
-
-
 typedef uint32_t EventId_t;
 typedef uint32_t ActorId_t;
-typedef enum {INET=AF_INET, INET6=AF_INET6} family_t;
-
-typedef struct {
-    enum {INET=AF_INET, INET6=AF_INET6} family;
-    uint16_t port;
-    char addr[INET6_ADDRSTRLEN];
-} ipaddr;
 
 typedef unsigned int flags_t;
 
 int inet_pton(int af, const char *src, void *dst);
 const char * inet_ntop(int af, const void *src, char *dst, socklen_t size);
-void ipaddr_posix2feal(sockaddr_ip* su, ipaddr* fa);
-int  ipaddr_feal2posix(ipaddr* fa, sockaddr_ip* su);
 int  set_nonblocking(handle_t fd);
 int  set_ipv6only(handle_t fd);
 int  set_reuseaddr(handle_t fd, bool enable);

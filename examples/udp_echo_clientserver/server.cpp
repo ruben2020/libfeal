@@ -7,6 +7,7 @@
 #include <cstring>
 #include "server.h"
 
+#define SERVERPORT 56001
 #define MIN(a,b) (a<b ? a : b)
 
 
@@ -41,26 +42,31 @@ void Server::shutdownActor(void)
 
 void Server::start_listening(void)
 {
-    feal::ipaddr serveraddr;
+    feal::handle_t fd;
+    fd = socket(AF_INET, SOCK_DGRAM, 0);
+    feal::sockaddr_all sall;
+    memset(&sall, 0, sizeof(sall));
+    sall.in.sin_family = AF_INET;
+    sall.in.sin_port = htons(SERVERPORT);
+    feal::inet_pton(AF_INET, "127.0.0.1", &(sall.in.sin_addr));
     feal::errenum se;
-    serveraddr.family = feal::ipaddr::INET;
-    serveraddr.port = 56001;
-    strcpy(serveraddr.addr, "127.0.0.1");
-    se = dgram.create_sock((feal::family_t) serveraddr.family);
+    se = dgram.monitor_sock(fd);
     if (se != feal::FEAL_OK)
     {
-        printf("create sock: %d\n", se);
+        se = static_cast<feal::errenum>(FEAL_GETHANDLEERRNO);
+        printf("Err create sock: %d\n", se);
         timers.startTimer<EvtRetryTimer>(std::chrono::seconds(5));
         return;
     }
-    se = dgram.bind_sock(&serveraddr);
-    if (se != feal::FEAL_OK)
+    int ret = bind(fd, &(sall.sa), sizeof(sall));
+    if (ret != feal::FEAL_OK)
     {
-        printf("bind sock: %d\n", se);
+        se = static_cast<feal::errenum>(FEAL_GETHANDLEERRNO);
+        printf("Err bind sock: %d\n", se);
         timers.startTimer<EvtRetryTimer>(std::chrono::seconds(5));
         return;
     }
-    printf("UDP Listening on %s:%d ...\n", serveraddr.addr, serveraddr.port );
+    printf("UDP Listening on %s:%d ...\n", "127.0.0.1", SERVERPORT );
 }
 
 
@@ -84,16 +90,28 @@ void Server::handleEvent(std::shared_ptr<EvtDgramReadAvail> pevt)
 {
     if (!pevt) return;
     printf("Server::EvtDgramReadAvail\n");
-    char buf[30];
+    char buf[50];
+    char addrstr[INET6_ADDRSTRLEN];
     int32_t bytes;
     memset(&buf, 0, sizeof(buf));
-    feal::ipaddr recvaddr;
-    feal::errenum se = dgram.recv_from((void*) buf, sizeof(buf), &bytes, &recvaddr);
-    if (se != feal::FEAL_OK) printf("Error receiving: %d\n", se);
-    else printf("Received %lld bytes: \"%s\" from %s:%d\n", (long long int) bytes, buf, recvaddr.addr, recvaddr.port);
-    printf("Sending back \"%s\" to %s:%d\n", buf, recvaddr.addr, recvaddr.port);
-    se = dgram.send_to((void*) buf, MIN(strlen(buf) + 1, sizeof(buf)), &bytes, &recvaddr);
-    if (se != feal::FEAL_OK) printf("Error sending back \"%s\" to %s:%d\n", buf, recvaddr.addr, recvaddr.port);
+    feal::sockaddr_all recvaddr;
+    feal::socklen_t addrsize = sizeof(recvaddr);
+    feal::errenum se = dgram.recvfrom((void*) buf, sizeof(buf), &bytes, &recvaddr, &addrsize);
+    if (se != feal::FEAL_OK)
+    {
+        se = static_cast<feal::errenum>(FEAL_GETHANDLEERRNO);
+        printf("Error receiving: %d\n", se);
+    }
+    else
+    {
+        feal::socklen_t addrport = ntohs(recvaddr.sa.sa_family == AF_INET ? 
+                recvaddr.in.sin_port : recvaddr.in6.sin6_port);
+        feal::inet_ntop(recvaddr.sa.sa_family, &(recvaddr.sa), addrstr, INET6_ADDRSTRLEN);
+        printf("Received %lld bytes: \"%s\" from %s:%d\n", (long long int) bytes, buf, addrstr, addrport);
+        printf("Sending back \"%s\" to %s:%d\n", buf, addrstr, addrport);
+        se = dgram.sendto((void*) buf, MIN(strlen(buf) + 1, sizeof(buf)), &bytes, &recvaddr, sizeof(recvaddr));
+        if (se != feal::FEAL_OK) printf("Error sending back \"%s\" to %s:%d\n", buf, addrstr, addrport);
+    }
 }
 
 void Server::handleEvent(std::shared_ptr<EvtDgramWriteAvail> pevt)

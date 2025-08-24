@@ -21,71 +21,50 @@ void feal::StreamGeneric::shutdownTool(void)
     disconnect_and_reset();
 }
 
-void feal::StreamGeneric::set_reuseaddr(bool enable)
-{
-    reuseaddr = enable;
-}
-
-feal::errenum feal::StreamGeneric::create_and_bind(feal::ipaddr* fa)
+feal::errenum feal::StreamGeneric::connect(handle_t fd, 
+    const sockaddr_all *addr, socklen_t addrlen)
 {
     errenum res = FEAL_OK;
-    int ret;
-    if (fa == nullptr) return res;
-    sockaddr_ip su;
-    memset(&su, 0, sizeof(su));
-    ret = ipaddr_feal2posix(fa, &su);
-    if (ret == FEAL_HANDLE_ERROR)
-    {
-        res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
-        return  res;
-    }
-    sockfd = socket(fa->family, SOCK_STREAM, 0);
-    if (sockfd == FEAL_INVALID_HANDLE)
+    if (addr == nullptr) return res;
+    sockfd = fd;
+    set_nonblocking(fd);
+    int ret = ::connect(sockfd, &(addr->sa), addrlen);
+    if ((ret == FEAL_HANDLE_ERROR) &&
+        (FEAL_GETHANDLEERRNO != FEAL_STREAM_EINPROGRESS))
     {
         res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
         return res;
     }
-    socklen_t length = sizeof(su.in);
-    if (fa->family == feal::ipaddr::INET6)
+    else if ((ret == FEAL_HANDLE_ERROR) &&
+        (FEAL_GETHANDLEERRNO == FEAL_STREAM_EINPROGRESS))
     {
-        set_ipv6only(sockfd);
-        length = sizeof(su.in6);
+        FEALDEBUGLOG("do_connect_in_progress");
+        do_connect_in_progress();
     }
-    feal::set_reuseaddr(sockfd, reuseaddr);
-    set_nonblocking(sockfd);
-    ret = ::bind(sockfd, &(su.sa), length);
-    if (ret == FEAL_HANDLE_ERROR)
+    else if (ret == 0)
     {
+        FEALDEBUGLOG("do_connect_ok");
+        do_connect_ok();
+    }
+    connectThread = std::thread(&connectLoopLauncher, this);
+    return res;
+}
+
+feal::errenum feal::StreamGeneric::listen(handle_t fd, int backlog)
+{
+    errenum res = FEAL_OK;
+    sockfd = fd;
+    set_nonblocking(fd);
+    if (serverThread.joinable()) return res;
+    if (::listen(sockfd, backlog) == FEAL_HANDLE_ERROR)
         res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
-        return res;
+    else
+    {
+        serverThread = std::thread(&serverLoopLauncher, this);
     }
     return res;
 }
 
-#if defined(unix) || defined(__unix__) || defined(__unix) || defined(__APPLE__) || defined(__MACH__) || defined(__linux__)
-feal::errenum feal::StreamGeneric::create_and_bind(struct sockaddr_un* su)
-{
-    errenum res = FEAL_OK;
-    int ret;
-    if (su == nullptr) return res;
-    sockfd = socket(su->sun_family, SOCK_STREAM, 0);
-    if (sockfd == FEAL_INVALID_HANDLE)
-    {
-        res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
-        return res;
-    }
-    feal::set_reuseaddr(sockfd, reuseaddr);
-    set_nonblocking(sockfd);
-    socklen_t length = sizeof(su->sun_family) + strlen(su->sun_path) + 1;
-    ret = ::bind(sockfd, (const struct sockaddr*) su, length);
-    if (ret == FEAL_HANDLE_ERROR)
-    {
-        res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
-        return res;
-    }
-    return res;
-}
-#endif
 
 feal::errenum feal::StreamGeneric::recv(void *buf,
     uint32_t len, int32_t* bytes, feal::handle_t fd)
@@ -146,45 +125,6 @@ feal::errenum feal::StreamGeneric::disconnect_and_reset(void)
     return res;
 }
 
-feal::errenum feal::StreamGeneric::getpeername(feal::ipaddr* fa, feal::handle_t fd)
-{
-    errenum res = FEAL_OK;
-    if (fd == FEAL_INVALID_HANDLE) fd = sockfd;
-    sockaddr_ip su;
-    memset(&su, 0, sizeof(su));
-    socklen_t length = sizeof(su);
-    int ret = ::getpeername(fd, &(su.sa), &length);
-    if (ret == FEAL_HANDLE_ERROR)
-    {
-        res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
-        return res;
-    }
-    if (fa) ipaddr_posix2feal(&su, fa);
-    return res;
-}
-
-#if defined(unix) || defined(__unix__) || defined(__unix) || defined(__APPLE__) || defined(__MACH__) || defined(__linux__)
-feal::errenum feal::StreamGeneric::getpeername(struct sockaddr_un* su, feal::handle_t fd)
-{
-    errenum res = FEAL_OK;
-    struct sockaddr_un an;
-    if (fd == -1) fd = sockfd;
-    socklen_t length = sizeof(an);
-    int ret = ::getpeername(fd, (struct sockaddr*) su, &length);
-    if (ret == FEAL_HANDLE_ERROR)
-    {
-        res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
-        return res;
-    }
-    return res;
-}
-
-feal::errenum feal::StreamGeneric::getpeereid(uid_t* euid, gid_t* egid)
-{
-    return feal::getpeereid(sockfd, euid, egid);
-}
-#endif
-
 void feal::StreamGeneric::serverLoopLauncher(StreamGeneric *p)
 {
     if (p) p->serverLoop();
@@ -197,10 +137,10 @@ void feal::StreamGeneric::connectLoopLauncher(StreamGeneric *p)
 
 int feal::StreamGeneric::accept_new_conn(void)
 {
-    sockaddr_ip su;
-    memset(&su, 0, sizeof(su));
-    socklen_t socklength = sizeof(su);
-    handle_t sock_conn_fd = accept(sockfd, &(su.sa), &socklength);
+    sockaddr_all sall;
+    memset(&sall, 0, sizeof(sall));
+    socklen_t socklength = sizeof(sall);
+    handle_t sock_conn_fd = accept(sockfd, &(sall.sa), &socklength);
     errenum errnum = FEAL_OK;
     if (sock_conn_fd == FEAL_INVALID_HANDLE)
     {

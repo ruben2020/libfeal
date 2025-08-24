@@ -207,27 +207,21 @@ typedef enum
 
 
 typedef int handle_t;
+typedef ::socklen_t socklen_t;
 #define FEAL_INVALID_HANDLE    (-1)
 #define FEAL_HANDLE_ERROR      (-1)
 #define FEAL_GETHANDLEERRNO    errno
 #define FEAL_SHUT_RDWR         SHUT_RDWR
 
-typedef union sockaddr_ip {
+typedef union {
     struct sockaddr sa;
     struct sockaddr_in in;
     struct sockaddr_in6 in6;
-} sockaddr_ip;
-
+    struct sockaddr_un un;
+} sockaddr_all;
 
 typedef uint32_t EventId_t;
 typedef uint32_t ActorId_t;
-typedef enum {INET=AF_INET, INET6=AF_INET6, UNIX=AF_UNIX} family_t;
-
-typedef struct {
-    enum {INET=AF_INET, INET6=AF_INET6} family;
-    uint16_t port;
-    char addr[INET6_ADDRSTRLEN];
-} ipaddr;
 
 #if defined (__linux__)
     typedef uint32_t flags_t;
@@ -235,8 +229,8 @@ typedef struct {
     typedef unsigned int flags_t;
 #endif
 
-void ipaddr_posix2feal(sockaddr_ip* su, ipaddr* fa);
-int  ipaddr_feal2posix(ipaddr* fa, sockaddr_ip* su);
+int inet_pton(int af, const char *src, void *dst);
+const char * inet_ntop(int af, const void *src, char *dst, socklen_t size);
 int  set_nonblocking(handle_t fd);
 int  set_nonblocking(handle_t fd[2]);
 int  set_ipv6only(handle_t fd);

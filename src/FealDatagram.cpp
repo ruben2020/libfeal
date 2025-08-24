@@ -19,81 +19,23 @@ void feal::DatagramGeneric::shutdownTool(void)
     close_and_reset();
 }
 
-void feal::DatagramGeneric::set_reuseaddr(bool enable)
-{
-    reuseaddr = enable;
-}
-
-feal::errenum feal::DatagramGeneric::create_sock(feal::family_t fam)
+feal::errenum feal::DatagramGeneric::monitor_sock(handle_t fd)
 {
     errenum res = FEAL_OK;
     if (datagramThread.joinable()) return res;
-    sockfd = socket((int) fam, SOCK_DGRAM, 0);
-    if (sockfd == FEAL_INVALID_HANDLE)
-    {
-        res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
-        return res;
-    }
-    feal::set_reuseaddr(sockfd, reuseaddr);
-    set_nonblocking(sockfd);
+    sockfd = fd;
+    set_nonblocking(fd);
     datagramThread = std::thread(&dgramLoopLauncher, this);
     return res;
 }
 
-feal::errenum feal::DatagramGeneric::bind_sock(feal::ipaddr* fa)
+feal::errenum feal::DatagramGeneric::recvfrom(void *buf, 
+    uint32_t len, int32_t* bytes, sockaddr_all* addr,
+           socklen_t* addrlen)
 {
     errenum res = FEAL_OK;
-    int ret;
-    if (fa == nullptr) return res;
-    sockaddr_ip su;
-    memset(&su, 0, sizeof(su));
-    ret = ipaddr_feal2posix(fa, &su);
-    if (ret == FEAL_HANDLE_ERROR)
-    {
-        res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
-        return  res;
-    }
-    socklen_t length = sizeof(su.in);
-    if (fa->family == feal::ipaddr::INET6)
-    {
-        set_ipv6only(sockfd);
-        length = sizeof(su.in6);
-    }
-    ret = bind(sockfd, &(su.sa), length);
-    if (ret == FEAL_HANDLE_ERROR)
-    {
-        res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
-        return res;
-    }
-    return res;
-}
-
-#if defined(unix) || defined(__unix__) || defined(__unix) || defined(__APPLE__) || defined(__MACH__) || defined(__linux__)
-feal::errenum feal::DatagramGeneric::bind_sock(struct sockaddr_un* su)
-{
-    errenum res = FEAL_OK;
-    int ret;
-    if (su == nullptr) return res;
-    socklen_t length = sizeof(su->sun_family) + strlen(su->sun_path) + 1;
-    ret = bind(sockfd, (const struct sockaddr*) su, length);
-    if (ret == FEAL_HANDLE_ERROR)
-    {
-        res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
-        return res;
-    }
-    return res;
-}
-#endif
-
-feal::errenum feal::DatagramGeneric::recv_from(void *buf, 
-    uint32_t len, int32_t* bytes, feal::ipaddr* src)
-{
-    errenum res = FEAL_OK;
-    sockaddr_ip su;
-    socklen_t addrlen = sizeof(su);
-    memset(&su, 0, sizeof(su));
-    ssize_t numbytes = recvfrom(sockfd, BUFCAST(buf), (size_t) len, 
-                MSG_DONTWAIT, &(su.sa), &addrlen);
+    ssize_t numbytes = ::recvfrom(sockfd, BUFCAST(buf), (size_t) len, 
+                MSG_DONTWAIT, &(addr->sa), addrlen);
 #if defined (_WIN32)
     sockread[0] = sockfd;
 #endif
@@ -103,56 +45,23 @@ feal::errenum feal::DatagramGeneric::recv_from(void *buf,
         return res;
     }
     if (bytes) *bytes = (int32_t) numbytes;
-    if (src) ipaddr_posix2feal(&su, src);
     return res;
 }
 
-#if defined(unix) || defined(__unix__) || defined(__unix) || defined(__APPLE__) || defined(__MACH__) || defined(__linux__)
-feal::errenum feal::DatagramGeneric::recv_from(void *buf, 
-    uint32_t len, int32_t* bytes,
-    struct sockaddr_un* src, socklen_t *srcaddrlen)
+feal::errenum feal::DatagramGeneric::sendto(void *buf,
+    uint32_t len, int32_t* bytes, const sockaddr_all* dest, 
+    socklen_t destlen, bool confirm)
 {
     errenum res = FEAL_OK;
-    ssize_t numbytes = recvfrom(sockfd, buf, (size_t) len, 
-                MSG_DONTWAIT, (struct sockaddr *) src, srcaddrlen);
-    if (numbytes == FEAL_HANDLE_ERROR)
-    {
-        res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
-        return res;
-    }
-    if (bytes) *bytes = (int32_t) numbytes;
-    return res;
-}
-#endif
-
-feal::errenum feal::DatagramGeneric::send_to(void *buf,
-    uint32_t len, int32_t* bytes, 
-    feal::ipaddr* dest, bool confirm)
-{
-    errenum res = FEAL_OK;
-    int ret;
     if (dest == nullptr) return res;
-    sockaddr_ip su;
-    memset(&su, 0, sizeof(su));
-    ret = ipaddr_feal2posix(dest, &su);
-    if (ret == FEAL_HANDLE_ERROR)
-    {
-        res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
-        return  res;
-    }
-    socklen_t length = sizeof(su.in);
-    if (dest->family == feal::ipaddr::INET6)
-    {
-        length = sizeof(su.in6);
-    }
 #if defined (_WIN32)
     (void)confirm;
     int flags = 0;
 #else
     int flags = ((confirm ? MSG_CONFIRM : 0) | MSG_DONTWAIT);
 #endif
-    ssize_t numbytes = sendto(sockfd, BUFCAST(buf), (size_t) len,
-            flags, &(su.sa), length);
+    ssize_t numbytes = ::sendto(sockfd, BUFCAST(buf), (size_t) len,
+            flags, &(dest->sa), destlen);
     if (numbytes == FEAL_HANDLE_ERROR)
     {
 #if defined (_WIN32)
@@ -169,31 +78,6 @@ feal::errenum feal::DatagramGeneric::send_to(void *buf,
     if (bytes) *bytes = (int32_t) numbytes;
     return res;
 }
-
-#if defined(unix) || defined(__unix__) || defined(__unix) || defined(__APPLE__) || defined(__MACH__) || defined(__linux__)
-feal::errenum feal::DatagramGeneric::send_to(void *buf, 
-    uint32_t len, int32_t* bytes,
-    struct sockaddr_un* dest, socklen_t destaddrlen,
-    bool confirm)
-{
-    errenum res = FEAL_OK;
-    if ((dest == nullptr)||(destaddrlen <= 0)) return res;
-    int flags = ((confirm ? MSG_CONFIRM : 0) | MSG_DONTWAIT);
-    ssize_t numbytes = sendto(sockfd, buf, (size_t) len,
-            flags, (const struct sockaddr *) dest, destaddrlen);
-    if (numbytes == FEAL_HANDLE_ERROR)
-    {
-        if ((errno == EAGAIN)||(errno == EWOULDBLOCK))
-        {
-            do_send_avail_notify();
-        }
-        res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
-        return res;
-    }
-    if (bytes) *bytes = (int32_t) numbytes;
-    return res;
-}
-#endif
 
 feal::errenum feal::DatagramGeneric::close_and_reset(void)
 {
