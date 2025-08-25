@@ -90,3 +90,42 @@ int feal::datareadavaillen(handle_t fd)
         }
     return ret;
 }
+
+std::string feal::get_addr(sockaddr_all* sa)
+{
+    char arr[200];
+    if (sa == nullptr) return std::string();
+    if (sa->sa.sa_family == AF_INET)
+    {
+        feal::inet_ntop(AF_INET, &(sa->sa), arr, 200);
+    }
+    else if (sa->sa.sa_family == AF_INET6)
+    {
+        feal::inet_ntop(AF_INET6, &(sa->sa), arr, 200);
+    }
+    else
+    {
+        arr[0] = 0;
+    }
+    return std::string(arr);
+}
+
+std::string feal::get_port(sockaddr_all* sa)
+{
+    char arr[10];
+    if (sa == nullptr) return std::string();
+    if (sa->sa.sa_family == AF_INET)
+    {
+        snprintf(arr, 10, "%d", ntohs(sa->in.sin_port));
+    }
+    else if (sa->sa.sa_family == AF_INET6)
+    {
+        snprintf(arr, 10, "%d", ntohs(sa->in6.sin6_port));
+    }
+    else
+    {
+        snprintf(arr, 10, "%d", 0);
+    }
+    return std::string(arr);
+}
+

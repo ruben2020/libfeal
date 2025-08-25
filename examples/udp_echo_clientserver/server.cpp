@@ -91,7 +91,6 @@ void Server::handleEvent(std::shared_ptr<EvtDgramReadAvail> pevt)
     if (!pevt) return;
     printf("Server::EvtDgramReadAvail\n");
     char buf[50];
-    char addrstr[INET6_ADDRSTRLEN];
     int32_t bytes;
     memset(&buf, 0, sizeof(buf));
     feal::sockaddr_all recvaddr;
@@ -104,13 +103,13 @@ void Server::handleEvent(std::shared_ptr<EvtDgramReadAvail> pevt)
     }
     else
     {
-        feal::socklen_t addrport = ntohs(recvaddr.sa.sa_family == AF_INET ? 
-                recvaddr.in.sin_port : recvaddr.in6.sin6_port);
-        feal::inet_ntop(recvaddr.sa.sa_family, &(recvaddr.sa), addrstr, INET6_ADDRSTRLEN);
-        printf("Received %lld bytes: \"%s\" from %s:%d\n", (long long int) bytes, buf, addrstr, addrport);
-        printf("Sending back \"%s\" to %s:%d\n", buf, addrstr, addrport);
+        printf("Received %lld bytes: \"%s\" from %s:%s\n", (long long int) bytes, buf,
+            feal::get_addr(&recvaddr).c_str(), feal::get_port(&recvaddr).c_str());
+        printf("Sending back \"%s\" to %s:%s\n", buf,
+            feal::get_addr(&recvaddr).c_str(), feal::get_port(&recvaddr).c_str());
         se = dgram.sendto((void*) buf, MIN(strlen(buf) + 1, sizeof(buf)), &bytes, &recvaddr, sizeof(recvaddr));
-        if (se != feal::FEAL_OK) printf("Error sending back \"%s\" to %s:%d\n", buf, addrstr, addrport);
+        if (se != feal::FEAL_OK) printf("Error sending back \"%s\" to %s:%s\n", buf, 
+            feal::get_addr(&recvaddr).c_str(), feal::get_port(&recvaddr).c_str());
     }
 }
 

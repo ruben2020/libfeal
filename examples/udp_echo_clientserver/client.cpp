@@ -59,10 +59,9 @@ void Client::send_something(void)
     char buf[50];
     int32_t bytes;
     memset(&buf, 0, sizeof(buf));
-    char addrstr[INET6_ADDRSTRLEN];
-    feal::inet_ntop(serveraddr.sa.sa_family, &(serveraddr.sa), addrstr, INET6_ADDRSTRLEN);
     snprintf(buf, sizeof(buf), "Client %d", n++);
-    printf("Trying to send \"%s\" to %s:%d\n", buf, addrstr, ntohs(serverport));
+    printf("Trying to send \"%s\" to %s:%s\n", buf,
+        feal::get_addr(&serveraddr).c_str(), feal::get_port(&serveraddr).c_str());
     feal::errenum se = dgram.sendto((void*) buf, MIN(strlen(buf) + 1, sizeof(buf)),
         &bytes, &serveraddr, sizeof(serveraddr));
     if (se != feal::FEAL_OK) printf("Error sending \"Client n\": %d\n", se);
@@ -95,12 +94,9 @@ void Client::handleEvent(std::shared_ptr<EvtDgramReadAvail> pevt)
     feal::sockaddr_all recvaddr;
     feal::socklen_t addrsize = sizeof(recvaddr);
     feal::errenum se = dgram.recvfrom((void*) buf, sizeof(buf), &bytes, &recvaddr, &addrsize);
-    char addrstr[INET6_ADDRSTRLEN];
-    feal::socklen_t addrport;
-    feal::inet_ntop(recvaddr.sa.sa_family, &(recvaddr.sa), addrstr, INET6_ADDRSTRLEN);
-    addrport = ntohs(recvaddr.sa.sa_family == AF_INET ? recvaddr.in.sin_port : recvaddr.in6.sin6_port);
     if (se != feal::FEAL_OK) printf("Error receiving: %d\n", se);
-    else printf("Received %lld bytes: \"%s\" from %s:%d\n", (long long int) bytes, buf, addrstr, addrport);
+    else printf("Received %lld bytes: \"%s\" from %s:%s\n", (long long int) bytes,
+        buf, feal::get_addr(&recvaddr).c_str(), feal::get_port(&recvaddr).c_str());
 }
 
 void Client::handleEvent(std::shared_ptr<EvtDgramWriteAvail> pevt)

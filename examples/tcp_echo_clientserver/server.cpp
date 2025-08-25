@@ -117,16 +117,16 @@ void Server::print_client_address(feal::handle_t fd)
 {
     feal::sockaddr_all sall;
     feal::socklen_t length = sizeof(sall);
-    char addrstr[INET6_ADDRSTRLEN];
     int ret = ::getpeername(fd, &(sall.sa), &length);
     feal::errenum se;
     if (ret != feal::FEAL_OK) se = static_cast<feal::errenum>(FEAL_GETHANDLEERRNO);
     if (ret == feal::FEAL_OK)
     {
-        feal::inet_ntop(sall.sa.sa_family, &(sall.sa), addrstr, INET6_ADDRSTRLEN);
-        printf("ClientHandler(%lld): %s addr %s port %d\n",
-            (long long int) fd, (sall.sa.sa_family == AF_INET ? "IPv4" : "IPv6"), addrstr,
-            ntohs(sall.sa.sa_family == AF_INET ? sall.in.sin_port : sall.in6.sin6_port));
+        printf("ClientHandler(%lld): %s addr %s port %s\n",
+            (long long int) fd,
+            (sall.sa.sa_family == AF_INET ? "IPv4" : "IPv6"), 
+            feal::get_addr(&sall).c_str(), 
+            feal::get_port(&sall).c_str());
     }
     else if ((se != feal::FEAL_ENOTCONN)&&(se != feal::FEAL_ENOTSOCK))
     {
@@ -138,14 +138,13 @@ void Server::get_client_address(feal::handle_t fd, char* addr, int addrbuflen)
 {
     feal::sockaddr_all sall;
     feal::socklen_t length = sizeof(sall);
-    char addrstr[INET6_ADDRSTRLEN];
     int ret = ::getpeername(fd, &(sall.sa), &length);
     if ((ret == feal::FEAL_OK)&&(addr))
     {
-        feal::inet_ntop(sall.sa.sa_family, &(sall.sa), addrstr, INET6_ADDRSTRLEN);
-        snprintf(addr, addrbuflen, "%s %s port %d",
-            (sall.sa.sa_family == AF_INET ? "IPv4" : "IPv6"), addrstr, 
-            ntohs(sall.sa.sa_family == AF_INET ? sall.in.sin_port : sall.in6.sin6_port));
+        snprintf(addr, addrbuflen, "%s %s port %s",
+            (sall.sa.sa_family == AF_INET ? "IPv4" : "IPv6"), 
+            feal::get_addr(&sall).c_str(), 
+            feal::get_port(&sall).c_str());
     }
 }
 

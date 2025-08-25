@@ -87,6 +87,48 @@ feal::errenum feal::getpeereid(feal::handle_t fd, uid_t* euid, gid_t* egid)
     return res;
 }
 
+std::string feal::get_addr(sockaddr_all* sa)
+{
+    char arr[200];
+    if (sa == nullptr) return std::string();
+    if (sa->sa.sa_family == AF_INET)
+    {
+        ::inet_ntop(AF_INET, &(sa->sa), arr, 200);
+    }
+    else if (sa->sa.sa_family == AF_INET6)
+    {
+        ::inet_ntop(AF_INET6, &(sa->sa), arr, 200);
+    }
+    else if (sa->sa.sa_family == AF_UNIX)
+    {
+        snprintf(arr, 200, "%s", sa->un.sun_path);
+    }
+    else
+    {
+        arr[0] = 0;
+    }
+    return std::string(arr);
+}
+
+std::string feal::get_port(sockaddr_all* sa)
+{
+    char arr[10];
+    if (sa == nullptr) return std::string();
+    if (sa->sa.sa_family == AF_INET)
+    {
+        snprintf(arr, 10, "%d", ntohs(sa->in.sin_port));
+    }
+    else if (sa->sa.sa_family == AF_INET6)
+    {
+        snprintf(arr, 10, "%d", ntohs(sa->in6.sin6_port));
+    }
+    else
+    {
+        snprintf(arr, 10, "%d", 0);
+    }
+    return std::string(arr);
+}
+
 #if defined (__linux__)
 int feal::epoll_ctl_add(int epfd, handle_t fd, uint32_t events)
 {

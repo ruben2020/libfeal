@@ -18,6 +18,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <cstring>
+#include <string>
 #include <sys/ioctl.h>
 #include <sys/un.h>
 
@@ -237,6 +238,8 @@ int  set_ipv6only(handle_t fd);
 int  set_reuseaddr(handle_t fd, bool enable);
 int  datareadavaillen(handle_t fd);
 feal::errenum getpeereid(feal::handle_t fd, uid_t* euid, gid_t* egid);
+std::string get_addr(sockaddr_all* sa);
+std::string get_port(sockaddr_all* sa);
 
 #if defined (__linux__)
 int epoll_ctl_add(int epfd, handle_t fd, uint32_t events);

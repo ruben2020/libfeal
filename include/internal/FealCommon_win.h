@@ -14,6 +14,7 @@
 //#include <winsock.h>
 #include <ws2tcpip.h>
 #include <windows.h>
+#include <string>
 
 #define SOCK_STARTUP() \
     WSADATA wsa; \
@@ -149,6 +150,8 @@ int  set_nonblocking(handle_t fd);
 int  set_ipv6only(handle_t fd);
 int  set_reuseaddr(handle_t fd, bool enable);
 int  datareadavaillen(handle_t fd);
+std::string get_addr(sockaddr_all* sa);
+std::string get_port(sockaddr_all* sa);
 
 }
 
