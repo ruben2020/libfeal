@@ -2,31 +2,50 @@
 // Copyright (c) 2022-2025 ruben2020 https://github.com/ruben2020
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
- 
-#include <cstdio>
-#include <cstring>
-#include <stdlib.h>
+
 #include "clientund.h"
 
-#define MIN(a,b) (a<b ? a : b)
+#include <stdlib.h>
+
+#include <cstdio>
+#include <cstring>
+
+#define MIN(a, b) (a < b ? a : b)
 #define SERVERPATH "/tmp/fealundserver"
 #define CLIENTPATH "/tmp/fealundclient"
 
 // https://stackoverflow.com/a/323302
 unsigned long mix(unsigned long a, unsigned long b, unsigned long c)
 {
-    a=a-b;  a=a-c;  a=a^(c >> 13);
-    b=b-c;  b=b-a;  b=b^(a << 8);
-    c=c-a;  c=c-b;  c=c^(b >> 13);
-    a=a-b;  a=a-c;  a=a^(c >> 12);
-    b=b-c;  b=b-a;  b=b^(a << 16);
-    c=c-a;  c=c-b;  c=c^(b >> 5);
-    a=a-b;  a=a-c;  a=a^(c >> 3);
-    b=b-c;  b=b-a;  b=b^(a << 10);
-    c=c-a;  c=c-b;  c=c^(b >> 15);
+    a = a - b;
+    a = a - c;
+    a = a ^ (c >> 13);
+    b = b - c;
+    b = b - a;
+    b = b ^ (a << 8);
+    c = c - a;
+    c = c - b;
+    c = c ^ (b >> 13);
+    a = a - b;
+    a = a - c;
+    a = a ^ (c >> 12);
+    b = b - c;
+    b = b - a;
+    b = b ^ (a << 16);
+    c = c - a;
+    c = c - b;
+    c = c ^ (b >> 5);
+    a = a - b;
+    a = a - c;
+    a = a ^ (c >> 3);
+    b = b - c;
+    b = b - a;
+    b = b ^ (a << 10);
+    c = c - a;
+    c = c - b;
+    c = c ^ (b >> 15);
     return c;
 }
-
 
 void Clientund::initActor(void)
 {
@@ -100,14 +119,16 @@ void Clientund::send_something(void)
     snprintf(buf, sizeof(buf), "Client %d", n++);
     printf("Trying to send \"%s\" to %s\n", buf, SERVERPATH);
     feal::socklen_t length = sizeof(serveraddr.un.sun_family) + strlen(serveraddr.un.sun_path) + 1;
-    feal::errenum se = dgram.sendto((void*) buf, MIN(strlen(buf) + 1,
-        sizeof(buf)), &bytes, &serveraddr, length);
-    if (se != feal::FEAL_OK) printf("Error sending \"Client n\": %d\n", se);
+    feal::errenum se = dgram.sendto((void*)buf, MIN(strlen(buf) + 1, sizeof(buf)), &bytes,
+                                    &serveraddr, length);
+    if (se != feal::FEAL_OK)
+        printf("Error sending \"Client n\": %d\n", se);
 }
 
 void Clientund::handleEvent(std::shared_ptr<EvtEndTimer> pevt)
 {
-    if (!pevt) return;
+    if (!pevt)
+        return;
     printf("Clientund::EvtEndTimer Elapsed\n");
     timers.stopTimer<EvtDelayTimer>();
     dgram.close_and_reset();
@@ -116,7 +137,8 @@ void Clientund::handleEvent(std::shared_ptr<EvtEndTimer> pevt)
 
 void Clientund::handleEvent(std::shared_ptr<EvtDelayTimer> pevt)
 {
-    if (!pevt) return;
+    if (!pevt)
+        return;
     printf("Clientund::EvtDelayTimer\n");
     send_something();
     timers.startTimer<EvtDelayTimer>(std::chrono::seconds(2));
@@ -124,32 +146,36 @@ void Clientund::handleEvent(std::shared_ptr<EvtDelayTimer> pevt)
 
 void Clientund::handleEvent(std::shared_ptr<EvtDgramReadAvail> pevt)
 {
-    if (!pevt) return;
+    if (!pevt)
+        return;
     printf("Clientund::EvtDgramReadAvail\n");
     char buf[50];
     int32_t bytes;
     memset(&buf, 0, sizeof(buf));
     feal::sockaddr_all recvaddr;
     socklen_t recvaddr_len = sizeof(recvaddr);
-    feal::errenum se = dgram.recvfrom((void*) buf,
-        sizeof(buf), &bytes, &recvaddr, &recvaddr_len);
-    if (se != feal::FEAL_OK) printf("Error receiving: %d\n", se);
-    else printf("Received %lld bytes: \"%s\" from %s\n", (long long int) bytes, buf, recvaddr.un.sun_path);
+    feal::errenum se = dgram.recvfrom((void*)buf, sizeof(buf), &bytes, &recvaddr, &recvaddr_len);
+    if (se != feal::FEAL_OK)
+        printf("Error receiving: %d\n", se);
+    else
+        printf("Received %lld bytes: \"%s\" from %s\n", (long long int)bytes, buf,
+               recvaddr.un.sun_path);
 }
 
 void Clientund::handleEvent(std::shared_ptr<EvtDgramWriteAvail> pevt)
 {
-    if (!pevt) return;
+    if (!pevt)
+        return;
     printf("Clientund::EvtDgramWriteAvail\n");
-    //send_something();
+    // send_something();
 }
 
 void Clientund::handleEvent(std::shared_ptr<EvtSockErr> pevt)
 {
-    if (!pevt) return;
+    if (!pevt)
+        return;
     printf("Clientund::EvtSockErr\n");
     timers.stopTimer<EvtDelayTimer>();
     dgram.close_and_reset();
     send_to_server();
 }
-

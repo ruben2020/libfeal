@@ -2,11 +2,12 @@
 // Copyright (c) 2022-2025 ruben2020 https://github.com/ruben2020
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
- 
-#include <cstdio>
-#include "ActorsManager.h"
-#include "ActorA.h"
 
+#include "ActorsManager.h"
+
+#include <cstdio>
+
+#include "ActorA.h"
 
 void ActorsManager::initActor(void)
 {
@@ -43,26 +44,26 @@ void ActorsManager::shutdownActor(void)
 
 void ActorsManager::handleEvent(std::shared_ptr<EventTimerShutdown> pevt)
 {
-    if (!pevt ) return;
+    if (!pevt)
+        return;
     printf("ActorsManager::EventTimerShutdown Elapsed\n");
     shutdown();
 }
 
 void ActorsManager::handleEvent(std::shared_ptr<EvtSigInt> pevt)
 {
-    if (!pevt ) return;
-    printf("ActorsManager::EvtSigInt (signum=%d, sicode=%d)\n", 
-        pevt.get()->signo, pevt.get()->sicode);
+    if (!pevt)
+        return;
+    printf("ActorsManager::EvtSigInt (signum=%d, sicode=%d)\n", pevt.get()->signo,
+           pevt.get()->sicode);
     timers.stopTimer<EventTimerShutdown>();
     shutdown();
 }
 
 void ActorsManager::handleEvent(std::shared_ptr<EvtWorkDone> pevt)
 {
-    if (!pevt ) return;
+    if (!pevt)
+        return;
     printf("ActorsManager::EvtWorkDone\n");
     shutdown();
 }
-
-
-

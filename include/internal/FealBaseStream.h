@@ -2,7 +2,7 @@
 // Copyright (c) 2022-2025 ruben2020 https://github.com/ruben2020
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
- 
+
 #ifndef _FEAL_BASESTREAM_H
 #define _FEAL_BASESTREAM_H
 
@@ -10,9 +10,9 @@
 #error "Please include feal.h and not the other internal Feal header files, to avoid include errors."
 #endif
 
-#if defined (_WIN32)
+#if defined(_WIN32)
 #include <atomic>
-#elif defined (__linux__)
+#elif defined(__linux__)
 #include <sys/epoll.h>
 #else
 #include <unistd.h>
@@ -20,65 +20,59 @@
 #include <cstring>
 #endif
 
-
 namespace feal
 {
 
 class BaseStream : public Tool
 {
-public:
-BaseStream() = default;
-BaseStream( const BaseStream & ) = default;
-BaseStream& operator= ( const BaseStream & ) = default;
-~BaseStream() = default;
+   public:
+    BaseStream() = default;
+    BaseStream(const BaseStream&) = default;
+    BaseStream& operator=(const BaseStream&) = default;
+    ~BaseStream() = default;
 
-protected:
+   protected:
+    handle_t sockfd = FEAL_INVALID_HANDLE;
+    bool waitingforconn = false;
 
-handle_t sockfd = FEAL_INVALID_HANDLE;
-bool waitingforconn = false;
+    virtual int accept_new_conn(void);
+    virtual void client_read_avail(handle_t client_sockfd);
+    virtual void client_write_avail(handle_t client_sockfd);
+    virtual void client_shutdown(handle_t client_sockfd);
+    virtual void server_shutdown(void);
+    virtual void connected_to_server(handle_t fd);
+    virtual void connection_read_avail(void);
+    virtual void connection_write_avail(void);
+    virtual void connection_shutdown(void);
 
-virtual int  accept_new_conn(void);
-virtual void client_read_avail(handle_t client_sockfd);
-virtual void client_write_avail(handle_t client_sockfd);
-virtual void client_shutdown(handle_t client_sockfd);
-virtual void server_shutdown(void);
-virtual void connected_to_server(handle_t fd);
-virtual void connection_read_avail(void);
-virtual void connection_write_avail(void);
-virtual void connection_shutdown(void);
+    void serverLoop(void);
 
-void serverLoop(void);
+    int do_client_read_start(handle_t client_sockfd);
+    int do_client_shutdown(handle_t client_sockfd);
+    int do_full_shutdown(void);
+    void do_connect_in_progress(void);
+    void do_connect_ok(void);
+    void do_send_avail_notify(handle_t fd);
 
-int  do_client_read_start(handle_t client_sockfd);
-int  do_client_shutdown(handle_t client_sockfd);
-int  do_full_shutdown(void);
-void do_connect_in_progress(void);
-void do_connect_ok(void);
-void do_send_avail_notify(handle_t fd);
+    void connectLoop(void);
 
-void connectLoop(void);
+   private:
+#if defined(_WIN32)
+#define FEALBASESTREAM_MAXEVENTS (FD_SETSIZE > 64 ? 64 : FD_SETSIZE)
+    handle_t sockread[FEALBASESTREAM_MAXEVENTS];
+    handle_t sockwrite[FEALBASESTREAM_MAXEVENTS];
+    handle_t sockexcpt[FEALBASESTREAM_MAXEVENTS];
 
-private:
-
-#if defined (_WIN32)
-#define FEALBASESTREAM_MAXEVENTS       (FD_SETSIZE > 64 ? 64 : FD_SETSIZE)
-handle_t sockread[FEALBASESTREAM_MAXEVENTS];
-handle_t sockwrite[FEALBASESTREAM_MAXEVENTS];
-handle_t sockexcpt[FEALBASESTREAM_MAXEVENTS];
-
-#elif defined (__linux__)
+#elif defined(__linux__)
 #define FEALBASESTREAM_MAXEVENTS 64
-int epfd = -1;
+    int epfd = -1;
 #else
 
 #define FEALBASESTREAM_MAXEVENTS 64
-int kq = -1;
+    int kq = -1;
 #endif
-
-
 };
 
+}  // namespace feal
 
-} // namespace feal
-
-#endif // _FEAL_BASESTREAM_H
+#endif  // _FEAL_BASESTREAM_H

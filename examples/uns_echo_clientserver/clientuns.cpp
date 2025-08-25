@@ -2,10 +2,11 @@
 // Copyright (c) 2022-2025 ruben2020 https://github.com/ruben2020
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
- 
+
+#include "clientuns.h"
+
 #include <cstdio>
 #include <cstring>
-#include "clientuns.h"
 
 #define SERVERPATH "/tmp/fealunsserver"
 
@@ -26,5 +27,3 @@ void Clientuns::connect_to_server(void)
         timers.startTimer<EvtRetryTimer>(std::chrono::seconds(5));
     }
 }
-
-

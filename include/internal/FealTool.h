@@ -2,7 +2,7 @@
 // Copyright (c) 2022-2025 ruben2020 https://github.com/ruben2020
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
- 
+
 #ifndef _FEAL_TOOL_H
 #define _FEAL_TOOL_H
 
@@ -15,18 +15,15 @@ namespace feal
 
 class Tool
 {
-public:
+   public:
+    Tool() = default;
+    virtual ~Tool() = default;
 
-Tool() = default;
-virtual ~Tool() = default;
-
-virtual void startTool(void){}
-virtual void pauseTool(void){}
-virtual void shutdownTool(void){}
-
+    virtual void startTool(void) {}
+    virtual void pauseTool(void) {}
+    virtual void shutdownTool(void) {}
 };
 
+}  // namespace feal
 
-} // namespace feal
-
-#endif // _FEAL_TOOL_H
+#endif  // _FEAL_TOOL_H

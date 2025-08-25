@@ -2,8 +2,9 @@
 // Copyright (c) 2022-2025 ruben2020 https://github.com/ruben2020
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
- 
+
 #include <stdio.h>
+
 #include "server.h"
 
 int main(void)
@@ -19,4 +20,3 @@ int main(void)
     printf("tcpserver terminating program\n");
     return 0;
 }
-

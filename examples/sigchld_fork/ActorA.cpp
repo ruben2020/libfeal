@@ -2,13 +2,15 @@
 // Copyright (c) 2022-2025 ruben2020 https://github.com/ruben2020
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
- 
-#include <cstdio>
-#include <sys/wait.h>
-#include "feal.h"
-#include "ActorA.h"
-#include "ActorsManager.h"
 
+#include "ActorA.h"
+
+#include <sys/wait.h>
+
+#include <cstdio>
+
+#include "ActorsManager.h"
+#include "feal.h"
 
 void ActorA::initActor(void)
 {
@@ -31,10 +33,10 @@ void ActorA::startActor(void)
             printf("Fork error occurred!\n");
             return;
         }
-        if (p == 0) // Child process
+        if (p == 0)  // Child process
         {
             printf("Child: Starting child process %d\n", i + 1);
-            std::this_thread::sleep_for(std::chrono::milliseconds((i+1)*2000));
+            std::this_thread::sleep_for(std::chrono::milliseconds((i + 1) * 2000));
             printf("Child: Terminating child process %d\n", i + 1);
             exit(i);
         }
@@ -58,10 +60,10 @@ void ActorA::shutdownActor(void)
 
 void ActorA::handleEvent(std::shared_ptr<EvtSigInt> pevt)
 {
-    if (!pevt ) return;
-    printf("ActorA::EvtSigInt (signum=%d, sicode=%d)\n", 
-        pevt.get()->signo, pevt.get()->sicode);
-    switch(pevt.get()->signo)
+    if (!pevt)
+        return;
+    printf("ActorA::EvtSigInt (signum=%d, sicode=%d)\n", pevt.get()->signo, pevt.get()->sicode);
+    switch (pevt.get()->signo)
     {
         case SIGINT:
             printf("Received SIGINT\n");
@@ -74,9 +76,9 @@ void ActorA::handleEvent(std::shared_ptr<EvtSigInt> pevt)
         default:
             break;
     }
-    for(long unsigned int i=0; i<pidvec.size(); i++)
+    for (long unsigned int i = 0; i < pidvec.size(); i++)
     {
-        if (pidvec[i] > 0) 
+        if (pidvec[i] > 0)
         {
             printf("Killing child process pid %d\n", pidvec[i]);
             kill(pidvec[i], SIGKILL);
@@ -88,26 +90,29 @@ void ActorA::handleEvent(std::shared_ptr<EvtSigInt> pevt)
 
 void ActorA::handleEvent(std::shared_ptr<EvtSigChld> pevt)
 {
-    if (!pevt ) return;
-    printf("ActorA::EvtSigChld (signum=%d, sicode=%d)\n", 
-        pevt.get()->signo, pevt.get()->sicode);
-    if (pevt.get()->signo != SIGCHLD) return;
+    if (!pevt)
+        return;
+    printf("ActorA::EvtSigChld (signum=%d, sicode=%d)\n", pevt.get()->signo, pevt.get()->sicode);
+    if (pevt.get()->signo != SIGCHLD)
+        return;
     pid_t p;
     int wstatus = 0;
 
     /* Reap all pending child processes */
-    do {
+    do
+    {
         p = waitpid(-1, &wstatus, WNOHANG);
-        if (p <= (pid_t)0) continue;
+        if (p <= (pid_t)0)
+            continue;
         printf("Child process pid %d terminated %s", p,
-            (WIFEXITED(wstatus)?"normally":"abnormally\n"));
+               (WIFEXITED(wstatus) ? "normally" : "abnormally\n"));
         if (WIFEXITED(wstatus))
         {
             printf(" with exit code %d\n", WEXITSTATUS(wstatus));
         }
-        for(long unsigned int i=0; i<pidvec.size(); i++)
+        for (long unsigned int i = 0; i < pidvec.size(); i++)
         {
-            if (pidvec[i] == p) 
+            if (pidvec[i] == p)
             {
                 pidvec[i] = 0;
                 break;

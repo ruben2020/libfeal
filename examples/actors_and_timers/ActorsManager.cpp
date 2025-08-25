@@ -2,12 +2,13 @@
 // Copyright (c) 2022-2025 ruben2020 https://github.com/ruben2020
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
- 
-#include <stdio.h>
+
 #include "ActorsManager.h"
+
+#include <stdio.h>
+
 #include "ActorA.h"
 #include "ActorB.h"
-
 
 void ActorsManager::initActor(void)
 {
@@ -42,7 +43,8 @@ void ActorsManager::shutdownActor(void)
 
 void ActorsManager::handleEvent(std::shared_ptr<EventTimerShutdown> pevt)
 {
-    if (!pevt ) return;
+    if (!pevt)
+        return;
     printf("ActorsManager::EventTimerShutdown Elapsed\n");
     shutdown();
 }

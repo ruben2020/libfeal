@@ -2,7 +2,7 @@
 // Copyright (c) 2022-2025 ruben2020 https://github.com/ruben2020
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
- 
+
 #ifndef _FEAL_DESCMON_H
 #define _FEAL_DESCMON_H
 
@@ -13,154 +13,152 @@
 namespace feal
 {
 
-
 class DescMonGeneric : public Tool
 {
-public:
-DescMonGeneric() = default;
-DescMonGeneric( const DescMonGeneric & ) = default;
-DescMonGeneric& operator= ( const DescMonGeneric & ) = default;
-~DescMonGeneric() = default;
+   public:
+    DescMonGeneric() = default;
+    DescMonGeneric(const DescMonGeneric&) = default;
+    DescMonGeneric& operator=(const DescMonGeneric&) = default;
+    ~DescMonGeneric() = default;
 
-void shutdownTool(void);
+    void shutdownTool(void);
 
-errenum start_monitoring(void);
-errenum add(handle_t fd);
-errenum remove(handle_t fd);
-errenum close_and_reset(void);
+    errenum start_monitoring(void);
+    errenum add(handle_t fd);
+    errenum remove(handle_t fd);
+    errenum close_and_reset(void);
 
-protected:
+   protected:
+    std::thread DescMonThread;
 
-std::thread DescMonThread;
+#if defined(_WIN32)
+#define FEALDESCMON_MAXEVENTS (FD_SETSIZE > 64 ? 64 : FD_SETSIZE)
+    handle_t sockread[FEALDESCMON_MAXEVENTS];
+    handle_t sockwrite[FEALDESCMON_MAXEVENTS];
+    std::atomic_bool active = true;
 
-#if defined (_WIN32)
-#define FEALDESCMON_MAXEVENTS  (FD_SETSIZE > 64 ? 64 : FD_SETSIZE)
-handle_t sockread[FEALDESCMON_MAXEVENTS];
-handle_t sockwrite[FEALDESCMON_MAXEVENTS];
-std::atomic_bool active = true;
-
-#elif defined (__linux__)
+#elif defined(__linux__)
 #define FEALDESCMON_MAXEVENTS 64
-int epfd = -1;
+    int epfd = -1;
 
 #else
 #define FEALDESCMON_MAXEVENTS 64
-int kq = -1;
+    int kq = -1;
 #endif
 
-void init(void);
+    void init(void);
 
-virtual void receiveEventReadAvail(errenum errnum, handle_t fd, int datalen);
-virtual void receiveEventWriteAvail(errenum errnum, handle_t fd, int datalen);
-virtual void receiveEventDescErr(errenum errnum, handle_t fd, int datalen);
+    virtual void receiveEventReadAvail(errenum errnum, handle_t fd, int datalen);
+    virtual void receiveEventWriteAvail(errenum errnum, handle_t fd, int datalen);
+    virtual void receiveEventDescErr(errenum errnum, handle_t fd, int datalen);
 
-private:
-
-static void fdmonLoopLauncher(DescMonGeneric *p);
-void fdmonLoop(void);
-void fd_error(handle_t fd);
-void fd_read_avail(handle_t fd);
-void fd_write_avail(handle_t fd);
-
+   private:
+    static void fdmonLoopLauncher(DescMonGeneric* p);
+    void fdmonLoop(void);
+    void fd_error(handle_t fd);
+    void fd_read_avail(handle_t fd);
+    void fd_write_avail(handle_t fd);
 };
 
-
-template<typename Y>
+template <typename Y>
 class DescMon : public DescMonGeneric
 {
-public:
-DescMon() = default;
-DescMon( const DescMon & ) = default;
-DescMon& operator= ( const DescMon & ) = default;
-~DescMon() = default;
+   public:
+    DescMon() = default;
+    DescMon(const DescMon&) = default;
+    DescMon& operator=(const DescMon&) = default;
+    ~DescMon() = default;
 
-void init(Y* p)
-{
-    actorptr = p;
-    p->addTool(this);
-    DescMonGeneric::init();
-}
-
-template<typename T>
-void subscribeReadAvail()
-{
-    T inst;
-    actorptr->addEvent(actorptr, inst);
-    evtread = std::make_shared<T>();
-    EventBus::getInstance().registerEventCloner<T>();
-}
-
-template<typename T>
-void subscribeWriteAvail()
-{
-    T inst;
-    actorptr->addEvent(actorptr, inst);
-    evtwrite = std::make_shared<T>();
-    EventBus::getInstance().registerEventCloner<T>();
-}
-
-template<typename T>
-void subscribeDescErr()
-{
-    T inst;
-    actorptr->addEvent(actorptr, inst);
-    evterrfd = std::make_shared<T>();
-    EventBus::getInstance().registerEventCloner<T>();
-}
-
-
-protected:
-
-void receiveEventReadAvail(errenum errnum, handle_t fd, int datalen)
-{
-    if (evtread.get())
+    void init(Y* p)
     {
-        auto itw = std::dynamic_pointer_cast<EventComm>(EventBus::getInstance().cloneEvent(evtread));
-        itw.get()->errnum = errnum;
-        itw.get()->fd = fd;
-        itw.get()->datalen = datalen;
-        if (actorptr) actorptr->receiveEvent(itw);
+        actorptr = p;
+        p->addTool(this);
+        DescMonGeneric::init();
     }
-    else printf("No subscription using DescMon::subscribeReadAvail\n");
-}
 
-void receiveEventWriteAvail(errenum errnum, handle_t fd, int datalen)
-{
-    if (evtwrite.get())
+    template <typename T>
+    void subscribeReadAvail()
     {
-        auto itw = std::dynamic_pointer_cast<EventComm>(EventBus::getInstance().cloneEvent(evtwrite));
-        itw.get()->errnum = errnum;
-        itw.get()->fd = fd;
-        itw.get()->datalen = datalen;
-        if (actorptr) actorptr->receiveEvent(itw);
+        T inst;
+        actorptr->addEvent(actorptr, inst);
+        evtread = std::make_shared<T>();
+        EventBus::getInstance().registerEventCloner<T>();
     }
-    else printf("No subscription using DescMon::subscribeWriteAvail\n");
-}
 
-void receiveEventDescErr(errenum errnum, handle_t fd, int datalen)
-{
-    if (evterrfd.get())
+    template <typename T>
+    void subscribeWriteAvail()
     {
-        auto itw = std::dynamic_pointer_cast<EventComm>(EventBus::getInstance().cloneEvent(evterrfd));
-        itw.get()->errnum = errnum;
-        itw.get()->fd = fd;
-        itw.get()->datalen = datalen;
-        if (actorptr) actorptr->receiveEvent(itw);
+        T inst;
+        actorptr->addEvent(actorptr, inst);
+        evtwrite = std::make_shared<T>();
+        EventBus::getInstance().registerEventCloner<T>();
     }
-    else printf("No subscription using DescMon::subscribeDescErr\n");
-}
 
+    template <typename T>
+    void subscribeDescErr()
+    {
+        T inst;
+        actorptr->addEvent(actorptr, inst);
+        evterrfd = std::make_shared<T>();
+        EventBus::getInstance().registerEventCloner<T>();
+    }
 
-private:
+   protected:
+    void receiveEventReadAvail(errenum errnum, handle_t fd, int datalen)
+    {
+        if (evtread.get())
+        {
+            auto itw = std::dynamic_pointer_cast<EventComm>(
+                    EventBus::getInstance().cloneEvent(evtread));
+            itw.get()->errnum = errnum;
+            itw.get()->fd = fd;
+            itw.get()->datalen = datalen;
+            if (actorptr)
+                actorptr->receiveEvent(itw);
+        }
+        else
+            printf("No subscription using DescMon::subscribeReadAvail\n");
+    }
 
-Y* actorptr = nullptr;
-std::shared_ptr<EventComm> evtread;
-std::shared_ptr<EventComm> evtwrite;
-std::shared_ptr<EventComm> evterrfd;
+    void receiveEventWriteAvail(errenum errnum, handle_t fd, int datalen)
+    {
+        if (evtwrite.get())
+        {
+            auto itw = std::dynamic_pointer_cast<EventComm>(
+                    EventBus::getInstance().cloneEvent(evtwrite));
+            itw.get()->errnum = errnum;
+            itw.get()->fd = fd;
+            itw.get()->datalen = datalen;
+            if (actorptr)
+                actorptr->receiveEvent(itw);
+        }
+        else
+            printf("No subscription using DescMon::subscribeWriteAvail\n");
+    }
 
+    void receiveEventDescErr(errenum errnum, handle_t fd, int datalen)
+    {
+        if (evterrfd.get())
+        {
+            auto itw = std::dynamic_pointer_cast<EventComm>(
+                    EventBus::getInstance().cloneEvent(evterrfd));
+            itw.get()->errnum = errnum;
+            itw.get()->fd = fd;
+            itw.get()->datalen = datalen;
+            if (actorptr)
+                actorptr->receiveEvent(itw);
+        }
+        else
+            printf("No subscription using DescMon::subscribeDescErr\n");
+    }
+
+   private:
+    Y* actorptr = nullptr;
+    std::shared_ptr<EventComm> evtread;
+    std::shared_ptr<EventComm> evtwrite;
+    std::shared_ptr<EventComm> evterrfd;
 };
 
+}  // namespace feal
 
-} // namespace feal
-
-#endif // _FEAL_FILEDESCMON_H
+#endif  // _FEAL_FILEDESCMON_H

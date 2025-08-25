@@ -2,7 +2,7 @@
 // Copyright (c) 2022-2025 ruben2020 https://github.com/ruben2020
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
- 
+
 #ifndef _FEAL_COMMON_WIN_H
 #define _FEAL_COMMON_WIN_H
 
@@ -11,16 +11,17 @@
 #endif
 
 #include <winsock2.h>
-//#include <winsock.h>
+// #include <winsock.h>
 #include <ws2tcpip.h>
 #include <windows.h>
 #include <string>
 
-#define SOCK_STARTUP() \
-    WSADATA wsa; \
-    if (WSAStartup(MAKEWORD(2,2),&wsa) != 0) return 1;
+#define SOCK_STARTUP()                         \
+    WSADATA wsa;                               \
+    if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0) \
+        return 1;
 
-#define SOCK_CLEANUP()  WSACleanup()
+#define SOCK_CLEANUP() WSACleanup()
 
 namespace feal
 {
@@ -35,9 +36,9 @@ typedef enum
     FEAL_EAFNOSUPPORT = WSAEAFNOSUPPORT,
     FEAL_EAGAIN = EAGAIN,
     FEAL_EALREADY = WSAEALREADY,
-    //FEAL_EBUSY = WSAEBUSY,
+    // FEAL_EBUSY = WSAEBUSY,
     FEAL_ECANCELED = WSAECANCELLED,
-    //FEAL_ECHILD = WSAECHILD,
+    // FEAL_ECHILD = WSAECHILD,
     FEAL_ECONNABORTED = WSAECONNABORTED,
     FEAL_ECONNREFUSED = WSAECONNREFUSED,
     FEAL_ECONNRESET = WSAECONNRESET,
@@ -55,34 +56,34 @@ typedef enum
     FEAL_EINPROGRESS = WSAEINPROGRESS,
     FEAL_EINTR = WSAEINTR,
     FEAL_EINVAL = WSAEINVAL,
-    //FEAL_EIO = WSAEIO,
+    // FEAL_EIO = WSAEIO,
     FEAL_EISCONN = WSAEISCONN,
-    //FEAL_EISDIR = WSAEISDIR,
+    // FEAL_EISDIR = WSAEISDIR,
     FEAL_ELOOP = WSAELOOP,
     FEAL_EMFILE = WSAEMFILE,
     FEAL_EMLINK = EMLINK,
     FEAL_EMSGSIZE = WSAEMSGSIZE,
-    //FEAL_EMULTIHOP = WSAEMULTIHOP,
+    // FEAL_EMULTIHOP = WSAEMULTIHOP,
     FEAL_ENAMETOOLONG = WSAENAMETOOLONG,
     FEAL_ENETDOWN = WSAENETDOWN,
     FEAL_ENETRESET = WSAENETRESET,
     FEAL_ENETUNREACH = WSAENETUNREACH,
-    //FEAL_ENFILE = WSAENFILE,
+    // FEAL_ENFILE = WSAENFILE,
     FEAL_ENOBUFS = WSAENOBUFS,
-    //FEAL_ENODATA = WSAENODATA,
+    // FEAL_ENODATA = WSAENODATA,
     FEAL_ENODEV = ENODEV,
-    //FEAL_ENOENT = WSAENOENT,
+    // FEAL_ENOENT = WSAENOENT,
     FEAL_ENOEXEC = ENOEXEC,
-    //FEAL_ENOLCK = WSAENOLCK,
+    // FEAL_ENOLCK = WSAENOLCK,
     FEAL_ENOLINK = ENOLINK,
     FEAL_ENOMEM = WSA_NOT_ENOUGH_MEMORY,
-    //FEAL_ENOMSG = WSAENOMSG,
+    // FEAL_ENOMSG = WSAENOMSG,
     FEAL_ENOPROTOOPT = WSAENOPROTOOPT,
-    //FEAL_ENOSPC = WSAENOSPC,
-    //FEAL_ENOSR = WSAENOSR,
-    //FEAL_ENOSTR = WSAENOSTR,
-    //FEAL_ENOSYS = WSAENOSYS,
-    //FEAL_ENOTBLK = WSAENOTBLK,
+    // FEAL_ENOSPC = WSAENOSPC,
+    // FEAL_ENOSR = WSAENOSR,
+    // FEAL_ENOSTR = WSAENOSTR,
+    // FEAL_ENOSYS = WSAENOSYS,
+    // FEAL_ENOTBLK = WSAENOTBLK,
     FEAL_ENOTCONN = WSAENOTCONN,
     FEAL_ENOTDIR = ENOTDIR,
     FEAL_ENOTEMPTY = WSAENOTEMPTY,
@@ -94,21 +95,21 @@ typedef enum
     FEAL_EOPNOTSUPP = WSAEOPNOTSUPP,
     FEAL_EOVERFLOW = EOVERFLOW,
     FEAL_EOWNERDEAD = EOWNERDEAD,
-    //FEAL_EPERM = WSAEPERM,
+    // FEAL_EPERM = WSAEPERM,
     FEAL_EPFNOSUPPORT = WSAEPFNOSUPPORT,
     FEAL_EPIPE = EPIPE,
     FEAL_EPROTO = EPROTO,
     FEAL_EPROTONOSUPPORT = WSAEPROTONOSUPPORT,
     FEAL_EPROTOTYPE = WSAEPROTOTYPE,
-    //FEAL_ERANGE = WSAERANGE,
+    // FEAL_ERANGE = WSAERANGE,
     FEAL_EREMOTE = WSAEREMOTE,
     FEAL_EROFS = EROFS,
     FEAL_ESHUTDOWN = WSAESHUTDOWN,
-    //FEAL_ESPIPE = WSAESPIPE,
+    // FEAL_ESPIPE = WSAESPIPE,
     FEAL_ESOCKTNOSUPPORT = WSAESOCKTNOSUPPORT,
     FEAL_ESRCH = ESRCH,
     FEAL_ESTALE = WSAESTALE,
-    //FEAL_ETIME = WSAETIME,
+    // FEAL_ETIME = WSAETIME,
     FEAL_ETIMEDOUT = WSAETIMEDOUT,
     FEAL_ETOOMANYREFS = WSAETOOMANYREFS,
     FEAL_ETXTBSY = ETXTBSY,
@@ -117,26 +118,26 @@ typedef enum
     FEAL_EXDEV = EXDEV
 } errenum;
 
-
 typedef SOCKET handle_t;
 typedef int socklen_t;
-#define FEAL_INVALID_HANDLE    (INVALID_SOCKET)
-#define FEAL_HANDLE_ERROR      (SOCKET_ERROR)
-#define FEAL_GETHANDLEERRNO    WSAGetLastError()
-#define FEAL_SHUT_RDWR         SD_BOTH
+#define FEAL_INVALID_HANDLE (INVALID_SOCKET)
+#define FEAL_HANDLE_ERROR (SOCKET_ERROR)
+#define FEAL_GETHANDLEERRNO WSAGetLastError()
+#define FEAL_SHUT_RDWR SD_BOTH
 
-typedef union {
+typedef union
+{
     struct sockaddr sa;
     struct sockaddr_in in;
     struct sockaddr_in6 in6;
 } sockaddr_all;
 
 #ifndef MSG_DONTWAIT
-#define MSG_DONTWAIT   (0)
+#define MSG_DONTWAIT (0)
 #endif
 
 #ifndef MSG_CONFIRM
-#define MSG_CONFIRM    (0)
+#define MSG_CONFIRM (0)
 #endif
 
 typedef uint32_t EventId_t;
@@ -145,15 +146,14 @@ typedef uint32_t ActorId_t;
 typedef unsigned int flags_t;
 
 int inet_pton(int af, const char *src, void *dst);
-const char * inet_ntop(int af, const void *src, char *dst, socklen_t size);
-int  set_nonblocking(handle_t fd);
-int  set_ipv6only(handle_t fd);
-int  set_reuseaddr(handle_t fd, bool enable);
-int  datareadavaillen(handle_t fd);
-std::string get_addr(sockaddr_all* sa);
-std::string get_port(sockaddr_all* sa);
+const char *inet_ntop(int af, const void *src, char *dst, socklen_t size);
+int set_nonblocking(handle_t fd);
+int set_ipv6only(handle_t fd);
+int set_reuseaddr(handle_t fd, bool enable);
+int datareadavaillen(handle_t fd);
+std::string get_addr(sockaddr_all *sa);
+std::string get_port(sockaddr_all *sa);
 
-}
+}  // namespace feal
 
-
-#endif // _FEAL_COMMON_WIN_H
+#endif  // _FEAL_COMMON_WIN_H

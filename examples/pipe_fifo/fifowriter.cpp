@@ -2,16 +2,17 @@
 // Copyright (c) 2022-2025 ruben2020 https://github.com/ruben2020
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
- 
-#include <cstdio>
-#include <cstring>
-#include <stdlib.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+
 #include "fifowriter.h"
 
-#define FIFOPATH "/tmp/fealfifo"
+#include <fcntl.h>
+#include <stdlib.h>
+#include <sys/stat.h>
 
+#include <cstdio>
+#include <cstring>
+
+#define FIFOPATH "/tmp/fealfifo"
 
 void Fifowriter::initActor(void)
 {
@@ -63,7 +64,8 @@ void Fifowriter::send_something(void)
     snprintf(buf, sizeof(buf), "Fifowriter %d", n++);
     printf("Trying to send \"%s\" to %s\n", buf, FIFOPATH);
     bytes = write(fifofd, buf, strlen(buf) + 2);
-    if (bytes > 0) printf ("Wrote %lld bytes\n", (long long) bytes);
+    if (bytes > 0)
+        printf("Wrote %lld bytes\n", (long long)bytes);
     else
     {
         printf("Error writing with errno %d\n", errno);
@@ -74,7 +76,8 @@ void Fifowriter::send_something(void)
 
 void Fifowriter::handleEvent(std::shared_ptr<EvtEndTimer> pevt)
 {
-    if (!pevt) return;
+    if (!pevt)
+        return;
     printf("Fifowriter::EvtEndTimer Elapsed\n");
     timers.stopTimer<EvtDelayTimer>();
     close(fifofd);
@@ -83,9 +86,9 @@ void Fifowriter::handleEvent(std::shared_ptr<EvtEndTimer> pevt)
 
 void Fifowriter::handleEvent(std::shared_ptr<EvtDelayTimer> pevt)
 {
-    if (!pevt) return;
+    if (!pevt)
+        return;
     printf("Fifowriter::EvtDelayTimer\n");
     send_something();
     timers.startTimer<EvtDelayTimer>(std::chrono::seconds(2));
 }
-

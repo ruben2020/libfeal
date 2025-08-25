@@ -2,7 +2,7 @@
 // Copyright (c) 2022-2025 ruben2020 https://github.com/ruben2020
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
- 
+
 #ifndef _FEAL_COMMON_POSIX_H
 #define _FEAL_COMMON_POSIX_H
 
@@ -22,7 +22,7 @@
 #include <sys/ioctl.h>
 #include <sys/un.h>
 
-#if defined (__linux__)
+#if defined(__linux__)
 #include <sys/epoll.h>
 #include <sys/inotify.h>
 #include <linux/limits.h>
@@ -41,7 +41,7 @@
 
 namespace feal
 {
-    
+
 typedef enum
 {
     FEAL_OK = 0,
@@ -133,7 +133,7 @@ typedef enum
     FEAL_EWOULDBLOCK = EWOULDBLOCK,
     FEAL_EXDEV = EXDEV
 
-#if defined (__linux__)
+#if defined(__linux__)
     ,
     FEAL_EBADE = EBADE,
     FEAL_EBADF = EBADF,
@@ -178,43 +178,43 @@ typedef enum
 
 } errenum;
 
-#if defined (__linux__)
-    #define FEAL_FDM_ATTRIB          IN_ATTRIB,
-    #define FEAL_FDM_CLOSE_NOWRITE   IN_CLOSE_NOWRITE
-    #define FEAL_FDM_CLOSE_WRITE     IN_CLOSE_WRITE
-    #define FEAL_FDM_MODIFY          IN_MODIFY
-    #define FEAL_FDM_DELETE          IN_DELETE
-    #define FEAL_FDM_OPEN            IN_OPEN
-    #define FEAL_FDM_ACCESS          IN_ACCESS
-    #define FEAL_FDM_READ            IN_ACCESS
-    #define FEAL_FDM_WRITE           IN_MODIFY
-#elif defined (__APPLE__) 
-    #define FEAL_FDM_ATTRIB          NOTE_ATTRIB,
-    #define FEAL_FDM_CLOSE_WRITE     NOTE_WRITE
-    #define FEAL_FDM_MODIFY          NOTE_WRITE
-    #define FEAL_FDM_DELETE          NOTE_DELETE
-    #define FEAL_FDM_WRITE           NOTE_WRITE
+#if defined(__linux__)
+#define FEAL_FDM_ATTRIB IN_ATTRIB,
+#define FEAL_FDM_CLOSE_NOWRITE IN_CLOSE_NOWRITE
+#define FEAL_FDM_CLOSE_WRITE IN_CLOSE_WRITE
+#define FEAL_FDM_MODIFY IN_MODIFY
+#define FEAL_FDM_DELETE IN_DELETE
+#define FEAL_FDM_OPEN IN_OPEN
+#define FEAL_FDM_ACCESS IN_ACCESS
+#define FEAL_FDM_READ IN_ACCESS
+#define FEAL_FDM_WRITE IN_MODIFY
+#elif defined(__APPLE__)
+#define FEAL_FDM_ATTRIB NOTE_ATTRIB,
+#define FEAL_FDM_CLOSE_WRITE NOTE_WRITE
+#define FEAL_FDM_MODIFY NOTE_WRITE
+#define FEAL_FDM_DELETE NOTE_DELETE
+#define FEAL_FDM_WRITE NOTE_WRITE
 #else
-    #define FEAL_FDM_ATTRIB          NOTE_ATTRIB,
-    #define FEAL_FDM_CLOSE_NOWRITE   NOTE_CLOSE
-    #define FEAL_FDM_CLOSE_WRITE     NOTE_CLOSE_WRITE
-    #define FEAL_FDM_MODIFY          NOTE_WRITE
-    #define FEAL_FDM_DELETE          NOTE_DELETE
-    #define FEAL_FDM_OPEN            NOTE_OPEN
-    #define FEAL_FDM_ACCESS          (NOTE_OPEN | NOTE_READ)
-    #define FEAL_FDM_READ            NOTE_READ
-    #define FEAL_FDM_WRITE           NOTE_WRITE
+#define FEAL_FDM_ATTRIB NOTE_ATTRIB,
+#define FEAL_FDM_CLOSE_NOWRITE NOTE_CLOSE
+#define FEAL_FDM_CLOSE_WRITE NOTE_CLOSE_WRITE
+#define FEAL_FDM_MODIFY NOTE_WRITE
+#define FEAL_FDM_DELETE NOTE_DELETE
+#define FEAL_FDM_OPEN NOTE_OPEN
+#define FEAL_FDM_ACCESS (NOTE_OPEN | NOTE_READ)
+#define FEAL_FDM_READ NOTE_READ
+#define FEAL_FDM_WRITE NOTE_WRITE
 #endif
-
 
 typedef int handle_t;
 typedef ::socklen_t socklen_t;
-#define FEAL_INVALID_HANDLE    (-1)
-#define FEAL_HANDLE_ERROR      (-1)
-#define FEAL_GETHANDLEERRNO    errno
-#define FEAL_SHUT_RDWR         SHUT_RDWR
+#define FEAL_INVALID_HANDLE (-1)
+#define FEAL_HANDLE_ERROR (-1)
+#define FEAL_GETHANDLEERRNO errno
+#define FEAL_SHUT_RDWR SHUT_RDWR
 
-typedef union {
+typedef union
+{
     struct sockaddr sa;
     struct sockaddr_in in;
     struct sockaddr_in6 in6;
@@ -224,29 +224,29 @@ typedef union {
 typedef uint32_t EventId_t;
 typedef uint32_t ActorId_t;
 
-#if defined (__linux__)
-    typedef uint32_t flags_t;
+#if defined(__linux__)
+typedef uint32_t flags_t;
 #else
-    typedef unsigned int flags_t;
+typedef unsigned int flags_t;
 #endif
 
-int inet_pton(int af, const char *src, void *dst);
-const char * inet_ntop(int af, const void *src, char *dst, socklen_t size);
-int  set_nonblocking(handle_t fd);
-int  set_nonblocking(handle_t fd[2]);
-int  set_ipv6only(handle_t fd);
-int  set_reuseaddr(handle_t fd, bool enable);
-int  datareadavaillen(handle_t fd);
+int inet_pton(int af, const char* src, void* dst);
+const char* inet_ntop(int af, const void* src, char* dst, socklen_t size);
+int set_nonblocking(handle_t fd);
+int set_nonblocking(handle_t fd[2]);
+int set_ipv6only(handle_t fd);
+int set_reuseaddr(handle_t fd, bool enable);
+int datareadavaillen(handle_t fd);
 feal::errenum getpeereid(feal::handle_t fd, uid_t* euid, gid_t* egid);
 std::string get_addr(sockaddr_all* sa);
 std::string get_port(sockaddr_all* sa);
 
-#if defined (__linux__)
+#if defined(__linux__)
 int epoll_ctl_add(int epfd, handle_t fd, uint32_t events);
 int epoll_ctl_mod(int epfd, handle_t fd, uint32_t events);
 int epoll_ctl_del(int epfd, handle_t fd);
 #endif
 
-}
+}  // namespace feal
 
-#endif // _FEAL_COMMON_POSIX_H
+#endif  // _FEAL_COMMON_POSIX_H

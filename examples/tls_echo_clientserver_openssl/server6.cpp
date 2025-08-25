@@ -2,11 +2,13 @@
 // Copyright (c) 2022-2025 ruben2020 https://github.com/ruben2020
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
- 
+
+#include "server6.h"
+
 #include <cstdio>
 #include <cstring>
+
 #include "clienthandler.h"
-#include "server6.h"
 
 #define SERVERPORT 58103
 
@@ -22,11 +24,11 @@ void Server6::start_server(void)
     feal::set_ipv6only(fd);
     feal::set_reuseaddr(fd, true);
     printf("Starting Server on 127.0.0.1:%d\n", SERVERPORT);
-    int ret = bind(fd, (sockaddr*) &(sall.in6), sizeof(sall.in6));
+    int ret = bind(fd, (sockaddr*)&(sall.in6), sizeof(sall.in6));
     if (ret != feal::FEAL_OK)
     {
-        printf("Error binding to 127.0.0.1:%d  err %d\n", SERVERPORT, 
-            static_cast<feal::errenum>(FEAL_GETHANDLEERRNO));
+        printf("Error binding to 127.0.0.1:%d  err %d\n", SERVERPORT,
+               static_cast<feal::errenum>(FEAL_GETHANDLEERRNO));
         timers.startTimer<EvtRetryTimer>(std::chrono::seconds(5));
         return;
     }
@@ -39,5 +41,3 @@ void Server6::start_server(void)
     }
     printf("Listening ...\n");
 }
-
-

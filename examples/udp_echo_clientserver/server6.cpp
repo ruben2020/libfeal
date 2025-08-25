@@ -2,10 +2,11 @@
 // Copyright (c) 2022-2025 ruben2020 https://github.com/ruben2020
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
- 
+
+#include "server6.h"
+
 #include <cstdio>
 #include <cstring>
-#include "server6.h"
 
 #define SERVERPORT 56002
 
@@ -36,6 +37,5 @@ void Server6::start_listening(void)
         timers.startTimer<EvtRetryTimer>(std::chrono::seconds(5));
         return;
     }
-    printf("UDP Listening on %s:%d ...\n", "::1", SERVERPORT );
+    printf("UDP Listening on %s:%d ...\n", "::1", SERVERPORT);
 }
-

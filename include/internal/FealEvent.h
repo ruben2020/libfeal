@@ -2,7 +2,7 @@
 // Copyright (c) 2022-2025 ruben2020 https://github.com/ruben2020
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
- 
+
 #ifndef _FEAL_EVENT_H
 #define _FEAL_EVENT_H
 
@@ -13,16 +13,15 @@
 #include <vector>
 #include <memory>
 
-#define FEAL_EVENT_DEFAULT_DECLARE(X,Y) \
-class X : public feal::Y \
-{ \
-public: \
-X() = default; \
-X( const X & ) = default; \
-X& operator= ( const X & ) = default; \
-~X() = default; \
-};
-
+#define FEAL_EVENT_DEFAULT_DECLARE(X, Y)  \
+    class X : public feal::Y              \
+    {                                     \
+       public:                            \
+        X() = default;                    \
+        X(const X&) = default;            \
+        X& operator=(const X&) = default; \
+        ~X() = default;                   \
+    };
 
 namespace feal
 {
@@ -31,40 +30,37 @@ class Actor;
 
 class Event : public std::enable_shared_from_this<Event>
 {
-friend class Actor;
+    friend class Actor;
 
-public:
+   public:
+    Event() = default;
+    Event(const Event&) = default;
+    Event& operator=(const feal::Event&) = default;
+    virtual ~Event() = default;
 
-Event() = default;
-Event( const Event & ) = default;
-Event& operator= ( const feal::Event & ) = default;
-virtual ~Event() = default;
+    std::shared_ptr<Event> getptr(void);
 
-std::shared_ptr<Event> getptr(void);
+    void replyEvent(std::shared_ptr<Event> spevt);
 
-void replyEvent(std::shared_ptr<Event> spevt);
+    void setSender(std::weak_ptr<Actor>& act);
 
-void setSender(std::weak_ptr<Actor>& act);
-
-private:
-std::weak_ptr<Actor> sender;
-
+   private:
+    std::weak_ptr<Actor> sender;
 };
 
 class EventComm : public Event
 {
-public:
-EventComm() = default;
-EventComm( const EventComm & ) = default;
-EventComm& operator= ( const EventComm & ) = default;
-~EventComm() = default;
-errenum errnum = FEAL_OK;
-handle_t fd = FEAL_INVALID_HANDLE;
-int datalen = -1;
-flags_t flags = 0;
+   public:
+    EventComm() = default;
+    EventComm(const EventComm&) = default;
+    EventComm& operator=(const EventComm&) = default;
+    ~EventComm() = default;
+    errenum errnum = FEAL_OK;
+    handle_t fd = FEAL_INVALID_HANDLE;
+    int datalen = -1;
+    flags_t flags = 0;
 };
 
+}  // namespace feal
 
-} // namespace feal
- 
-#endif // _FEAL_EVENT_H
+#endif  // _FEAL_EVENT_H

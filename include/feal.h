@@ -2,7 +2,7 @@
 // Copyright (c) 2022-2025 ruben2020 https://github.com/ruben2020
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
- 
+
 #ifndef _FEAL_H
 #define _FEAL_H
 
@@ -12,7 +12,7 @@
 #define FEALDEBUG (1)
 
 #if (FEALDEBUG)
-#define FEALDEBUGLOG(x)      printf("%s\n", x);
+#define FEALDEBUGLOG(x) printf("%s\n", x);
 #else
 #define FEALDEBUGLOG(x)
 #endif
@@ -37,4 +37,4 @@
 #include "internal/FealFileDirMon.h"
 #endif
 
-#endif // _FEAL_H
+#endif  // _FEAL_H

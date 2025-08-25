@@ -1,0 +1,33 @@
+BasedOnStyle: Google
+
+# Braces
+BreakBeforeBraces: Allman          # Allman style braces (on a new line)
+AllowShortFunctionsOnASingleLine: Empty  # Keep {} inline only if completely empty
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+
+# Indentation & spacing
+IndentWidth: 4                     # 4 spaces instead of Google's 2
+ContinuationIndentWidth: 8         # Extra indent for wrapped lines
+UseTab: Never                      # Always use spaces, no tabs
+PointerAlignment: Left             # int* p; instead of int *p;
+
+# Line length
+ColumnLimit: 100                   # More practical than 80 in modern codebases
+
+# Includes
+SortIncludes: false
+IncludeBlocks: Regroup             # Group project/system/third-party headers
+
+# Namespaces
+NamespaceIndentation: None         # Don’t indent nested namespaces
+CompactNamespaces: false           # Prefer expanded form for clarity
+
+# Comments
+ReflowComments: true               # Wrap long comments automatically
+SpacesInLineCommentPrefix:
+  Minimum: 1
+  Maximum: 1
+
+# Constructor initializer lists
+BreakConstructorInitializers: BeforeColon

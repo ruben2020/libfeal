@@ -2,7 +2,7 @@
 // Copyright (c) 2022-2025 ruben2020 https://github.com/ruben2020
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
- 
+
 #ifndef _FEAL_READER_H
 #define _FEAL_READER_H
 
@@ -13,119 +13,117 @@
 namespace feal
 {
 
-
 class ReaderGeneric : public Tool
 {
-public:
-ReaderGeneric() = default;
-ReaderGeneric( const ReaderGeneric & ) = default;
-ReaderGeneric& operator= ( const ReaderGeneric & ) = default;
-~ReaderGeneric() = default;
+   public:
+    ReaderGeneric() = default;
+    ReaderGeneric(const ReaderGeneric&) = default;
+    ReaderGeneric& operator=(const ReaderGeneric&) = default;
+    ~ReaderGeneric() = default;
 
-void shutdownTool(void);
+    void shutdownTool(void);
 
-errenum close_and_reset(void);
+    errenum close_and_reset(void);
 
-protected:
+   protected:
+    std::thread readerThread;
+    handle_t readerfd = FEAL_INVALID_HANDLE;
+    errenum open_pipe_for_reading(const char* pathname);
+    errenum registerhandle(handle_t fd);
 
-std::thread readerThread;
-handle_t readerfd = FEAL_INVALID_HANDLE;
-errenum open_pipe_for_reading(const char *pathname);
-errenum registerhandle(handle_t fd);
-
-#if defined (__linux__)
+#if defined(__linux__)
 #define FEALREADER_MAXEVENTS 64
-int epfd = -1;
+    int epfd = -1;
 
 #else
 #define FEALREADER_MAXEVENTS 64
-int kq = -1;
+    int kq = -1;
 #endif
 
-virtual void receiveEventReadAvail(errenum errnum, handle_t fd, int datalen);
-virtual void receiveEventSockErr(errenum errnum, handle_t fd, int datalen);
+    virtual void receiveEventReadAvail(errenum errnum, handle_t fd, int datalen);
+    virtual void receiveEventSockErr(errenum errnum, handle_t fd, int datalen);
 
-private:
-
-static void readerLoopLauncher(ReaderGeneric *p);
-void readerLoop(void);
-void close_handle(void);
-void handle_error(void);
-void handle_read_avail(void);
-
+   private:
+    static void readerLoopLauncher(ReaderGeneric* p);
+    void readerLoop(void);
+    void close_handle(void);
+    void handle_error(void);
+    void handle_read_avail(void);
 };
 
-
-template<typename Y>
+template <typename Y>
 class Reader : public ReaderGeneric
 {
-public:
-Reader() = default;
-Reader( const Reader & ) = default;
-Reader& operator= ( const Reader & ) = default;
-~Reader() = default;
+   public:
+    Reader() = default;
+    Reader(const Reader&) = default;
+    Reader& operator=(const Reader&) = default;
+    ~Reader() = default;
 
-void init(Y* p)
-{
-    actorptr = p;
-    p->addTool(this);
-}
-
-
-template<typename T>
-errenum subscribeReadAvail(handle_t fd)
-{
-    T inst;
-    actorptr->addEvent(actorptr, inst);
-    evtread = std::make_shared<T>();
-    EventBus::getInstance().registerEventCloner<T>();
-    return ReaderGeneric::registerhandle(fd);
-}
-
-template<typename T>
-void subscribeSockErr()
-{
-    T inst;
-    actorptr->addEvent(actorptr, inst);
-    evterrsock = std::make_shared<T>();
-    EventBus::getInstance().registerEventCloner<T>();
-}
-
-protected:
-
-void receiveEventReadAvail(errenum errnum, handle_t fd, int datalen)
-{
-    if (evtread.get()) 
+    void init(Y* p)
     {
-        auto itw = std::dynamic_pointer_cast<EventComm>(EventBus::getInstance().cloneEvent(evtread));
-        itw.get()->errnum = errnum;
-        itw.get()->fd = fd;
-        itw.get()->datalen = datalen;
-        if (actorptr) actorptr->receiveEvent(itw);
+        actorptr = p;
+        p->addTool(this);
     }
-    else printf("No subscription using Reader::subscribeReadAvail\n");
-}
 
-void receiveEventSockErr(errenum errnum, handle_t fd, int datalen)
-{
-    if (evterrsock.get()) 
+    template <typename T>
+    errenum subscribeReadAvail(handle_t fd)
     {
-        auto itw = std::dynamic_pointer_cast<EventComm>(EventBus::getInstance().cloneEvent(evterrsock));
-        itw.get()->errnum = errnum;
-        itw.get()->fd = fd;
-        itw.get()->datalen = datalen;
-        if (actorptr) actorptr->receiveEvent(itw);
+        T inst;
+        actorptr->addEvent(actorptr, inst);
+        evtread = std::make_shared<T>();
+        EventBus::getInstance().registerEventCloner<T>();
+        return ReaderGeneric::registerhandle(fd);
     }
-    else printf("No subscription using Reader::subscribeSockErr\n");
-}
 
-private:
-Y* actorptr = nullptr;
-std::shared_ptr<EventComm> evtread;
-std::shared_ptr<EventComm> evterrsock;
+    template <typename T>
+    void subscribeSockErr()
+    {
+        T inst;
+        actorptr->addEvent(actorptr, inst);
+        evterrsock = std::make_shared<T>();
+        EventBus::getInstance().registerEventCloner<T>();
+    }
 
+   protected:
+    void receiveEventReadAvail(errenum errnum, handle_t fd, int datalen)
+    {
+        if (evtread.get())
+        {
+            auto itw = std::dynamic_pointer_cast<EventComm>(
+                    EventBus::getInstance().cloneEvent(evtread));
+            itw.get()->errnum = errnum;
+            itw.get()->fd = fd;
+            itw.get()->datalen = datalen;
+            if (actorptr)
+                actorptr->receiveEvent(itw);
+        }
+        else
+            printf("No subscription using Reader::subscribeReadAvail\n");
+    }
+
+    void receiveEventSockErr(errenum errnum, handle_t fd, int datalen)
+    {
+        if (evterrsock.get())
+        {
+            auto itw = std::dynamic_pointer_cast<EventComm>(
+                    EventBus::getInstance().cloneEvent(evterrsock));
+            itw.get()->errnum = errnum;
+            itw.get()->fd = fd;
+            itw.get()->datalen = datalen;
+            if (actorptr)
+                actorptr->receiveEvent(itw);
+        }
+        else
+            printf("No subscription using Reader::subscribeSockErr\n");
+    }
+
+   private:
+    Y* actorptr = nullptr;
+    std::shared_ptr<EventComm> evtread;
+    std::shared_ptr<EventComm> evterrsock;
 };
 
-} // namespace feal
+}  // namespace feal
 
-#endif // _FEAL_READER_H
+#endif  // _FEAL_READER_H

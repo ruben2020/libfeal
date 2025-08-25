@@ -2,11 +2,12 @@
 // Copyright (c) 2022-2025 ruben2020 https://github.com/ruben2020
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
- 
-#include <cstdio>
-#include "feal.h"
+
 #include "ActorA.h"
 
+#include <cstdio>
+
+#include "feal.h"
 
 void ActorA::initActor(void)
 {
@@ -33,8 +34,7 @@ void ActorA::shutdownActor(void)
 
 void ActorA::handleEvent(std::shared_ptr<EventTimerA1> pevt)
 {
-    if (!pevt) return;
+    if (!pevt)
+        return;
     printf("ActorA::TimerA1 Elapsed - press Ctrl-C to end program\n");
 }
-
-

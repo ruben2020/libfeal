@@ -2,14 +2,15 @@
 // Copyright (c) 2022-2025 ruben2020 https://github.com/ruben2020
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
- 
-#include <cstdio>
-#include <cstring>
-#include <stdlib.h>
-#include <sys/inotify.h>
-#include <linux/limits.h>
+
 #include "ActorA.h"
 
+#include <linux/limits.h>
+#include <stdlib.h>
+#include <sys/inotify.h>
+
+#include <cstdio>
+#include <cstring>
 
 void ActorA::initActor(void)
 {
@@ -58,7 +59,8 @@ void ActorA::shutdownActor(void)
 
 void ActorA::handleEvent(std::shared_ptr<EvtEndTimer> pevt)
 {
-    if (!pevt) return;
+    if (!pevt)
+        return;
     printf("ActorA::EvtEndTimer Elapsed\n");
     timers.stopTimer<EvtDelayTimer>();
     inotify_rm_watch(fd, wd);
@@ -69,7 +71,8 @@ void ActorA::handleEvent(std::shared_ptr<EvtEndTimer> pevt)
 
 void ActorA::handleEvent(std::shared_ptr<EvtDelayTimer> pevt)
 {
-    if (!pevt) return;
+    if (!pevt)
+        return;
     printf("ActorA::EvtDelayTimer\n");
     FILE *fp = fopen("/tmp/test_inotifymon.txt", "w");
     if (fp != NULL)
@@ -82,19 +85,21 @@ void ActorA::handleEvent(std::shared_ptr<EvtDelayTimer> pevt)
 
 void ActorA::handleEvent(std::shared_ptr<EvtINotifyReadAvail> pevt)
 {
-    if (!pevt) return;
+    if (!pevt)
+        return;
     printf("ActorA::EvtINotifyReadAvail\n");
     size_t bufsize = sizeof(struct inotify_event) + NAME_MAX + 1;
-    struct inotify_event* event = new struct inotify_event[bufsize / sizeof(struct inotify_event)];
+    struct inotify_event *event = new struct inotify_event[bufsize / sizeof(struct inotify_event)];
     if (read(fd, event, bufsize) > 0)
     {
-        printf("inotify read event with watch descriptor = %d for event %s\n", 
-            event[0].wd, (event[0].mask && IN_CLOSE_WRITE == IN_CLOSE_WRITE ? "IN_CLOSE_WRITE" : "something else"));
+        printf("inotify read event with watch descriptor = %d for event %s\n", event[0].wd,
+               (event[0].mask && IN_CLOSE_WRITE == IN_CLOSE_WRITE ? "IN_CLOSE_WRITE"
+                                                                  : "something else"));
         printf("File contents of /tmp/test_inotifymon.txt: ");
         FILE *fp = fopen("/tmp/test_inotifymon.txt", "r");
         if (fp != NULL)
         {
-            int val=0;
+            int val = 0;
             fscanf(fp, "%d\n", &val);
             printf("%d\n", val);
             fclose(fp);
@@ -105,15 +110,16 @@ void ActorA::handleEvent(std::shared_ptr<EvtINotifyReadAvail> pevt)
 
 void ActorA::handleEvent(std::shared_ptr<EvtINotifyWriteAvail> pevt)
 {
-    if (!pevt) return;
+    if (!pevt)
+        return;
     printf("ActorA::EvtINotifyWriteAvail\n");
 }
 
 void ActorA::handleEvent(std::shared_ptr<EvtINotifyErr> pevt)
 {
-    if (!pevt) return;
+    if (!pevt)
+        return;
     printf("ActorA::EvtINotifyErr\n");
     timers.stopTimer<EvtDelayTimer>();
     dmon.close_and_reset();
 }
-

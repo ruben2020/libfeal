@@ -2,9 +2,8 @@
 // Copyright (c) 2022-2025 ruben2020 https://github.com/ruben2020
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
- 
-#include "feal.h"
 
+#include "feal.h"
 
 feal::EventBus* feal::EventBus::inst = nullptr;
 
@@ -19,14 +18,13 @@ feal::EventBus& feal::EventBus::getInstance(void)
 
 void feal::EventBus::destroyInstance(void)
 {
-    if (inst) inst->resetBus();
+    if (inst)
+        inst->resetBus();
     delete inst;
     inst = nullptr;
 }
 
-feal::EventBus::~EventBus()
-{
-}
+feal::EventBus::~EventBus() {}
 
 void feal::EventBus::subscribeEvent(const std::type_index& evtid, feal::actorptr_t ptr)
 {
@@ -43,13 +41,13 @@ void feal::EventBus::subscribeEvent(const std::type_index& evtid, feal::actorptr
                 break;
             }
         }
-        if (!found) it->second.push_back(ptr);
+        if (!found)
+            it->second.push_back(ptr);
     }
     else
     {
-        mapEventSubscribers[evtid] = vec_actor_ptr_t { ptr };
+        mapEventSubscribers[evtid] = vec_actor_ptr_t{ptr};
     }
-    
 }
 
 void feal::EventBus::unsubscribeEvent(const std::type_index& evtid, feal::actorptr_t ptr)
@@ -58,29 +56,30 @@ void feal::EventBus::unsubscribeEvent(const std::type_index& evtid, feal::actorp
     auto it = mapEventSubscribers.find(evtid);
     if (it != mapEventSubscribers.end())
     {
-        for (auto itv = it->second.begin(); itv != it->second.end(); )
+        for (auto itv = it->second.begin(); itv != it->second.end();)
         {
             if ((*itv) == ptr)
             {
                 it->second.erase(itv);
             }
-            else ++itv;
+            else
+                ++itv;
         }
     }
 }
 
 void feal::EventBus::publishEvent(std::shared_ptr<Event> pevt)
 {
-    if ((!pevt)|| (eventBusOff)) return;
+    if ((!pevt) || (eventBusOff))
+        return;
     const std::lock_guard<std::mutex> lock(mtxEventBus);
     auto it = mapEventSubscribers.find(std::type_index(typeid(*pevt)));
     if (it != mapEventSubscribers.end())
     {
-        for (auto itv = it->second.begin(); itv !=  it->second.end(); ++itv)
+        for (auto itv = it->second.begin(); itv != it->second.end(); ++itv)
         {
             (**itv).receiveEvent(pevt);
         }
-        
     }
 }
 
@@ -113,4 +112,3 @@ void feal::EventBus::resetBus(void)
     mapEventSubscribers.clear();
     mapEventCloners.clear();
 }
-

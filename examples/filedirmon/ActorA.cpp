@@ -2,14 +2,15 @@
 // Copyright (c) 2022-2025 ruben2020 https://github.com/ruben2020
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
- 
-#include <cstdio>
-#include <cstring>
-#include <stdlib.h>
 
 #include "ActorA.h"
 
-#if defined (_WIN32)
+#include <stdlib.h>
+
+#include <cstdio>
+#include <cstring>
+
+#if defined(_WIN32)
 #define FILETOMONITOR1 "C:\\Users\\AppData\\Local\\Temp\\test_filedirmon1.txt"
 #define FILETOMONITOR2 "C:\\Users\\AppData\\Local\\Temp\\test_filedirmon2.txt"
 #else
@@ -62,7 +63,8 @@ void ActorA::shutdownActor(void)
 
 void ActorA::handleEvent(std::shared_ptr<EvtEndTimer> pevt)
 {
-    if (!pevt) return;
+    if (!pevt)
+        return;
     printf("ActorA::EvtEndTimer Elapsed\n");
     timers.stopTimer<EvtDelayTimer>();
     fdmon.remove(wnum1);
@@ -73,7 +75,8 @@ void ActorA::handleEvent(std::shared_ptr<EvtEndTimer> pevt)
 
 void ActorA::handleEvent(std::shared_ptr<EvtDelayTimer> pevt)
 {
-    if (!pevt) return;
+    if (!pevt)
+        return;
     printf("ActorA::EvtDelayTimer\n");
     FILE *fp = fopen(FILETOMONITOR1, "w");
     if (fp != NULL)
@@ -92,18 +95,19 @@ void ActorA::handleEvent(std::shared_ptr<EvtDelayTimer> pevt)
 
 void ActorA::handleEvent(std::shared_ptr<EvtFDMReadAvail> pevt)
 {
-    if (!pevt) return;
+    if (!pevt)
+        return;
     printf("ActorA::EvtFDMReadAvail\n");
     std::string fn;
     fn = fdmon.get_filepath(pevt->fd);
-    printf("filedirmon event for file %s for event %s\n", 
-        fn.c_str(),
-        (pevt->flags && FEAL_FDM_CLOSE_WRITE == FEAL_FDM_CLOSE_WRITE ? "FEAL_FDM_CLOSE_WRITE" : "something else"));
+    printf("filedirmon event for file %s for event %s\n", fn.c_str(),
+           (pevt->flags && FEAL_FDM_CLOSE_WRITE == FEAL_FDM_CLOSE_WRITE ? "FEAL_FDM_CLOSE_WRITE"
+                                                                        : "something else"));
     printf("File contents of %s: ", fn.c_str());
     FILE *fp = fopen(fn.c_str(), "r");
     if (fp != NULL)
     {
-        int val=0;
+        int val = 0;
         fscanf(fp, "%d\n", &val);
         printf("%d\n", val);
         fclose(fp);
@@ -112,9 +116,9 @@ void ActorA::handleEvent(std::shared_ptr<EvtFDMReadAvail> pevt)
 
 void ActorA::handleEvent(std::shared_ptr<EvtFDMErr> pevt)
 {
-    if (!pevt) return;
+    if (!pevt)
+        return;
     printf("ActorA::EvtFDMErr\n");
     timers.stopTimer<EvtDelayTimer>();
     fdmon.close_and_reset();
 }
-

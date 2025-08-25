@@ -2,8 +2,9 @@
 // Copyright (c) 2022-2025 ruben2020 https://github.com/ruben2020
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
- 
+
 #include <cstdio>
+
 #include "feal.h"
 
 feal::Timer::~Timer()
@@ -20,7 +21,8 @@ void feal::Timer::initTimer(void)
 
 void feal::Timer::timerLoopLauncher(feal::Timer *p)
 {
-    if (p) p->timerLoop();
+    if (p)
+        p->timerLoop();
 }
 
 void feal::Timer::timerLoop(void)
@@ -42,7 +44,8 @@ void feal::Timer::timerLoop(void)
                     tpoint += secs;
                     mtxTimerVar.unlock();
                 }
-                else timerActive = false;
+                else
+                    timerActive = false;
                 timerEvent.get()->replyEvent(EventBus::getInstance().cloneEvent(timerEvent));
             }
         }
@@ -62,7 +65,7 @@ void feal::Timer::stopTimer(void)
     cvTimer.notify_all();
     do
     {
-#if defined (_WIN32)
+#if defined(_WIN32)
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
 #else
         std::this_thread::sleep_for(std::chrono::microseconds(50));
@@ -97,5 +100,3 @@ void feal::Timer::setTimerEvent(std::shared_ptr<Event> timEvt)
 {
     timerEvent = timEvt;
 }
-
-

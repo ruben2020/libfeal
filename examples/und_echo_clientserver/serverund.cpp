@@ -2,14 +2,14 @@
 // Copyright (c) 2022-2025 ruben2020 https://github.com/ruben2020
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
- 
-#include <cstdio>
-#include <cstring>
+
 #include "serverund.h"
 
-#define MIN(a,b) (a<b ? a : b)
-#define SERVERPATH "/tmp/fealundserver"
+#include <cstdio>
+#include <cstring>
 
+#define MIN(a, b) (a < b ? a : b)
+#define SERVERPATH "/tmp/fealundserver"
 
 void Serverund::initActor(void)
 {
@@ -69,10 +69,10 @@ void Serverund::start_listening(void)
     printf("Unix domain socket datagram server listening on %s ...\n", SERVERPATH);
 }
 
-
 void Serverund::handleEvent(std::shared_ptr<EvtEndTimer> pevt)
 {
-    if (!pevt) return;
+    if (!pevt)
+        return;
     printf("Serverund::EvtEndTimer Elapsed\n");
     timers.stopTimer<EvtRetryTimer>();
     dgram.close_and_reset();
@@ -81,14 +81,16 @@ void Serverund::handleEvent(std::shared_ptr<EvtEndTimer> pevt)
 
 void Serverund::handleEvent(std::shared_ptr<EvtRetryTimer> pevt)
 {
-    if (!pevt) return;
+    if (!pevt)
+        return;
     printf("Serverund::EvtRetryTimer\n");
     start_listening();
 }
 
 void Serverund::handleEvent(std::shared_ptr<EvtDgramReadAvail> pevt)
 {
-    if (!pevt) return;
+    if (!pevt)
+        return;
     printf("Serverund::EvtDgramReadAvail\n");
     char buf[50];
     int32_t bytes;
@@ -96,24 +98,31 @@ void Serverund::handleEvent(std::shared_ptr<EvtDgramReadAvail> pevt)
     feal::sockaddr_all recvaddr;
     memset(&recvaddr, 0, sizeof(recvaddr));
     socklen_t recvaddr_len;
-    feal::errenum se = dgram.recvfrom((void*) buf, sizeof(buf), &bytes, &recvaddr, &recvaddr_len);
-    if (se != feal::FEAL_OK) printf("Error receiving: %d\n", se);
-    else printf("Received %lld bytes: \"%s\" from %s\n", (long long int) bytes, buf, recvaddr.un.sun_path);
+    feal::errenum se = dgram.recvfrom((void*)buf, sizeof(buf), &bytes, &recvaddr, &recvaddr_len);
+    if (se != feal::FEAL_OK)
+        printf("Error receiving: %d\n", se);
+    else
+        printf("Received %lld bytes: \"%s\" from %s\n", (long long int)bytes, buf,
+               recvaddr.un.sun_path);
     printf("Sending back \"%s\" to %s\n", buf, recvaddr.un.sun_path);
     recvaddr_len = sizeof(recvaddr.un.sun_family) + strlen(recvaddr.un.sun_path) + 1;
-    se = dgram.sendto((void*) buf, MIN(strlen(buf) + 1, sizeof(buf)), &bytes, &recvaddr, recvaddr_len);
-    if (se != feal::FEAL_OK) printf("Error sending back \"%s\" to %s\n", buf, recvaddr.un.sun_path);
+    se = dgram.sendto((void*)buf, MIN(strlen(buf) + 1, sizeof(buf)), &bytes, &recvaddr,
+                      recvaddr_len);
+    if (se != feal::FEAL_OK)
+        printf("Error sending back \"%s\" to %s\n", buf, recvaddr.un.sun_path);
 }
 
 void Serverund::handleEvent(std::shared_ptr<EvtDgramWriteAvail> pevt)
 {
-    if (!pevt) return;
+    if (!pevt)
+        return;
     printf("Serverund::EvtDgramWriteAvail\n");
 }
 
 void Serverund::handleEvent(std::shared_ptr<EvtSockErr> pevt)
 {
-    if (!pevt) return;
+    if (!pevt)
+        return;
     printf("Serverund::EvtSockErr\n");
     timers.stopTimer<EvtRetryTimer>();
     dgram.close_and_reset();

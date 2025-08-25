@@ -39,7 +39,8 @@ void feal::shutdownAll(feal::actor_vec_t& vec)
 
 void feal::receiveEventAll(feal::actor_vec_t& vec, std::shared_ptr<feal::Event> pevt)
 {
-    if (!pevt) return;
+    if (!pevt)
+        return;
     for (auto it = vec.begin(); it != vec.end(); ++it)
     {
         (**it).receiveEvent(pevt);

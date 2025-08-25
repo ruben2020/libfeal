@@ -2,15 +2,14 @@
 // Copyright (c) 2022-2025 ruben2020 https://github.com/ruben2020
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
- 
-#if defined (_WIN32)
+
+#if defined(_WIN32)
 #include "FealCommon_win.cpp"
-#elif defined (__linux__)
+#elif defined(__linux__)
 #include "FealCommon_posix.cpp"
-#elif defined (__APPLE__)   || defined (__FreeBSD__)   || defined (__NetBSD__) || \
-      defined (__OpenBSD__) || defined (__DragonFly__)
+#elif defined(__APPLE__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || \
+        defined(__DragonFly__)
 #include "FealCommon_posix.cpp"
 #else
 #error "Unsupported operating system"
 #endif
-

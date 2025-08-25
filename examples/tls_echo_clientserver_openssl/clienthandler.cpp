@@ -2,16 +2,17 @@
 // Copyright (c) 2022-2025 ruben2020 https://github.com/ruben2020
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
- 
-#include <stdio.h>
-#include "feal.h"
+
 #include "clienthandler.h"
+
+#include <stdio.h>
+
+#include "feal.h"
 #include "server.h"
 
-#define MIN(a,b) (a<b ? a : b)
+#define MIN(a, b) (a < b ? a : b)
 
-
-void ClientHandler::setParam(feal::Stream<Server>* p, feal::handle_t fd, char *s, SSL_CTX *ctx1)
+void ClientHandler::setParam(feal::Stream<Server> *p, feal::handle_t fd, char *s, SSL_CTX *ctx1)
 {
     stream = p;
     sockfd = fd;
@@ -21,7 +22,7 @@ void ClientHandler::setParam(feal::Stream<Server>* p, feal::handle_t fd, char *s
 
 void ClientHandler::initActor(void)
 {
-    printf("ClientHandler(%lld)::initActor\n", (long long int) sockfd);
+    printf("ClientHandler(%lld)::initActor\n", (long long int)sockfd);
     subscribeEvent<EvtClientSSLShutdown>(this);
     memset(&buf, 0, sizeof(buf));
     snprintf(buf, sizeof(buf), "Initial Hello from Server");
@@ -39,9 +40,11 @@ void ClientHandler::initActor(void)
 
 void ClientHandler::startActor(void)
 {
-    printf("ClientHandler(%lld)::startActor\n", (long long int) sockfd);
-    feal::errenum se =feal::FEAL_OK;
-    if (stream) se = stream->registerClient<ClientHandler, EvtDataReadAvail, EvtDataWriteAvail, EvtClientShutdown>(this, sockfd);
+    printf("ClientHandler(%lld)::startActor\n", (long long int)sockfd);
+    feal::errenum se = feal::FEAL_OK;
+    if (stream)
+        se = stream->registerClient<ClientHandler, EvtDataReadAvail, EvtDataWriteAvail,
+                                    EvtClientShutdown>(this, sockfd);
     if (se != feal::FEAL_OK)
     {
         printf("Error3 %d\n", se);
@@ -51,22 +54,24 @@ void ClientHandler::startActor(void)
 
 void ClientHandler::pauseActor(void)
 {
-    printf("ClientHandler(%lld)::pauseActor\n", (long long int) sockfd);
+    printf("ClientHandler(%lld)::pauseActor\n", (long long int)sockfd);
 }
 
 void ClientHandler::shutdownActor(void)
 {
-    printf("ClientHandler(%lld)::shutdownActor\n", (long long int) sockfd);
+    printf("ClientHandler(%lld)::shutdownActor\n", (long long int)sockfd);
     stream->disconnect_client(sockfd);
-    if (ssl) SSL_free(ssl);
+    if (ssl)
+        SSL_free(ssl);
     ssl = nullptr;
     client_bio = nullptr;
 }
 
 void ClientHandler::handleEvent(std::shared_ptr<EvtDataReadAvail> pevt)
 {
-    printf("ClientHandler(%lld)::EvtDataReadAvail\n", (long long int) sockfd);
-    if ((!pevt)||(!stream)) return;
+    printf("ClientHandler(%lld)::EvtDataReadAvail\n", (long long int)sockfd);
+    if ((!pevt) || (!stream))
+        return;
     if (sslaccept_pending)
     {
         perform_sslaccept();
@@ -83,8 +88,9 @@ void ClientHandler::handleEvent(std::shared_ptr<EvtDataReadAvail> pevt)
 
 void ClientHandler::handleEvent(std::shared_ptr<EvtDataWriteAvail> pevt)
 {
-    if ((!pevt)||(!stream)) return;
-    printf("ClientHandler(%lld)::EvtDataWriteAvail\n", (long long int) sockfd);
+    if ((!pevt) || (!stream))
+        return;
+    printf("ClientHandler(%lld)::EvtDataWriteAvail\n", (long long int)sockfd);
     if (sslaccept_pending)
     {
         perform_sslaccept();
@@ -105,8 +111,9 @@ void ClientHandler::handleEvent(std::shared_ptr<EvtDataWriteAvail> pevt)
 
 void ClientHandler::handleEvent(std::shared_ptr<EvtClientShutdown> pevt)
 {
-    if (!pevt) return;
-    printf("ClientHandler(%lld)::EvtClientShutdown\n", (long long int) sockfd);
+    if (!pevt)
+        return;
+    printf("ClientHandler(%lld)::EvtClientShutdown\n", (long long int)sockfd);
     std::shared_ptr<EvtClientDisconnected> pevt2 = std::make_shared<EvtClientDisconnected>();
     pevt2.get()->fd = sockfd;
     publishEvent(pevt2);
@@ -114,8 +121,9 @@ void ClientHandler::handleEvent(std::shared_ptr<EvtClientShutdown> pevt)
 
 void ClientHandler::handleEvent(std::shared_ptr<EvtClientSSLShutdown> pevt)
 {
-    if (!pevt) return;
-    printf("ClientHandler(%lld)::EvtClientSSLShutdown\n", (long long int) sockfd);
+    if (!pevt)
+        return;
+    printf("ClientHandler(%lld)::EvtClientSSLShutdown\n", (long long int)sockfd);
     perform_sslshutdown();
 }
 
@@ -144,15 +152,18 @@ int ClientHandler::perform_sslaccept(void)
         else
         {
             printf("Fatal error performing SSL handshake with client\n");
-            if (ssl) SSL_free(ssl);
+            if (ssl)
+                SSL_free(ssl);
             ssl = nullptr;
             client_bio = nullptr;
-            std::shared_ptr<EvtClientDisconnected> pevt2 = std::make_shared<EvtClientDisconnected>();
+            std::shared_ptr<EvtClientDisconnected> pevt2 =
+                    std::make_shared<EvtClientDisconnected>();
             pevt2.get()->fd = sockfd;
             publishEvent(pevt2);
-       }
+        }
     }
-    else printf("SSL handshake with client successfully completed!\n ");
+    else
+        printf("SSL handshake with client successfully completed!\n ");
     return ret;
 }
 
@@ -172,7 +183,7 @@ int ClientHandler::perform_read(void)
     printf("ret value SSL_read_ex = %d\n", ret);
     if (ret > 0)
     {
-        printf("Received %lld bytes \"%s\" from %s\n", (long long int) bytes, buf, addrstr.c_str());
+        printf("Received %lld bytes \"%s\" from %s\n", (long long int)bytes, buf, addrstr.c_str());
         perform_write(1);
     }
     else
@@ -195,7 +206,8 @@ int ClientHandler::perform_read(void)
         {
             printf("Fatal error doing SSL_read_ex\n");
             perform_sslshutdown();
-            std::shared_ptr<EvtClientDisconnected> pevt2 = std::make_shared<EvtClientDisconnected>();
+            std::shared_ptr<EvtClientDisconnected> pevt2 =
+                    std::make_shared<EvtClientDisconnected>();
             pevt2.get()->fd = sockfd;
             publishEvent(pevt2);
         }
@@ -220,13 +232,15 @@ int ClientHandler::perform_write(int num)
     int ret;
     sslwrite_want_read = false;
     sslwrite_want_write = false;
-    if (num == 0) ret = SSL_write_ex(ssl, buf, 0, &bytes);
-    else ret = SSL_write_ex(ssl, buf, MIN(strlen(buf) + 1, sizeof(buf)), &bytes);
+    if (num == 0)
+        ret = SSL_write_ex(ssl, buf, 0, &bytes);
+    else
+        ret = SSL_write_ex(ssl, buf, MIN(strlen(buf) + 1, sizeof(buf)), &bytes);
     printf("ret value SSL_write_ex = %d\n", ret);
     if (ret > 0)
     {
         if (bytes > 0)
-        printf("Sent %lld bytes \"%s\" to %s\n", (long long int) bytes, buf, addrstr.c_str());
+            printf("Sent %lld bytes \"%s\" to %s\n", (long long int)bytes, buf, addrstr.c_str());
     }
     else
     {
@@ -244,7 +258,8 @@ int ClientHandler::perform_write(int num)
         {
             printf("Fatal error doing SSL_write_ex\n");
             perform_sslshutdown();
-            std::shared_ptr<EvtClientDisconnected> pevt2 = std::make_shared<EvtClientDisconnected>();
+            std::shared_ptr<EvtClientDisconnected> pevt2 =
+                    std::make_shared<EvtClientDisconnected>();
             pevt2.get()->fd = sockfd;
             publishEvent(pevt2);
         }

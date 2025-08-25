@@ -2,7 +2,7 @@
 // Copyright (c) 2022-2025 ruben2020 https://github.com/ruben2020
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
- 
+
 #ifndef _FIFOWRITER_H
 #define _FIFOWRITER_H
 
@@ -11,34 +11,28 @@
 FEAL_EVENT_DEFAULT_DECLARE(EvtEndTimer, Event)
 FEAL_EVENT_DEFAULT_DECLARE(EvtDelayTimer, Event)
 
-
 class Fifowriter : public feal::Actor
 {
+   public:
+    Fifowriter() = default;
+    ~Fifowriter() = default;
 
-public:
+    void initActor(void);
+    void startActor(void);
+    void pauseActor(void);
+    void shutdownActor(void);
 
-Fifowriter() = default;
-~Fifowriter() = default;
+    void handleEvent(std::shared_ptr<EvtEndTimer> pevt);
+    void handleEvent(std::shared_ptr<EvtDelayTimer> pevt);
 
-void initActor(void);
-void startActor(void);
-void pauseActor(void);
-void shutdownActor(void);
+   protected:
+    feal::Timers<Fifowriter> timers;
 
-void handleEvent(std::shared_ptr<EvtEndTimer> pevt);
-void handleEvent(std::shared_ptr<EvtDelayTimer> pevt);
-
-protected:
-
-feal::Timers<Fifowriter> timers;
-
-private:
-int n=0;
-feal::handle_t fifofd = -1;
-void open_for_writing(void);
-void send_something(void);
-
+   private:
+    int n = 0;
+    feal::handle_t fifofd = -1;
+    void open_for_writing(void);
+    void send_something(void);
 };
 
-#endif // _FIFOWRITER_H
-
+#endif  // _FIFOWRITER_H

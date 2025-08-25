@@ -2,7 +2,7 @@
 // Copyright (c) 2022-2025 ruben2020 https://github.com/ruben2020
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
- 
+
 #ifndef _SERVER_H
 #define _SERVER_H
 
@@ -14,35 +14,29 @@ FEAL_EVENT_DEFAULT_DECLARE(EvtDgramReadAvail, EventComm)
 FEAL_EVENT_DEFAULT_DECLARE(EvtDgramWriteAvail, EventComm)
 FEAL_EVENT_DEFAULT_DECLARE(EvtSockErr, EventComm)
 
-
 class Server : public feal::Actor
 {
+   public:
+    Server() = default;
+    ~Server() = default;
 
-public:
+    void initActor(void);
+    void startActor(void);
+    void pauseActor(void);
+    void shutdownActor(void);
 
-Server() = default;
-~Server() = default;
+    void handleEvent(std::shared_ptr<EvtEndTimer> pevt);
+    void handleEvent(std::shared_ptr<EvtRetryTimer> pevt);
+    void handleEvent(std::shared_ptr<EvtDgramReadAvail> pevt);
+    void handleEvent(std::shared_ptr<EvtDgramWriteAvail> pevt);
+    void handleEvent(std::shared_ptr<EvtSockErr> pevt);
 
-void initActor(void);
-void startActor(void);
-void pauseActor(void);
-void shutdownActor(void);
+   protected:
+    feal::Timers<Server> timers;
+    feal::Datagram<Server> dgram;
+    virtual void start_listening(void);
 
-void handleEvent(std::shared_ptr<EvtEndTimer> pevt);
-void handleEvent(std::shared_ptr<EvtRetryTimer> pevt);
-void handleEvent(std::shared_ptr<EvtDgramReadAvail> pevt);
-void handleEvent(std::shared_ptr<EvtDgramWriteAvail> pevt);
-void handleEvent(std::shared_ptr<EvtSockErr> pevt);
-
-protected:
-
-feal::Timers<Server> timers;
-feal::Datagram<Server> dgram;
-virtual void start_listening(void);
-
-private:
-
-
+   private:
 };
 
-#endif // _SERVER_H
+#endif  // _SERVER_H

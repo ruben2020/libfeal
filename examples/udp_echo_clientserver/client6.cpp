@@ -2,10 +2,11 @@
 // Copyright (c) 2022-2025 ruben2020 https://github.com/ruben2020
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
- 
+
+#include "client6.h"
+
 #include <cstdio>
 #include <cstring>
-#include "client6.h"
 
 #define SERVERPORT 56002
 
@@ -21,8 +22,7 @@ void Client6::send_to_server(void)
     serveraddr.in6.sin6_port = serverport;
     feal::inet_pton(AF_INET6, "::1", &(serveraddr.in6.sin6_addr));
     se = dgram.monitor_sock(fd);
-    if (se != feal::FEAL_OK) printf("Error create sock: %d\n", se);
+    if (se != feal::FEAL_OK)
+        printf("Error create sock: %d\n", se);
     timers.startTimer<EvtDelayTimer>(std::chrono::seconds(1));
-
 }
-

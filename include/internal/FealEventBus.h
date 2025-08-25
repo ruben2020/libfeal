@@ -2,7 +2,7 @@
 // Copyright (c) 2022-2025 ruben2020 https://github.com/ruben2020
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
- 
+
 #ifndef _FEAL_EVENT_BUS_H
 #define _FEAL_EVENT_BUS_H
 
@@ -31,51 +31,43 @@ typedef std::unordered_map<std::type_index, vec_actor_ptr_t> map_evt_subsc_t;
 
 class EventBus
 {
+   public:
+    EventBus(const EventBus&) = delete;
+    EventBus& operator=(const EventBus&) = delete;
+    ~EventBus();
 
-public:
+    static EventBus& getInstance(void);
+    static void destroyInstance(void);
+    void subscribeEvent(const std::type_index& evtid, actorptr_t ptr);
+    void unsubscribeEvent(const std::type_index& evtid, actorptr_t ptr);
+    void publishEvent(std::shared_ptr<Event> pevt);
+    void stopBus(void);
+    void resetBus(void);
 
-EventBus( const EventBus & ) = delete;
-EventBus& operator= ( const EventBus & ) = delete;
-~EventBus();
-
-static EventBus& getInstance(void);
-static void destroyInstance(void);
-void subscribeEvent(const std::type_index& evtid, actorptr_t ptr);
-void unsubscribeEvent(const std::type_index& evtid, actorptr_t ptr);
-void publishEvent(std::shared_ptr<Event> pevt);
-void stopBus(void);
-void resetBus(void);
-
-template<typename T>
-void registerEventCloner()
-{
-    const std::lock_guard<std::mutex> lock(mtxEventBus);
-    auto id = std::type_index(typeid(T));
-    auto it = mapEventCloners.find(id);
-    if (it == mapEventCloners.end())
+    template <typename T>
+    void registerEventCloner()
     {
-        mapEventCloners.insert(std::make_pair(id,
-                []() -> std::shared_ptr<Event>
-                    { return std::make_shared<T>(); }
-                )
-            );
+        const std::lock_guard<std::mutex> lock(mtxEventBus);
+        auto id = std::type_index(typeid(T));
+        auto it = mapEventCloners.find(id);
+        if (it == mapEventCloners.end())
+        {
+            mapEventCloners.insert(std::make_pair(
+                    id, []() -> std::shared_ptr<Event> { return std::make_shared<T>(); }));
+        }
     }
-}
 
-std::shared_ptr<Event> cloneEvent(std::shared_ptr<Event> p);
+    std::shared_ptr<Event> cloneEvent(std::shared_ptr<Event> p);
 
-private:
-
-EventBus() = default;
-static EventBus* inst;
-map_evt_subsc_t mapEventSubscribers;
-std::unordered_map<std::type_index, std::function<std::shared_ptr<Event>()>> mapEventCloners;
-std::mutex mtxEventBus;
-std::atomic_bool eventBusOff {false};
-
+   private:
+    EventBus() = default;
+    static EventBus* inst;
+    map_evt_subsc_t mapEventSubscribers;
+    std::unordered_map<std::type_index, std::function<std::shared_ptr<Event>()>> mapEventCloners;
+    std::mutex mtxEventBus;
+    std::atomic_bool eventBusOff{false};
 };
 
+}  // namespace feal
 
-} // namespace feal
-
-#endif // _FEAL_EVENT_BUS_H
+#endif  // _FEAL_EVENT_BUS_H

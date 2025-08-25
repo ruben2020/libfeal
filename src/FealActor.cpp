@@ -2,41 +2,40 @@
 // Copyright (c) 2022-2025 ruben2020 https://github.com/ruben2020
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
- 
+
 #include <memory>
 #include <typeindex>
+
 #include "feal.h"
 
-
-void feal::Actor::initActor(void){}
-void feal::Actor::startActor(void){}
-void feal::Actor::pauseActor(void){}
-void feal::Actor::shutdownActor(void){}
+void feal::Actor::initActor(void) {}
+void feal::Actor::startActor(void) {}
+void feal::Actor::pauseActor(void) {}
+void feal::Actor::shutdownActor(void) {}
 
 void feal::Actor::init(void)
 {
-    if (threadValid == false) return; // not possible after shutdown
-    mapEventHandlers.insert(std::make_pair(std::type_index(typeid(EventStartActor)),
-            [this](std::shared_ptr<Event> fe)
-                {   this->handleEvent(std::dynamic_pointer_cast<EventStartActor>(fe));  }
-            )
-    );
-    mapEventHandlers.insert(std::make_pair(std::type_index(typeid(EventPauseActor)),
-            [this](std::shared_ptr<Event> fe)
-                {   this->handleEvent(std::dynamic_pointer_cast<EventPauseActor>(fe));  }
-            )
-    );
+    if (threadValid == false)
+        return;  // not possible after shutdown
+    mapEventHandlers.insert(std::make_pair(
+            std::type_index(typeid(EventStartActor)), [this](std::shared_ptr<Event> fe)
+            { this->handleEvent(std::dynamic_pointer_cast<EventStartActor>(fe)); }));
+    mapEventHandlers.insert(std::make_pair(
+            std::type_index(typeid(EventPauseActor)), [this](std::shared_ptr<Event> fe)
+            { this->handleEvent(std::dynamic_pointer_cast<EventPauseActor>(fe)); }));
     initActor();
-}   
+}
 
 void feal::Actor::handleEvent(std::shared_ptr<feal::EventStartActor> pevt)
 {
-    if (pevt) startActor();
+    if (pevt)
+        startActor();
 }
 
 void feal::Actor::start(void)
 {
-    if (threadValid == false) return; // not possible after shutdown
+    if (threadValid == false)
+        return;  // not possible after shutdown
     threadRunning = true;
     std::shared_ptr<Event> p = std::make_shared<EventStartActor>();
     receiveEvent(p);
@@ -50,7 +49,7 @@ void feal::Actor::start(void)
         // event loop is resuming from pause
         cvEventLoop.notify_all();
     }
-    for (std::vector<feal::Tool*>::size_type i=0; i < vecTool.size(); i++)
+    for (std::vector<feal::Tool*>::size_type i = 0; i < vecTool.size(); i++)
         (vecTool[i])->startTool();
 }
 
@@ -66,23 +65,23 @@ void feal::Actor::handleEvent(std::shared_ptr<feal::EventPauseActor> pevt)
 
 void feal::Actor::pause(void)
 {
-    if (threadValid == false) return; // not possible after shutdown
+    if (threadValid == false)
+        return;  // not possible after shutdown
     std::shared_ptr<Event> p = std::make_shared<EventPauseActor>();
     receiveEvent(p);
-    for (std::vector<feal::Tool*>::size_type i=0; i < vecTool.size(); i++)
+    for (std::vector<feal::Tool*>::size_type i = 0; i < vecTool.size(); i++)
         (vecTool[i])->pauseTool();
 }
 
 void feal::Actor::shutdown(void)
 {
     shutdownActor();
-    for (std::vector<feal::Tool*>::size_type i=0; i < vecTool.size(); i++)
+    for (std::vector<feal::Tool*>::size_type i = 0; i < vecTool.size(); i++)
         (vecTool[i])->shutdownTool();
     threadValid = false;
     threadRunning = false;
     cvEventLoop.notify_all();
-    if ((actorThread.get_id() != std::this_thread::get_id()) &&
-                        (actorThread.joinable()))
+    if ((actorThread.get_id() != std::this_thread::get_id()) && (actorThread.joinable()))
     {
         actorThread.join();
     }
@@ -97,9 +96,8 @@ bool feal::Actor::isActive(void)
 void feal::Actor::wait_for_shutdown(void)
 {
     std::unique_lock<std::mutex> ulk(mtxWaitShutdown);
-    cvWaitShutdown.wait(ulk);           
-    if ((actorThread.get_id() != std::this_thread::get_id()) &&
-                        (actorThread.joinable()))
+    cvWaitShutdown.wait(ulk);
+    if ((actorThread.get_id() != std::this_thread::get_id()) && (actorThread.joinable()))
     {
         actorThread.join();
     }
@@ -112,7 +110,8 @@ void feal::Actor::addTool(Tool* p)
 
 void feal::Actor::eventLoopLauncher(feal::Actor* p)
 {
-    if (p) p->eventLoop();
+    if (p)
+        p->eventLoop();
 }
 
 void feal::Actor::eventLoop(void)
@@ -131,7 +130,8 @@ void feal::Actor::eventLoop(void)
                 evtQueue.pop();
             }
             mtxEventQueue.unlock();
-            if ((queue_empty) || (!threadValid)) break;
+            if ((queue_empty) || (!threadValid))
+                break;
             auto id = std::type_index(typeid(*fe));
             auto it = mapEventHandlers.find(id);
             if (it != mapEventHandlers.end())
@@ -145,12 +145,11 @@ void feal::Actor::eventLoop(void)
             cvEventLoop.wait(ulk);
         }
     }
-    
 }
 
 void feal::Actor::receiveEvent(std::shared_ptr<feal::Event> pevt)
 {
-    if ((threadValid) && (pevt)) // not possible after shutdown
+    if ((threadValid) && (pevt))  // not possible after shutdown
     {
         mtxEventQueue.lock();
         evtQueue.push(pevt);
@@ -161,11 +160,10 @@ void feal::Actor::receiveEvent(std::shared_ptr<feal::Event> pevt)
 
 void feal::Actor::publishEvent(std::shared_ptr<feal::Event> pevt)
 {
-   if (pevt)
+    if (pevt)
     {
         std::weak_ptr<Actor> wkact = shared_from_this();
         pevt.get()->setSender(wkact);
         EventBus::getInstance().publishEvent(pevt);
     }
 }
-

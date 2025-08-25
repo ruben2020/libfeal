@@ -2,18 +2,33 @@
 // Copyright (c) 2022-2025 ruben2020 https://github.com/ruben2020
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
- 
+
 #include "feal.h"
 
-int  feal::BaseStream::accept_new_conn(void){return FEAL_HANDLE_ERROR;}
-void feal::BaseStream::client_read_avail(handle_t client_sockfd){(void)(client_sockfd);}
-void feal::BaseStream::client_write_avail(handle_t client_sockfd){(void)(client_sockfd);}
-void feal::BaseStream::client_shutdown(handle_t client_sockfd){(void)(client_sockfd);}
-void feal::BaseStream::server_shutdown(void){}
-void feal::BaseStream::connected_to_server(handle_t fd){(void)(fd);}
-void feal::BaseStream::connection_read_avail(void){}
-void feal::BaseStream::connection_write_avail(void){}
-void feal::BaseStream::connection_shutdown(void){}
+int feal::BaseStream::accept_new_conn(void)
+{
+    return FEAL_HANDLE_ERROR;
+}
+void feal::BaseStream::client_read_avail(handle_t client_sockfd)
+{
+    (void)(client_sockfd);
+}
+void feal::BaseStream::client_write_avail(handle_t client_sockfd)
+{
+    (void)(client_sockfd);
+}
+void feal::BaseStream::client_shutdown(handle_t client_sockfd)
+{
+    (void)(client_sockfd);
+}
+void feal::BaseStream::server_shutdown(void) {}
+void feal::BaseStream::connected_to_server(handle_t fd)
+{
+    (void)(fd);
+}
+void feal::BaseStream::connection_read_avail(void) {}
+void feal::BaseStream::connection_write_avail(void) {}
+void feal::BaseStream::connection_shutdown(void) {}
 
 void feal::BaseStream::serverLoop(void)
 {
@@ -30,14 +45,16 @@ void feal::BaseStream::serverLoop(void)
         nfds = epoll_wait(epfd, events, FEALBASESTREAM_MAXEVENTS, 500);
         if (nfds == -1)
         {
-            if (errno == EINTR) continue;
-            else break;
+            if (errno == EINTR)
+                continue;
+            else
+                break;
         }
         for (int i = 0; i < nfds; i++)
         {
             if (events[i].data.fd == sockfd)
             {
-                if (((events[i].events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR)) != 0)||
+                if (((events[i].events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR)) != 0) ||
                     (accept_new_conn() == -1))
                 {
                     do_full_shutdown();
@@ -59,7 +76,7 @@ void feal::BaseStream::serverLoop(void)
             if ((events[i].events & EPOLLOUT) == EPOLLOUT)
             {
                 client_write_avail(events[i].data.fd);
-                /*epoll_ctl_mod(epfd, events[i].data.fd, 
+                /*epoll_ctl_mod(epfd, events[i].data.fd,
                     (EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP));*/
             }
         }
@@ -68,8 +85,8 @@ void feal::BaseStream::serverLoop(void)
 
 int feal::BaseStream::do_client_read_start(feal::handle_t client_sockfd)
 {
-    return epoll_ctl_add(epfd, client_sockfd, 
-        (EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP | EPOLLOUT));
+    return epoll_ctl_add(epfd, client_sockfd,
+                         (EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP | EPOLLOUT));
 }
 
 int feal::BaseStream::do_client_shutdown(feal::handle_t client_sockfd)
@@ -86,7 +103,8 @@ int feal::BaseStream::do_full_shutdown(void)
         epoll_ctl(epfd, EPOLL_CTL_DEL, sockfd, NULL);
         close(epfd);
     }
-    if (sockfd != -1) res = shutdown(sockfd, SHUT_RDWR);
+    if (sockfd != -1)
+        res = shutdown(sockfd, SHUT_RDWR);
     epfd = -1;
     sockfd = -1;
     waitingforconn = false;
@@ -97,8 +115,7 @@ void feal::BaseStream::do_connect_in_progress(void)
 {
     epfd = epoll_create(1);
     waitingforconn = true;
-    if (epoll_ctl_add(epfd, sockfd, 
-        (EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP | EPOLLOUT)) == -1)
+    if (epoll_ctl_add(epfd, sockfd, (EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP | EPOLLOUT)) == -1)
     {
         FEALDEBUGLOG("epoll_ctl error");
         return;
@@ -109,8 +126,7 @@ void feal::BaseStream::do_connect_ok(void)
 {
     epfd = epoll_create(1);
     waitingforconn = false;
-    if (epoll_ctl_add(epfd, sockfd, 
-        (EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP | EPOLLOUT)) == -1)
+    if (epoll_ctl_add(epfd, sockfd, (EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP | EPOLLOUT)) == -1)
     {
         FEALDEBUGLOG("epoll_ctl error");
         return;
@@ -120,8 +136,7 @@ void feal::BaseStream::do_connect_ok(void)
 
 void feal::BaseStream::do_send_avail_notify(feal::handle_t fd)
 {
-    if (epoll_ctl_mod(epfd, fd, 
-        (EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP | EPOLLOUT)) == -1)
+    if (epoll_ctl_mod(epfd, fd, (EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP | EPOLLOUT)) == -1)
     {
         FEALDEBUGLOG("epoll_ctl error");
         return;
@@ -137,8 +152,10 @@ void feal::BaseStream::connectLoop(void)
         nfds = epoll_wait(epfd, events, FEALBASESTREAM_MAXEVENTS, 500);
         if (nfds == -1)
         {
-            if (errno == EINTR) continue;
-            else break;
+            if (errno == EINTR)
+                continue;
+            else
+                break;
         }
         for (int i = 0; i < nfds; i++)
         {
@@ -163,10 +180,9 @@ void feal::BaseStream::connectLoop(void)
                 {
                     connection_write_avail();
                 }
-                /*epoll_ctl_mod(epfd, sockfd, 
+                /*epoll_ctl_mod(epfd, sockfd,
                     (EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP));*/
             }
         }
     }
 }
-

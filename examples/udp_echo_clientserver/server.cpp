@@ -2,14 +2,14 @@
 // Copyright (c) 2022-2025 ruben2020 https://github.com/ruben2020
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
- 
-#include <cstdio>
-#include <cstring>
+
 #include "server.h"
 
-#define SERVERPORT 56001
-#define MIN(a,b) (a<b ? a : b)
+#include <cstdio>
+#include <cstring>
 
+#define SERVERPORT 56001
+#define MIN(a, b) (a < b ? a : b)
 
 void Server::initActor(void)
 {
@@ -66,13 +66,13 @@ void Server::start_listening(void)
         timers.startTimer<EvtRetryTimer>(std::chrono::seconds(5));
         return;
     }
-    printf("UDP Listening on %s:%d ...\n", "127.0.0.1", SERVERPORT );
+    printf("UDP Listening on %s:%d ...\n", "127.0.0.1", SERVERPORT);
 }
-
 
 void Server::handleEvent(std::shared_ptr<EvtEndTimer> pevt)
 {
-    if (!pevt) return;
+    if (!pevt)
+        return;
     printf("Server::EvtEndTimer Elapsed\n");
     timers.stopTimer<EvtRetryTimer>();
     dgram.close_and_reset();
@@ -81,21 +81,23 @@ void Server::handleEvent(std::shared_ptr<EvtEndTimer> pevt)
 
 void Server::handleEvent(std::shared_ptr<EvtRetryTimer> pevt)
 {
-    if (!pevt) return;
+    if (!pevt)
+        return;
     printf("Server::EvtRetryTimer\n");
     start_listening();
 }
 
 void Server::handleEvent(std::shared_ptr<EvtDgramReadAvail> pevt)
 {
-    if (!pevt) return;
+    if (!pevt)
+        return;
     printf("Server::EvtDgramReadAvail\n");
     char buf[50];
     int32_t bytes;
     memset(&buf, 0, sizeof(buf));
     feal::sockaddr_all recvaddr;
     feal::socklen_t addrsize = sizeof(recvaddr);
-    feal::errenum se = dgram.recvfrom((void*) buf, sizeof(buf), &bytes, &recvaddr, &addrsize);
+    feal::errenum se = dgram.recvfrom((void*)buf, sizeof(buf), &bytes, &recvaddr, &addrsize);
     if (se != feal::FEAL_OK)
     {
         se = static_cast<feal::errenum>(FEAL_GETHANDLEERRNO);
@@ -103,25 +105,29 @@ void Server::handleEvent(std::shared_ptr<EvtDgramReadAvail> pevt)
     }
     else
     {
-        printf("Received %lld bytes: \"%s\" from %s:%s\n", (long long int) bytes, buf,
-            feal::get_addr(&recvaddr).c_str(), feal::get_port(&recvaddr).c_str());
-        printf("Sending back \"%s\" to %s:%s\n", buf,
-            feal::get_addr(&recvaddr).c_str(), feal::get_port(&recvaddr).c_str());
-        se = dgram.sendto((void*) buf, MIN(strlen(buf) + 1, sizeof(buf)), &bytes, &recvaddr, sizeof(recvaddr));
-        if (se != feal::FEAL_OK) printf("Error sending back \"%s\" to %s:%s\n", buf, 
-            feal::get_addr(&recvaddr).c_str(), feal::get_port(&recvaddr).c_str());
+        printf("Received %lld bytes: \"%s\" from %s:%s\n", (long long int)bytes, buf,
+               feal::get_addr(&recvaddr).c_str(), feal::get_port(&recvaddr).c_str());
+        printf("Sending back \"%s\" to %s:%s\n", buf, feal::get_addr(&recvaddr).c_str(),
+               feal::get_port(&recvaddr).c_str());
+        se = dgram.sendto((void*)buf, MIN(strlen(buf) + 1, sizeof(buf)), &bytes, &recvaddr,
+                          sizeof(recvaddr));
+        if (se != feal::FEAL_OK)
+            printf("Error sending back \"%s\" to %s:%s\n", buf, feal::get_addr(&recvaddr).c_str(),
+                   feal::get_port(&recvaddr).c_str());
     }
 }
 
 void Server::handleEvent(std::shared_ptr<EvtDgramWriteAvail> pevt)
 {
-    if (!pevt) return;
+    if (!pevt)
+        return;
     printf("Server::EvtDgramWriteAvail\n");
 }
 
 void Server::handleEvent(std::shared_ptr<EvtSockErr> pevt)
 {
-    if (!pevt) return;
+    if (!pevt)
+        return;
     printf("Server::EvtSockErr\n");
     timers.stopTimer<EvtRetryTimer>();
     dgram.close_and_reset();

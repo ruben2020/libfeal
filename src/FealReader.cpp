@@ -5,7 +5,6 @@
 
 #include "feal.h"
 
-
 void feal::ReaderGeneric::shutdownTool(void)
 {
     close_and_reset();
@@ -32,44 +31,46 @@ feal::errenum feal::ReaderGeneric::close_and_reset(void)
         shutdown(readerfd, FEAL_SHUT_RDWR);
     close(readerfd);
     readerfd = FEAL_INVALID_HANDLE;
-#if defined (__linux__)
+#if defined(__linux__)
     close(epfd);
     epfd = -1;
 #else
     close(kq);
     kq = -1;
 #endif
-    if (readerThread.joinable()) readerThread.join();
+    if (readerThread.joinable())
+        readerThread.join();
     return res;
 }
 
 void feal::ReaderGeneric::readerLoopLauncher(feal::ReaderGeneric *p)
 {
-    if (p) p->readerLoop();
+    if (p)
+        p->readerLoop();
 }
 
 void feal::ReaderGeneric::readerLoop(void)
 {
-#if defined (__linux__)
+#if defined(__linux__)
     int nfds = 0;
-    struct epoll_event events[FEALREADER_MAXEVENTS
-];
+    struct epoll_event events[FEALREADER_MAXEVENTS];
     epfd = epoll_create(1);
-    if (epoll_ctl_add(epfd, readerfd, 
-        (EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP)) == -1)
+    if (epoll_ctl_add(epfd, readerfd, (EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP)) == -1)
     {
         FEALDEBUGLOG("epoll_ctl error");
         return;
     }
     for (;;)
     {
-        if ((readerfd == -1)||(epfd == -1)) break;
-        nfds = epoll_wait(epfd, events, FEALREADER_MAXEVENTS
-, 500);
+        if ((readerfd == -1) || (epfd == -1))
+            break;
+        nfds = epoll_wait(epfd, events, FEALREADER_MAXEVENTS, 500);
         if (nfds == -1)
         {
-            if (errno == EINTR) continue;
-            else break;
+            if (errno == EINTR)
+                continue;
+            else
+                break;
         }
         for (int i = 0; i < nfds; i++)
         {
@@ -89,25 +90,27 @@ void feal::ReaderGeneric::readerLoop(void)
 #else
     int nevts = 0;
     struct timespec tims;
-    struct kevent change_event[2], event[FEALREADER_MAXEVENTS
-];
+    struct kevent change_event[2], event[FEALREADER_MAXEVENTS];
     memset(&change_event, 0, sizeof(change_event));
     memset(&event, 0, sizeof(event));
     tims.tv_sec = 0;
-    tims.tv_nsec = 500000000; // 500ms
+    tims.tv_nsec = 500000000;  // 500ms
     kq = kqueue();
     EV_SET(change_event, readerfd, EVFILT_READ, EV_ADD | EV_ENABLE | EV_CLEAR, 0, 0, 0);
-    if (kevent(kq, (const struct kevent	*) change_event, 1, nullptr, 0, nullptr) == -1)
+    if (kevent(kq, (const struct kevent *)change_event, 1, nullptr, 0, nullptr) == -1)
     {
         printf("kevent err %d\n", errno);
     }
     for (;;)
     {
-        if ((readerfd == -1)||(kq == -1)) break;
-        nevts = kevent(kq, nullptr, 0, event, FEALREADER_MAXEVENTS
- - 1, (const struct timespec *) &tims);
-        if (nevts == 0) continue;
-        if (nevts == -1) break;
+        if ((readerfd == -1) || (kq == -1))
+            break;
+        nevts = kevent(kq, nullptr, 0, event, FEALREADER_MAXEVENTS - 1,
+                       (const struct timespec *)&tims);
+        if (nevts == 0)
+            continue;
+        if (nevts == -1)
+            break;
         for (int i = 0; i < nevts; i++)
         {
             if ((event[i].flags & (EV_EOF | EV_ERROR)) != 0)
@@ -131,7 +134,7 @@ void feal::ReaderGeneric::close_handle(void)
     shutdown(readerfd, FEAL_SHUT_RDWR);
     close(readerfd);
     readerfd = FEAL_INVALID_HANDLE;
-#if defined (__linux__)
+#if defined(__linux__)
     close(epfd);
     epfd = -1;
 #else
@@ -152,14 +155,14 @@ void feal::ReaderGeneric::handle_read_avail(void)
 
 void feal::ReaderGeneric::receiveEventReadAvail(errenum errnum, handle_t fd, int datalen)
 {
-    (void) errnum;
-    (void) fd;
-    (void) datalen;
+    (void)errnum;
+    (void)fd;
+    (void)datalen;
 }
 
 void feal::ReaderGeneric::receiveEventSockErr(errenum errnum, handle_t fd, int datalen)
 {
-    (void) errnum;
-    (void) fd;
-    (void) datalen;
+    (void)errnum;
+    (void)fd;
+    (void)datalen;
 }

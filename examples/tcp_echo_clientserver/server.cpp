@@ -2,11 +2,13 @@
 // Copyright (c) 2022-2025 ruben2020 https://github.com/ruben2020
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
- 
+
+#include "server.h"
+
 #include <cstdio>
 #include <cstring>
+
 #include "clienthandler.h"
-#include "server.h"
 
 #define SERVERPORT 55001
 
@@ -38,7 +40,7 @@ void Server::shutdownActor(void)
 {
     printf("Server::shutdownActor\n");
     feal::EventBus::getInstance().stopBus();
-    for (auto it=mapch.begin(); it!=mapch.end(); ++it)
+    for (auto it = mapch.begin(); it != mapch.end(); ++it)
     {
         it->second.get()->shutdown();
     }
@@ -57,11 +59,11 @@ void Server::start_server(void)
     feal::inet_pton(AF_INET, "127.0.0.1", &(sall.in.sin_addr));
     feal::set_reuseaddr(fd, true);
     printf("Starting Server on 127.0.0.1:%d\n", SERVERPORT);
-    int ret = bind(fd, (sockaddr*) &(sall.in), sizeof(sall.in));
+    int ret = bind(fd, (sockaddr*)&(sall.in), sizeof(sall.in));
     if (ret != feal::FEAL_OK)
     {
-        printf("Error binding to 127.0.0.1:%d  err %d\n", SERVERPORT, 
-            static_cast<feal::errenum>(FEAL_GETHANDLEERRNO));
+        printf("Error binding to 127.0.0.1:%d  err %d\n", SERVERPORT,
+               static_cast<feal::errenum>(FEAL_GETHANDLEERRNO));
         timers.startTimer<EvtRetryTimer>(std::chrono::seconds(5));
         return;
     }
@@ -77,27 +79,30 @@ void Server::start_server(void)
 
 void Server::handleEvent(std::shared_ptr<EvtEndTimer> pevt)
 {
-    if (!pevt ) return;
+    if (!pevt)
+        return;
     printf("Server::EvtEndTimer Elapsed\n");
     shutdown();
 }
 
 void Server::handleEvent(std::shared_ptr<EvtRetryTimer> pevt)
 {
-    if (!pevt ) return;
+    if (!pevt)
+        return;
     printf("Server::EvtRetryTimer Elapsed\n");
     start_server();
 }
 
 void Server::handleEvent(std::shared_ptr<EvtIncomingConn> pevt)
 {
-    if (!pevt ) return;
+    if (!pevt)
+        return;
     printf("Server::EvtIncomingConn\n");
-    printf("Incoming connection, client socket: %lld\n", (long long int) pevt.get()->fd);
-    if (pevt.get()-> errnum != feal::FEAL_OK)
+    printf("Incoming connection, client socket: %lld\n", (long long int)pevt.get()->fd);
+    if (pevt.get()->errnum != feal::FEAL_OK)
     {
-    	printf("Error1 %d\n", pevt.get()-> errnum);
-    	return;
+        printf("Error1 %d\n", pevt.get()->errnum);
+        return;
     }
     auto it = mapch.find(pevt.get()->fd);
     if (it == mapch.end())
@@ -119,18 +124,17 @@ void Server::print_client_address(feal::handle_t fd)
     feal::socklen_t length = sizeof(sall);
     int ret = ::getpeername(fd, &(sall.sa), &length);
     feal::errenum se;
-    if (ret != feal::FEAL_OK) se = static_cast<feal::errenum>(FEAL_GETHANDLEERRNO);
+    if (ret != feal::FEAL_OK)
+        se = static_cast<feal::errenum>(FEAL_GETHANDLEERRNO);
     if (ret == feal::FEAL_OK)
     {
-        printf("ClientHandler(%lld): %s addr %s port %s\n",
-            (long long int) fd,
-            (sall.sa.sa_family == AF_INET ? "IPv4" : "IPv6"), 
-            feal::get_addr(&sall).c_str(), 
-            feal::get_port(&sall).c_str());
+        printf("ClientHandler(%lld): %s addr %s port %s\n", (long long int)fd,
+               (sall.sa.sa_family == AF_INET ? "IPv4" : "IPv6"), feal::get_addr(&sall).c_str(),
+               feal::get_port(&sall).c_str());
     }
-    else if ((se != feal::FEAL_ENOTCONN)&&(se != feal::FEAL_ENOTSOCK))
+    else if ((se != feal::FEAL_ENOTCONN) && (se != feal::FEAL_ENOTSOCK))
     {
-        printf("Error2 %d, fd=%lld\n", se, (long long int) fd);
+        printf("Error2 %d, fd=%lld\n", se, (long long int)fd);
     }
 }
 
@@ -139,24 +143,25 @@ void Server::get_client_address(feal::handle_t fd, char* addr, int addrbuflen)
     feal::sockaddr_all sall;
     feal::socklen_t length = sizeof(sall);
     int ret = ::getpeername(fd, &(sall.sa), &length);
-    if ((ret == feal::FEAL_OK)&&(addr))
+    if ((ret == feal::FEAL_OK) && (addr))
     {
         snprintf(addr, addrbuflen, "%s %s port %s",
-            (sall.sa.sa_family == AF_INET ? "IPv4" : "IPv6"), 
-            feal::get_addr(&sall).c_str(), 
-            feal::get_port(&sall).c_str());
+                 (sall.sa.sa_family == AF_INET ? "IPv4" : "IPv6"), feal::get_addr(&sall).c_str(),
+                 feal::get_port(&sall).c_str());
     }
 }
 
 void Server::handleEvent(std::shared_ptr<EvtServerShutdown> pevt)
 {
-    if (!pevt ) return;
+    if (!pevt)
+        return;
     printf("Server::EvtServerShutdown\n");
 }
 
 void Server::handleEvent(std::shared_ptr<EvtClientDisconnected> pevt)
 {
-    if (!pevt ) return;
+    if (!pevt)
+        return;
     printf("Server::EvtClientDisconnected\n");
     print_client_address(pevt.get()->fd);
     auto it = mapch.find(pevt.get()->fd);
@@ -169,9 +174,9 @@ void Server::handleEvent(std::shared_ptr<EvtClientDisconnected> pevt)
 
 void Server::handleEvent(std::shared_ptr<EvtSigInt> pevt)
 {
-    if (!pevt ) return;
-    printf("Server::EvtSigInt (signum=%d, sicode=%d)\n", 
-        pevt.get()->signo, pevt.get()->sicode);
+    if (!pevt)
+        return;
+    printf("Server::EvtSigInt (signum=%d, sicode=%d)\n", pevt.get()->signo, pevt.get()->sicode);
     timers.stopTimer<EvtEndTimer>();
     shutdown();
 }
