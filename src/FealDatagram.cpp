@@ -157,7 +157,7 @@ void feal::DatagramGeneric::dgramLoop(void)
             if (FD_ISSET(sockread[i], &ReadSet))
             {
                 nfds--;
-                numbytes = recvfrom(sockfd, buf, sizeof(buf), 
+                numbytes = ::recvfrom(sockfd, buf, sizeof(buf), 
                     MSG_PEEK, nullptr, nullptr);
                 if ((numbytes == SOCKET_ERROR)&&(WSAGetLastError() != WSAEWOULDBLOCK))
                 {
