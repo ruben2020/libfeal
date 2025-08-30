@@ -5,20 +5,20 @@
 
 #include "feal.h"
 
-feal::map_evtsig_t feal::SignalGeneric::mapSignal;
-std::mutex feal::SignalGeneric::mtxMapSig;
+feal::map_evtsig_t feal::SignalGeneric::map_signal;
+std::mutex feal::SignalGeneric::mtx_map_sig;
 
 void feal::SignalGeneric::init(void)
 {
-    const std::lock_guard<std::mutex> lock(mtxMapSig);
+    const std::lock_guard<std::mutex> lock(mtx_map_sig);
     BaseSignal::recvsig_fp = &sighandler;
 }
 
 void feal::SignalGeneric::sighandler(int signum, int sicode)
 {
-    const std::lock_guard<std::mutex> lock(mtxMapSig);
-    auto it = mapSignal.find(signum);
-    if (it != mapSignal.end())
+    const std::lock_guard<std::mutex> lock(mtx_map_sig);
+    auto it = map_signal.find(signum);
+    if (it != map_signal.end())
     {
         vec_evtsig_ptr_t ves = it->second;
         for (auto itv = ves.begin(); itv != ves.end(); ++itv)

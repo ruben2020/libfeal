@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
 
-#ifndef _FEAL_EVENT_H
-#define _FEAL_EVENT_H
+#ifndef FEAL_EVENT_H
+#define FEAL_EVENT_H
 
-#ifndef _FEAL_H
+#ifndef FEAL_H
 #error "Please include feal.h and not the other internal Feal header files, to avoid include errors."
 #endif
 
@@ -54,8 +54,8 @@ class EventComm : public Event
     EventComm() = default;
     EventComm(const EventComm&) = default;
     EventComm& operator=(const EventComm&) = default;
-    ~EventComm() = default;
-    errenum errnum = FEAL_OK;
+    ~EventComm() override = default;
+    errenum_t errnum = FEAL_OK;
     handle_t fd = FEAL_INVALID_HANDLE;
     int datalen = -1;
     flags_t flags = 0;
@@ -63,4 +63,4 @@ class EventComm : public Event
 
 }  // namespace feal
 
-#endif  // _FEAL_EVENT_H
+#endif  // FEAL_EVENT_H

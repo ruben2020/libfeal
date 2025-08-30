@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
 
-#ifndef _FEAL_DESCMON_H
-#define _FEAL_DESCMON_H
+#ifndef FEAL_DESCMON_H
+#define FEAL_DESCMON_H
 
-#ifndef _FEAL_H
+#ifndef FEAL_H
 #error "Please include feal.h and not the other internal Feal header files, to avoid include errors."
 #endif
 
@@ -19,14 +19,14 @@ class DescMonGeneric : public Tool
     DescMonGeneric() = default;
     DescMonGeneric(const DescMonGeneric&) = default;
     DescMonGeneric& operator=(const DescMonGeneric&) = default;
-    ~DescMonGeneric() = default;
+    ~DescMonGeneric() override = default;
 
-    void shutdownTool(void);
+    void shutdownTool(void) override;
 
-    errenum start_monitoring(void);
-    errenum add(handle_t fd);
-    errenum remove(handle_t fd);
-    errenum close_and_reset(void);
+    errenum_t startMonitoring(void);
+    errenum_t add(handle_t fd);
+    errenum_t remove(handle_t fd);
+    errenum_t closeAndReset(void);
 
    protected:
     std::thread DescMonThread;
@@ -48,16 +48,16 @@ class DescMonGeneric : public Tool
 
     void init(void);
 
-    virtual void receiveEventReadAvail(errenum errnum, handle_t fd, int datalen);
-    virtual void receiveEventWriteAvail(errenum errnum, handle_t fd, int datalen);
-    virtual void receiveEventDescErr(errenum errnum, handle_t fd, int datalen);
+    virtual void receiveEventReadAvail(errenum_t errnum, handle_t fd, int datalen);
+    virtual void receiveEventWriteAvail(errenum_t errnum, handle_t fd, int datalen);
+    virtual void receiveEventDescErr(errenum_t errnum, handle_t fd, int datalen);
 
    private:
     static void fdmonLoopLauncher(DescMonGeneric* p);
     void fdmonLoop(void);
-    void fd_error(handle_t fd);
-    void fd_read_avail(handle_t fd);
-    void fd_write_avail(handle_t fd);
+    void fdError(handle_t fd);
+    void fdReadAvail(handle_t fd);
+    void fdWriteAvail(handle_t fd);
 };
 
 template <typename Y>
@@ -67,7 +67,7 @@ class DescMon : public DescMonGeneric
     DescMon() = default;
     DescMon(const DescMon&) = default;
     DescMon& operator=(const DescMon&) = default;
-    ~DescMon() = default;
+    ~DescMon() override = default;
 
     void init(Y* p)
     {
@@ -104,7 +104,7 @@ class DescMon : public DescMonGeneric
     }
 
    protected:
-    void receiveEventReadAvail(errenum errnum, handle_t fd, int datalen)
+    void receiveEventReadAvail(errenum_t errnum, handle_t fd, int datalen) override
     {
         if (evtread.get())
         {
@@ -120,7 +120,7 @@ class DescMon : public DescMonGeneric
             printf("No subscription using DescMon::subscribeReadAvail\n");
     }
 
-    void receiveEventWriteAvail(errenum errnum, handle_t fd, int datalen)
+    void receiveEventWriteAvail(errenum_t errnum, handle_t fd, int datalen) override
     {
         if (evtwrite.get())
         {
@@ -136,7 +136,7 @@ class DescMon : public DescMonGeneric
             printf("No subscription using DescMon::subscribeWriteAvail\n");
     }
 
-    void receiveEventDescErr(errenum errnum, handle_t fd, int datalen)
+    void receiveEventDescErr(errenum_t errnum, handle_t fd, int datalen) override
     {
         if (evterrfd.get())
         {
@@ -161,4 +161,4 @@ class DescMon : public DescMonGeneric
 
 }  // namespace feal
 
-#endif  // _FEAL_FILEDESCMON_H
+#endif  // FEAL_FILEDESCMON_H

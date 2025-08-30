@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
 
-#include <stdio.h>
+#include <cstdio>
 
 #include "clientund.h"
 
@@ -13,7 +13,7 @@ int main(void)
     std::shared_ptr<feal::Actor> undclient1 = std::make_shared<Clientund>();
     undclient1.get()->init();
     undclient1.get()->start();
-    undclient1.get()->wait_for_shutdown();
+    undclient1.get()->waitForShutdown();
     feal::EventBus::getInstance().destroyInstance();
     printf("Unix domain socket datagram client terminating program\n");
     return 0;

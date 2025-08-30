@@ -17,45 +17,46 @@
 
 void feal::StreamGeneric::shutdownTool(void)
 {
-    disconnect_and_reset();
+    disconnectAndReset();
 }
 
-feal::errenum feal::StreamGeneric::connect(handle_t fd, const sockaddr_all *addr, socklen_t addrlen)
+feal::errenum_t feal::StreamGeneric::connect(handle_t fd, const sockaddr_all_t *addr,
+                                             socklen_t addrlen)
 {
-    errenum res = FEAL_OK;
+    errenum_t res = FEAL_OK;
     if (addr == nullptr)
         return res;
     sockfd = fd;
-    set_nonblocking(fd);
+    setNonBlocking(fd);
     int ret = ::connect(sockfd, &(addr->sa), addrlen);
     if ((ret == FEAL_HANDLE_ERROR) && (FEAL_GETHANDLEERRNO != FEAL_STREAM_EINPROGRESS))
     {
-        res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
+        res = static_cast<errenum_t>(FEAL_GETHANDLEERRNO);
         return res;
     }
     else if ((ret == FEAL_HANDLE_ERROR) && (FEAL_GETHANDLEERRNO == FEAL_STREAM_EINPROGRESS))
     {
         FEALDEBUGLOG("do_connect_in_progress");
-        do_connect_in_progress();
+        doConnectInProgress();
     }
     else if (ret == 0)
     {
         FEALDEBUGLOG("do_connect_ok");
-        do_connect_ok();
+        doConnectOk();
     }
     connectThread = std::thread(&connectLoopLauncher, this);
     return res;
 }
 
-feal::errenum feal::StreamGeneric::listen(handle_t fd, int backlog)
+feal::errenum_t feal::StreamGeneric::listen(handle_t fd, int backlog)
 {
-    errenum res = FEAL_OK;
+    errenum_t res = FEAL_OK;
     sockfd = fd;
-    set_nonblocking(fd);
+    setNonBlocking(fd);
     if (serverThread.joinable())
         return res;
     if (::listen(sockfd, backlog) == FEAL_HANDLE_ERROR)
-        res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
+        res = static_cast<errenum_t>(FEAL_GETHANDLEERRNO);
     else
     {
         serverThread = std::thread(&serverLoopLauncher, this);
@@ -63,9 +64,10 @@ feal::errenum feal::StreamGeneric::listen(handle_t fd, int backlog)
     return res;
 }
 
-feal::errenum feal::StreamGeneric::recv(void *buf, uint32_t len, int32_t *bytes, feal::handle_t fd)
+feal::errenum_t feal::StreamGeneric::recv(void *buf, uint32_t len, int32_t *bytes,
+                                          feal::handle_t fd)
 {
-    errenum res = FEAL_OK;
+    errenum_t res = FEAL_OK;
     if (fd == FEAL_INVALID_HANDLE)
         fd = sockfd;
     ssize_t numbytes = ::recv(fd, BUFCAST(buf), (size_t)len, MSG_DONTWAIT);
@@ -74,7 +76,7 @@ feal::errenum feal::StreamGeneric::recv(void *buf, uint32_t len, int32_t *bytes,
 #endif
     if (numbytes == FEAL_HANDLE_ERROR)
     {
-        res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
+        res = static_cast<errenum_t>(FEAL_GETHANDLEERRNO);
         return res;
     }
     if (bytes)
@@ -82,9 +84,10 @@ feal::errenum feal::StreamGeneric::recv(void *buf, uint32_t len, int32_t *bytes,
     return res;
 }
 
-feal::errenum feal::StreamGeneric::send(void *buf, uint32_t len, int32_t *bytes, feal::handle_t fd)
+feal::errenum_t feal::StreamGeneric::send(void *buf, uint32_t len, int32_t *bytes,
+                                          feal::handle_t fd)
 {
-    errenum res = FEAL_OK;
+    errenum_t res = FEAL_OK;
     if (fd == FEAL_INVALID_HANDLE)
         fd = sockfd;
     ssize_t numbytes = ::send(fd, BUFCAST(buf), (size_t)len, MSG_DONTWAIT);
@@ -92,9 +95,9 @@ feal::errenum feal::StreamGeneric::send(void *buf, uint32_t len, int32_t *bytes,
     {
         if ((FEAL_GETHANDLEERRNO == EAGAIN) || (FEAL_GETHANDLEERRNO == EWOULDBLOCK))
         {
-            do_send_avail_notify(fd);
+            doSendAvailNotify(fd);
         }
-        res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
+        res = static_cast<errenum_t>(FEAL_GETHANDLEERRNO);
         return res;
     }
     if (bytes)
@@ -102,23 +105,23 @@ feal::errenum feal::StreamGeneric::send(void *buf, uint32_t len, int32_t *bytes,
     return res;
 }
 
-feal::errenum feal::StreamGeneric::disconnect_client(feal::handle_t client_sockfd)
+feal::errenum_t feal::StreamGeneric::disconnectClient(feal::handle_t client_sockfd)
 {
-    errenum res = FEAL_OK;
+    errenum_t res = FEAL_OK;
     mapReaders.erase(client_sockfd);
-    if (do_client_shutdown(client_sockfd) == -1)
-        res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
+    if (doClientShutdown(client_sockfd) == -1)
+        res = static_cast<errenum_t>(FEAL_GETHANDLEERRNO);
     return res;
 }
 
-feal::errenum feal::StreamGeneric::disconnect_and_reset(void)
+feal::errenum_t feal::StreamGeneric::disconnectAndReset(void)
 {
     for (auto it = mapReaders.begin(); it != mapReaders.end(); ++it)
-        do_client_shutdown(it->first);
+        doClientShutdown(it->first);
     mapReaders.clear();
-    errenum res = FEAL_OK;
-    if (do_full_shutdown() == -1)
-        res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
+    errenum_t res = FEAL_OK;
+    if (doFullShutdown() == -1)
+        res = static_cast<errenum_t>(FEAL_GETHANDLEERRNO);
     if (serverThread.joinable())
         serverThread.join();
     if (connectThread.joinable())
@@ -138,27 +141,27 @@ void feal::StreamGeneric::connectLoopLauncher(StreamGeneric *p)
         p->connectLoop();
 }
 
-int feal::StreamGeneric::accept_new_conn(void)
+int feal::StreamGeneric::acceptNewConn(void)
 {
-    sockaddr_all sall;
+    sockaddr_all_t sall;
     memset(&sall, 0, sizeof(sall));
     socklen_t socklength = sizeof(sall);
     handle_t sock_conn_fd = accept(sockfd, &(sall.sa), &socklength);
-    errenum errnum = FEAL_OK;
+    errenum_t errnum = FEAL_OK;
     if (sock_conn_fd == FEAL_INVALID_HANDLE)
     {
-        errnum = static_cast<errenum>(FEAL_GETHANDLEERRNO);
+        errnum = static_cast<errenum_t>(FEAL_GETHANDLEERRNO);
     }
     receiveEventIncomingConn(errnum, sock_conn_fd, -1);
     return sock_conn_fd;
 }
 
-void feal::StreamGeneric::client_read_avail(feal::handle_t client_sockfd)
+void feal::StreamGeneric::clientReadAvail(feal::handle_t client_sockfd)
 {
     auto it = mapReaders.find(client_sockfd);
     if (it != mapReaders.end())
     {
-        clientst cst = it->second;
+        clientst_t cst = it->second;
         if (cst.wkact.expired() == false)
         {
             std::shared_ptr<Actor> act = cst.wkact.lock();
@@ -172,12 +175,12 @@ void feal::StreamGeneric::client_read_avail(feal::handle_t client_sockfd)
     }
 }
 
-void feal::StreamGeneric::client_write_avail(feal::handle_t client_sockfd)
+void feal::StreamGeneric::clientWriteAvail(feal::handle_t client_sockfd)
 {
     auto it = mapReaders.find(client_sockfd);
     if (it != mapReaders.end())
     {
-        clientst cst = it->second;
+        clientst_t cst = it->second;
         if (cst.wkact.expired() == false)
         {
             std::shared_ptr<Actor> act = cst.wkact.lock();
@@ -191,12 +194,12 @@ void feal::StreamGeneric::client_write_avail(feal::handle_t client_sockfd)
     }
 }
 
-void feal::StreamGeneric::client_shutdown(feal::handle_t client_sockfd)
+void feal::StreamGeneric::clientShutdown(feal::handle_t client_sockfd)
 {
     auto it = mapReaders.find(client_sockfd);
     if (it != mapReaders.end())
     {
-        clientst cst = it->second;
+        clientst_t cst = it->second;
         if (cst.wkact.expired() == false)
         {
             std::shared_ptr<Actor> act = cst.wkact.lock();
@@ -211,74 +214,74 @@ void feal::StreamGeneric::client_shutdown(feal::handle_t client_sockfd)
     mapReaders.erase(client_sockfd);
 }
 
-void feal::StreamGeneric::server_shutdown(void)
+void feal::StreamGeneric::serverShutdown(void)
 {
     receiveEventServerShutdown(FEAL_OK, FEAL_INVALID_HANDLE, -1);
 }
 
-void feal::StreamGeneric::connected_to_server(feal::handle_t fd)
+void feal::StreamGeneric::connectedToServer(feal::handle_t fd)
 {
     receiveEventConnectedToServer(FEAL_OK, fd, -1);
 }
 
-void feal::StreamGeneric::connection_read_avail(void)
+void feal::StreamGeneric::connectionReadAvail(void)
 {
     receiveEventReadAvail(FEAL_OK, sockfd, datareadavaillen(sockfd));
 }
 
-void feal::StreamGeneric::connection_write_avail(void)
+void feal::StreamGeneric::connectionWriteAvail(void)
 {
     receiveEventWriteAvail(FEAL_OK, sockfd, -1);
 }
 
-void feal::StreamGeneric::connection_shutdown(void)
+void feal::StreamGeneric::connectionShutdown(void)
 {
     receiveEventConnectionShutdown(FEAL_OK, FEAL_INVALID_HANDLE, -1);
 }
 
-void feal::StreamGeneric::receiveEventIncomingConn(errenum errnum, handle_t fd, int datalen)
+void feal::StreamGeneric::receiveEventIncomingConn(errenum_t errnum, handle_t fd, int datalen)
 {
     (void)errnum;
     (void)fd;
     (void)datalen;
 }
 
-void feal::StreamGeneric::receiveEventReadAvail(errenum errnum, handle_t fd, int datalen)
+void feal::StreamGeneric::receiveEventReadAvail(errenum_t errnum, handle_t fd, int datalen)
 {
     (void)errnum;
     (void)fd;
     (void)datalen;
 }
 
-void feal::StreamGeneric::receiveEventWriteAvail(errenum errnum, handle_t fd, int datalen)
+void feal::StreamGeneric::receiveEventWriteAvail(errenum_t errnum, handle_t fd, int datalen)
 {
     (void)errnum;
     (void)fd;
     (void)datalen;
 }
 
-void feal::StreamGeneric::receiveEventClientShutdown(errenum errnum, handle_t fd, int datalen)
+void feal::StreamGeneric::receiveEventClientShutdown(errenum_t errnum, handle_t fd, int datalen)
 {
     (void)errnum;
     (void)fd;
     (void)datalen;
 }
 
-void feal::StreamGeneric::receiveEventServerShutdown(errenum errnum, handle_t fd, int datalen)
+void feal::StreamGeneric::receiveEventServerShutdown(errenum_t errnum, handle_t fd, int datalen)
 {
     (void)errnum;
     (void)fd;
     (void)datalen;
 }
 
-void feal::StreamGeneric::receiveEventConnectedToServer(errenum errnum, handle_t fd, int datalen)
+void feal::StreamGeneric::receiveEventConnectedToServer(errenum_t errnum, handle_t fd, int datalen)
 {
     (void)errnum;
     (void)fd;
     (void)datalen;
 }
 
-void feal::StreamGeneric::receiveEventConnectionShutdown(errenum errnum, handle_t fd, int datalen)
+void feal::StreamGeneric::receiveEventConnectionShutdown(errenum_t errnum, handle_t fd, int datalen)
 {
     (void)errnum;
     (void)fd;

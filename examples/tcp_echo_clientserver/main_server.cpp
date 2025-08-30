@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
 
-#include <stdio.h>
+#include <cstdio>
 
 #include "server.h"
 
@@ -14,7 +14,7 @@ int main(void)
     std::shared_ptr<feal::Actor> tcpserver1 = std::make_shared<Server>();
     tcpserver1.get()->init();
     tcpserver1.get()->start();
-    tcpserver1.get()->wait_for_shutdown();
+    tcpserver1.get()->waitForShutdown();
     feal::EventBus::getInstance().destroyInstance();
     SOCK_CLEANUP();
     printf("tcpserver terminating program\n");

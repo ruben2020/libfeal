@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
 
-#include <stdio.h>
+#include <cstdio>
 
 #include "ActorA.h"
 
@@ -13,7 +13,7 @@ int main(void)
     std::shared_ptr<feal::Actor> filedirmon1 = std::make_shared<ActorA>();
     filedirmon1.get()->init();
     filedirmon1.get()->start();
-    filedirmon1.get()->wait_for_shutdown();
+    filedirmon1.get()->waitForShutdown();
     feal::EventBus::getInstance().destroyInstance();
     printf("filedirmon terminating program\n");
     return 0;

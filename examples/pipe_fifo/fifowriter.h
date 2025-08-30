@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
 
-#ifndef _FIFOWRITER_H
-#define _FIFOWRITER_H
+#ifndef FIFOWRITER_H
+#define FIFOWRITER_H
 
 #include "feal.h"
 
@@ -15,12 +15,12 @@ class Fifowriter : public feal::Actor
 {
    public:
     Fifowriter() = default;
-    ~Fifowriter() = default;
+    ~Fifowriter() override = default;
 
-    void initActor(void);
-    void startActor(void);
-    void pauseActor(void);
-    void shutdownActor(void);
+    void initActor(void) override;
+    void startActor(void) override;
+    void pauseActor(void) override;
+    void shutdownActor(void) override;
 
     void handleEvent(std::shared_ptr<EvtEndTimer> pevt);
     void handleEvent(std::shared_ptr<EvtDelayTimer> pevt);
@@ -31,8 +31,8 @@ class Fifowriter : public feal::Actor
    private:
     int n = 0;
     feal::handle_t fifofd = -1;
-    void open_for_writing(void);
-    void send_something(void);
+    void openForWriting(void);
+    void sendSomething(void);
 };
 
-#endif  // _FIFOWRITER_H
+#endif  // FIFOWRITER_H

@@ -7,7 +7,7 @@
 
 void feal::DescMonGeneric::shutdownTool(void)
 {
-    close_and_reset();
+    closeAndReset();
 }
 
 void feal::DescMonGeneric::init(void)
@@ -26,19 +26,19 @@ void feal::DescMonGeneric::init(void)
 #endif
 }
 
-feal::errenum feal::DescMonGeneric::start_monitoring(void)
+feal::errenum_t feal::DescMonGeneric::startMonitoring(void)
 {
-    errenum res = FEAL_OK;
+    errenum_t res = FEAL_OK;
     if (DescMonThread.joinable())
         return res;
     DescMonThread = std::thread(&fdmonLoopLauncher, this);
     return res;
 }
 
-feal::errenum feal::DescMonGeneric::add(handle_t fd)
+feal::errenum_t feal::DescMonGeneric::add(handle_t fd)
 {
-    errenum res = FEAL_OK;
-    set_nonblocking(fd);
+    errenum_t res = FEAL_OK;
+    setNonBlocking(fd);
 #if defined(_WIN32)
     for (int j = 0; j < FEALDESCMON_MAXEVENTS; j++)
     {
@@ -50,7 +50,7 @@ feal::errenum feal::DescMonGeneric::add(handle_t fd)
         }
     }
 #elif defined(__linux__)
-    if (epoll_ctl_add(epfd, fd, (EPOLLIN | EPOLLOUT | EPOLLET | EPOLLRDHUP | EPOLLHUP)) == -1)
+    if (epollCtlAdd(epfd, fd, (EPOLLIN | EPOLLOUT | EPOLLET | EPOLLRDHUP | EPOLLHUP)) == -1)
     {
         FEALDEBUGLOG("epoll_ctl error");
     }
@@ -71,9 +71,9 @@ feal::errenum feal::DescMonGeneric::add(handle_t fd)
     return res;
 }
 
-feal::errenum feal::DescMonGeneric::remove(handle_t fd)
+feal::errenum_t feal::DescMonGeneric::remove(handle_t fd)
 {
-    errenum res = FEAL_OK;
+    errenum_t res = FEAL_OK;
 #if defined(_WIN32)
     for (int j = 0; j < FEALDESCMON_MAXEVENTS; j++)
     {
@@ -85,7 +85,7 @@ feal::errenum feal::DescMonGeneric::remove(handle_t fd)
         }
     }
 #elif defined(__linux__)
-    if (epoll_ctl_del(epfd, fd) == -1)
+    if (epollCtlDel(epfd, fd) == -1)
     {
         FEALDEBUGLOG("epoll_ctl error");
     }
@@ -106,9 +106,9 @@ feal::errenum feal::DescMonGeneric::remove(handle_t fd)
     return res;
 }
 
-feal::errenum feal::DescMonGeneric::close_and_reset(void)
+feal::errenum_t feal::DescMonGeneric::closeAndReset(void)
 {
-    errenum res = FEAL_OK;
+    errenum_t res = FEAL_OK;
 #if defined(_WIN32)
     active = false;
 #elif defined(__linux__)
@@ -214,16 +214,16 @@ void feal::DescMonGeneric::fdmonLoop(void)
         {
             if ((events[i].events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR)) != 0)
             {
-                fd_error(events[i].data.fd);
+                fdError(events[i].data.fd);
                 break;
             }
             if ((events[i].events & EPOLLIN) == EPOLLIN)
             {
-                fd_read_avail(events[i].data.fd);
+                fdReadAvail(events[i].data.fd);
             }
             if ((events[i].events & EPOLLOUT) == EPOLLOUT)
             {
-                fd_write_avail(events[i].data.fd);
+                fdWriteAvail(events[i].data.fd);
             }
         }
     }
@@ -265,36 +265,36 @@ void feal::DescMonGeneric::fdmonLoop(void)
 #endif
 }
 
-void feal::DescMonGeneric::fd_error(handle_t fd)
+void feal::DescMonGeneric::fdError(handle_t fd)
 {
     receiveEventDescErr(FEAL_OK, fd, -1);
 }
 
-void feal::DescMonGeneric::fd_read_avail(handle_t fd)
+void feal::DescMonGeneric::fdReadAvail(handle_t fd)
 {
     receiveEventReadAvail(FEAL_OK, fd, datareadavaillen(fd));
 }
 
-void feal::DescMonGeneric::fd_write_avail(handle_t fd)
+void feal::DescMonGeneric::fdWriteAvail(handle_t fd)
 {
     receiveEventWriteAvail(FEAL_OK, fd, -1);
 }
 
-void feal::DescMonGeneric::receiveEventReadAvail(errenum errnum, handle_t fd, int datalen)
+void feal::DescMonGeneric::receiveEventReadAvail(errenum_t errnum, handle_t fd, int datalen)
 {
     (void)errnum;
     (void)fd;
     (void)datalen;
 }
 
-void feal::DescMonGeneric::receiveEventWriteAvail(errenum errnum, handle_t fd, int datalen)
+void feal::DescMonGeneric::receiveEventWriteAvail(errenum_t errnum, handle_t fd, int datalen)
 {
     (void)errnum;
     (void)fd;
     (void)datalen;
 }
 
-void feal::DescMonGeneric::receiveEventDescErr(errenum errnum, handle_t fd, int datalen)
+void feal::DescMonGeneric::receiveEventDescErr(errenum_t errnum, handle_t fd, int datalen)
 {
     (void)errnum;
     (void)fd;

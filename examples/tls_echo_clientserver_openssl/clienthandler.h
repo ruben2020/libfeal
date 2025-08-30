@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
 
-#ifndef _CLIENTHANDLER_H
-#define _CLIENTHANDLER_H
+#ifndef CLIENTHANDLER_H
+#define CLIENTHANDLER_H
 
 #include <openssl/bio.h>
 #include <openssl/ssl.h>
@@ -21,7 +21,7 @@ class EvtClientDisconnected : public feal::Event
     EvtClientDisconnected() = default;
     EvtClientDisconnected(const EvtClientDisconnected &) = default;
     EvtClientDisconnected &operator=(const EvtClientDisconnected &) = default;
-    ~EvtClientDisconnected() = default;
+    ~EvtClientDisconnected() override = default;
 
     feal::handle_t fd = -1;
 
@@ -37,13 +37,13 @@ class ClientHandler : public feal::Actor
 {
    public:
     ClientHandler() = default;
-    ~ClientHandler() = default;
+    ~ClientHandler() override = default;
     void setParam(feal::Stream<Server> *p, feal::handle_t fd, char *s, SSL_CTX *ctx1);
 
-    void initActor(void);
-    void startActor(void);
-    void pauseActor(void);
-    void shutdownActor(void);
+    void initActor(void) override;
+    void startActor(void) override;
+    void pauseActor(void) override;
+    void shutdownActor(void) override;
 
     void handleEvent(std::shared_ptr<EvtDataReadAvail> pevt);
     void handleEvent(std::shared_ptr<EvtDataWriteAvail> pevt);
@@ -65,10 +65,10 @@ class ClientHandler : public feal::Actor
     bool sslshutdown_pending = false;
     bool sslshutdown_complete = false;
 
-    int perform_sslaccept(void);
-    int perform_read(void);
-    int perform_write(int num);
-    int perform_sslshutdown(void);
+    int performSslaccept(void);
+    int performRead(void);
+    int performWrite(int num);
+    int performSslshutdown(void);
 };
 
 #endif  // _CLIENTHANDLER_H

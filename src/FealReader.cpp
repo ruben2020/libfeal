@@ -7,26 +7,26 @@
 
 void feal::ReaderGeneric::shutdownTool(void)
 {
-    close_and_reset();
+    closeAndReset();
 }
 
-feal::errenum feal::ReaderGeneric::registerhandle(handle_t fd)
+feal::errenum_t feal::ReaderGeneric::registerhandle(handle_t fd)
 {
-    errenum res = FEAL_OK;
+    errenum_t res = FEAL_OK;
     if (fd == FEAL_INVALID_HANDLE)
     {
-        res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
+        res = static_cast<errenum_t>(FEAL_GETHANDLEERRNO);
         return res;
     }
-    set_nonblocking(fd);
+    setNonBlocking(fd);
     readerfd = fd;
     readerThread = std::thread(&readerLoopLauncher, this);
     return res;
 }
 
-feal::errenum feal::ReaderGeneric::close_and_reset(void)
+feal::errenum_t feal::ReaderGeneric::closeAndReset(void)
 {
-    errenum res = FEAL_OK;
+    errenum_t res = FEAL_OK;
     if (readerfd != FEAL_INVALID_HANDLE)
         shutdown(readerfd, FEAL_SHUT_RDWR);
     close(readerfd);
@@ -55,7 +55,7 @@ void feal::ReaderGeneric::readerLoop(void)
     int nfds = 0;
     struct epoll_event events[FEALREADER_MAXEVENTS];
     epfd = epoll_create(1);
-    if (epoll_ctl_add(epfd, readerfd, (EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP)) == -1)
+    if (epollCtlAdd(epfd, readerfd, (EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP)) == -1)
     {
         FEALDEBUGLOG("epoll_ctl error");
         return;
@@ -76,13 +76,13 @@ void feal::ReaderGeneric::readerLoop(void)
         {
             if ((events[i].events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR)) != 0)
             {
-                close_handle();
-                handle_error();
+                closeHandle();
+                handleError();
                 break;
             }
             else if ((events[i].events & EPOLLIN) == EPOLLIN)
             {
-                handle_read_avail();
+                handleReadAvail();
                 continue;
             }
         }
@@ -129,7 +129,7 @@ void feal::ReaderGeneric::readerLoop(void)
 #endif
 }
 
-void feal::ReaderGeneric::close_handle(void)
+void feal::ReaderGeneric::closeHandle(void)
 {
     shutdown(readerfd, FEAL_SHUT_RDWR);
     close(readerfd);
@@ -143,24 +143,24 @@ void feal::ReaderGeneric::close_handle(void)
 #endif
 }
 
-void feal::ReaderGeneric::handle_error(void)
+void feal::ReaderGeneric::handleError(void)
 {
     receiveEventSockErr(FEAL_OK, FEAL_INVALID_HANDLE, -1);
 }
 
-void feal::ReaderGeneric::handle_read_avail(void)
+void feal::ReaderGeneric::handleReadAvail(void)
 {
     receiveEventReadAvail(FEAL_OK, readerfd, datareadavaillen(readerfd));
 }
 
-void feal::ReaderGeneric::receiveEventReadAvail(errenum errnum, handle_t fd, int datalen)
+void feal::ReaderGeneric::receiveEventReadAvail(errenum_t errnum, handle_t fd, int datalen)
 {
     (void)errnum;
     (void)fd;
     (void)datalen;
 }
 
-void feal::ReaderGeneric::receiveEventSockErr(errenum errnum, handle_t fd, int datalen)
+void feal::ReaderGeneric::receiveEventSockErr(errenum_t errnum, handle_t fd, int datalen)
 {
     (void)errnum;
     (void)fd;

@@ -13,11 +13,11 @@
 #define UNS(x) (x == AF_UNIX ? "AF_UNIX" : "unknown")
 #define SERVERPATH "fealunsserver"
 
-void Serveruns::start_server(void)
+void Serveruns::startServer(void)
 {
     feal::handle_t fd;
     fd = socket(AF_UNIX, SOCK_STREAM, 0);
-    feal::sockaddr_all sall;
+    feal::sockaddr_all_t sall;
     sall.un.sun_family = AF_UNIX;
     sall.un.sun_path[0] = 0;
     strcpy(sall.un.sun_path + 1, SERVERPATH);
@@ -28,11 +28,11 @@ void Serveruns::start_server(void)
     if (ret != feal::FEAL_OK)
     {
         printf("Error binding to %s  err %d\n", SERVERPATH,
-               static_cast<feal::errenum>(FEAL_GETHANDLEERRNO));
+               static_cast<feal::errenum_t>(FEAL_GETHANDLEERRNO));
         timers.startTimer<EvtRetryTimer>(std::chrono::seconds(5));
         return;
     }
-    feal::errenum se = stream.listen(fd);
+    feal::errenum_t se = stream.listen(fd);
     if (se != feal::FEAL_OK)
     {
         printf("Error listening to %s  err %d\n", SERVERPATH, se);
@@ -42,7 +42,7 @@ void Serveruns::start_server(void)
     printf("Listening ...\n");
 }
 
-void Serveruns::print_client_address(feal::handle_t fd)
+void Serveruns::printClientAddress(feal::handle_t fd)
 {
     uid_t euid = 0;
     gid_t egid = 0;
@@ -50,7 +50,7 @@ void Serveruns::print_client_address(feal::handle_t fd)
     printf("Credentials from getpeerid: euid=%ld, egid=%ld\n", (long)euid, (long)egid);
 }
 
-void Serveruns::get_client_address(feal::handle_t fd, char* addr, int addrbuflen)
+void Serveruns::getClientAddress(feal::handle_t fd, char* addr, int addrbuflen)
 {
     uid_t euid = 0;
     gid_t egid = 0;

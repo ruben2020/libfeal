@@ -6,10 +6,10 @@
 #include "ActorA.h"
 
 #include <linux/limits.h>
-#include <stdlib.h>
 #include <sys/inotify.h>
 
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 
 void ActorA::initActor(void)
@@ -28,7 +28,7 @@ void ActorA::startActor(void)
     timers.startTimer<EvtEndTimer>(std::chrono::seconds(15));
     timers.startTimer<EvtDelayTimer>(std::chrono::seconds(2));
     FILE *fp = fopen("/tmp/test_inotifymon.txt", "w");
-    if (fp != NULL)
+    if (fp != nullptr)
     {
         fprintf(fp, "%d\n", n++);
         fclose(fp);
@@ -41,7 +41,7 @@ void ActorA::startActor(void)
     }
     wd = inotify_add_watch(fd, "/tmp/test_inotifymon.txt", IN_CLOSE_WRITE);
     printf("Watch descriptor for IN_CLOSE_WRITE for /tmp/test_inotifymon.txt = %d\n", wd);
-    dmon.start_monitoring();
+    dmon.startMonitoring();
     dmon.add(fd);
 }
 
@@ -65,7 +65,7 @@ void ActorA::handleEvent(std::shared_ptr<EvtEndTimer> pevt)
     timers.stopTimer<EvtDelayTimer>();
     inotify_rm_watch(fd, wd);
     dmon.remove(fd);
-    dmon.close_and_reset();
+    dmon.closeAndReset();
     shutdown();
 }
 
@@ -75,7 +75,7 @@ void ActorA::handleEvent(std::shared_ptr<EvtDelayTimer> pevt)
         return;
     printf("ActorA::EvtDelayTimer\n");
     FILE *fp = fopen("/tmp/test_inotifymon.txt", "w");
-    if (fp != NULL)
+    if (fp != nullptr)
     {
         fprintf(fp, "%d\n", n++);
         fclose(fp);
@@ -97,7 +97,7 @@ void ActorA::handleEvent(std::shared_ptr<EvtINotifyReadAvail> pevt)
                                                                   : "something else"));
         printf("File contents of /tmp/test_inotifymon.txt: ");
         FILE *fp = fopen("/tmp/test_inotifymon.txt", "r");
-        if (fp != NULL)
+        if (fp != nullptr)
         {
             int val = 0;
             fscanf(fp, "%d\n", &val);
@@ -121,5 +121,5 @@ void ActorA::handleEvent(std::shared_ptr<EvtINotifyErr> pevt)
         return;
     printf("ActorA::EvtINotifyErr\n");
     timers.stopTimer<EvtDelayTimer>();
-    dmon.close_and_reset();
+    dmon.closeAndReset();
 }

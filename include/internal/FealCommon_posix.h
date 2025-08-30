@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
 
-#ifndef _FEAL_COMMON_POSIX_H
-#define _FEAL_COMMON_POSIX_H
+#ifndef FEAL_COMMON_POSIX_H
+#define FEAL_COMMON_POSIX_H
 
-#ifndef _FEAL_H
+#ifndef FEAL_H
 #error "Please include feal.h and not the other internal Feal header files, to avoid include errors."
 #endif
 
@@ -176,7 +176,7 @@ typedef enum
     FEAL_EXFULL = EXFULL
 #endif
 
-} errenum;
+} errenum_t;
 
 #if defined(__linux__)
 #define FEAL_FDM_ATTRIB IN_ATTRIB,
@@ -219,7 +219,7 @@ typedef union
     struct sockaddr_in in;
     struct sockaddr_in6 in6;
     struct sockaddr_un un;
-} sockaddr_all;
+} sockaddr_all_t;
 
 typedef uint32_t EventId_t;
 typedef uint32_t ActorId_t;
@@ -232,21 +232,21 @@ typedef unsigned int flags_t;
 
 int inet_pton(int af, const char* src, void* dst);
 const char* inet_ntop(int af, const void* src, char* dst, socklen_t size);
-int set_nonblocking(handle_t fd);
-int set_nonblocking(handle_t fd[2]);
-int set_ipv6only(handle_t fd);
-int set_reuseaddr(handle_t fd, bool enable);
+int setNonBlocking(handle_t fd);
+int setNonBlocking(handle_t fd[2]);
+int setIpv6Only(handle_t fd);
+int setReuseAddr(handle_t fd, bool enable);
 int datareadavaillen(handle_t fd);
-feal::errenum getpeereid(feal::handle_t fd, uid_t* euid, gid_t* egid);
-std::string get_addr(sockaddr_all* sa);
-std::string get_port(sockaddr_all* sa);
+feal::errenum_t getpeereid(feal::handle_t fd, uid_t* euid, gid_t* egid);
+std::string getAddr(sockaddr_all_t* sa);
+std::string getPort(sockaddr_all_t* sa);
 
 #if defined(__linux__)
-int epoll_ctl_add(int epfd, handle_t fd, uint32_t events);
-int epoll_ctl_mod(int epfd, handle_t fd, uint32_t events);
-int epoll_ctl_del(int epfd, handle_t fd);
+int epollCtlAdd(int epfd, handle_t fd, uint32_t events);
+int epollCtlMod(int epfd, handle_t fd, uint32_t events);
+int epollCtlDel(int epfd, handle_t fd);
 #endif
 
 }  // namespace feal
 
-#endif  // _FEAL_COMMON_POSIX_H
+#endif  // FEAL_COMMON_POSIX_H

@@ -25,7 +25,7 @@ void Serverund::startActor(void)
 {
     printf("Serverund::startActor\n");
     timers.startTimer<EvtEndTimer>(std::chrono::seconds(15));
-    start_listening();
+    startListening();
 }
 
 void Serverund::pauseActor(void)
@@ -40,17 +40,17 @@ void Serverund::shutdownActor(void)
     printf("Client shutdown complete\n");
 }
 
-void Serverund::start_listening(void)
+void Serverund::startListening(void)
 {
     feal::handle_t fd;
     fd = socket(AF_UNIX, SOCK_DGRAM, 0);
-    feal::sockaddr_all serveraddr;
+    feal::sockaddr_all_t serveraddr;
     memset(&serveraddr, 0, sizeof(serveraddr));
-    feal::errenum se;
+    feal::errenum_t se;
     serveraddr.un.sun_family = AF_UNIX;
     strcpy(serveraddr.un.sun_path, SERVERPATH);
     unlink(SERVERPATH);
-    se = dgram.monitor_sock(fd);
+    se = dgram.monitorSock(fd);
     if (se != feal::FEAL_OK)
     {
         printf("create sock: %d\n", se);
@@ -61,7 +61,7 @@ void Serverund::start_listening(void)
     int ret = bind(fd, &(serveraddr.sa), length);
     if (ret != feal::FEAL_OK)
     {
-        se = static_cast<feal::errenum>(FEAL_GETHANDLEERRNO);
+        se = static_cast<feal::errenum_t>(FEAL_GETHANDLEERRNO);
         printf("bind sock: %d\n", se);
         timers.startTimer<EvtRetryTimer>(std::chrono::seconds(5));
         return;
@@ -75,7 +75,7 @@ void Serverund::handleEvent(std::shared_ptr<EvtEndTimer> pevt)
         return;
     printf("Serverund::EvtEndTimer Elapsed\n");
     timers.stopTimer<EvtRetryTimer>();
-    dgram.close_and_reset();
+    dgram.closeAndReset();
     shutdown();
 }
 
@@ -84,7 +84,7 @@ void Serverund::handleEvent(std::shared_ptr<EvtRetryTimer> pevt)
     if (!pevt)
         return;
     printf("Serverund::EvtRetryTimer\n");
-    start_listening();
+    startListening();
 }
 
 void Serverund::handleEvent(std::shared_ptr<EvtDgramReadAvail> pevt)
@@ -95,10 +95,10 @@ void Serverund::handleEvent(std::shared_ptr<EvtDgramReadAvail> pevt)
     char buf[50];
     int32_t bytes;
     memset(&buf, 0, sizeof(buf));
-    feal::sockaddr_all recvaddr;
+    feal::sockaddr_all_t recvaddr;
     memset(&recvaddr, 0, sizeof(recvaddr));
     socklen_t recvaddr_len;
-    feal::errenum se = dgram.recvfrom((void*)buf, sizeof(buf), &bytes, &recvaddr, &recvaddr_len);
+    feal::errenum_t se = dgram.recvfrom((void*)buf, sizeof(buf), &bytes, &recvaddr, &recvaddr_len);
     if (se != feal::FEAL_OK)
         printf("Error receiving: %d\n", se);
     else
@@ -125,6 +125,6 @@ void Serverund::handleEvent(std::shared_ptr<EvtSockErr> pevt)
         return;
     printf("Serverund::EvtSockErr\n");
     timers.stopTimer<EvtRetryTimer>();
-    dgram.close_and_reset();
-    start_listening();
+    dgram.closeAndReset();
+    startListening();
 }

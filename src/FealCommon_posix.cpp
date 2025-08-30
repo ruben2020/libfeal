@@ -17,7 +17,7 @@ const char *feal::inet_ntop(int af, const void *src, char *dst, socklen_t size)
     return ::inet_ntop(af, src, dst, size);
 }
 
-int feal::set_nonblocking(handle_t fd)
+int feal::setNonBlocking(handle_t fd)
 {
     int flags = fcntl(fd, F_GETFL, 0);
     if (flags == -1)
@@ -25,16 +25,16 @@ int feal::set_nonblocking(handle_t fd)
     return fcntl(fd, F_SETFL, flags | O_NONBLOCK);
 }
 
-int feal::set_nonblocking(handle_t fd[2])
+int feal::setNonBlocking(handle_t fd[2])
 {
     int ret1 = 0;
     int ret2 = 0;
-    ret1 = feal::set_nonblocking(fd[0]);
-    ret2 = feal::set_nonblocking(fd[1]);
+    ret1 = feal::setNonBlocking(fd[0]);
+    ret2 = feal::setNonBlocking(fd[1]);
     return (ret1 < 0 ? ret1 : ret2);
 }
 
-int feal::set_ipv6only(handle_t fd)
+int feal::setIpv6Only(handle_t fd)
 {
     int on = 1;
     if (setsockopt(fd, IPPROTO_IPV6, IPV6_V6ONLY, (char *)&on, sizeof(on)) == -1)
@@ -44,7 +44,7 @@ int feal::set_ipv6only(handle_t fd)
     return 0;
 }
 
-int feal::set_reuseaddr(handle_t fd, bool enable)
+int feal::setReuseAddr(handle_t fd, bool enable)
 {
     int opt = enable ? 1 : 0;
     return setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
@@ -61,9 +61,9 @@ int feal::datareadavaillen(handle_t fd)
     return ret;
 }
 
-feal::errenum feal::getpeereid(feal::handle_t fd, uid_t *euid, gid_t *egid)
+feal::errenum_t feal::getpeereid(feal::handle_t fd, uid_t *euid, gid_t *egid)
 {
-    errenum res = FEAL_OK;
+    errenum_t res = FEAL_OK;
     int ret;
 #if defined(__linux__)
     socklen_t len;
@@ -80,13 +80,13 @@ feal::errenum feal::getpeereid(feal::handle_t fd, uid_t *euid, gid_t *egid)
 #endif
     if (ret == FEAL_HANDLE_ERROR)
     {
-        res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
+        res = static_cast<errenum_t>(FEAL_GETHANDLEERRNO);
         return res;
     }
     return res;
 }
 
-std::string feal::get_addr(sockaddr_all *sa)
+std::string feal::getAddr(sockaddr_all_t *sa)
 {
     char arr[200];
     if (sa == nullptr)
@@ -110,7 +110,7 @@ std::string feal::get_addr(sockaddr_all *sa)
     return std::string(arr);
 }
 
-std::string feal::get_port(sockaddr_all *sa)
+std::string feal::getPort(sockaddr_all_t *sa)
 {
     char arr[10];
     if (sa == nullptr)
@@ -131,7 +131,7 @@ std::string feal::get_port(sockaddr_all *sa)
 }
 
 #if defined(__linux__)
-int feal::epoll_ctl_add(int epfd, handle_t fd, uint32_t events)
+int feal::epollCtlAdd(int epfd, handle_t fd, uint32_t events)
 {
     struct epoll_event ev;
     ev.events = events;
@@ -139,7 +139,7 @@ int feal::epoll_ctl_add(int epfd, handle_t fd, uint32_t events)
     return epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &ev);
 }
 
-int feal::epoll_ctl_mod(int epfd, handle_t fd, uint32_t events)
+int feal::epollCtlMod(int epfd, handle_t fd, uint32_t events)
 {
     struct epoll_event ev;
     ev.events = events;
@@ -147,7 +147,7 @@ int feal::epoll_ctl_mod(int epfd, handle_t fd, uint32_t events)
     return epoll_ctl(epfd, EPOLL_CTL_MOD, fd, &ev);
 }
 
-int feal::epoll_ctl_del(int epfd, handle_t fd)
+int feal::epollCtlDel(int epfd, handle_t fd)
 {
     struct epoll_event ev;
     ev.events = 0;

@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
 
-#ifndef _ACTORA_H
-#define _ACTORA_H
+#ifndef ACTORA_H
+#define ACTORA_H
 
 #include "feal.h"
 
@@ -17,12 +17,12 @@ class ActorA : public feal::Actor
 {
    public:
     ActorA() = default;
-    ~ActorA() = default;
+    ~ActorA() override = default;
 
-    void initActor(void);
-    void startActor(void);
-    void pauseActor(void);
-    void shutdownActor(void);
+    void initActor(void) override;
+    void startActor(void) override;
+    void pauseActor(void) override;
+    void shutdownActor(void) override;
 
     void handleEvent(std::shared_ptr<EvtEndTimer> pevt);
     void handleEvent(std::shared_ptr<EvtDelayTimer> pevt);

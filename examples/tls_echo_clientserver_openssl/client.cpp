@@ -30,8 +30,8 @@ void Client::startActor(void)
 {
     printf("Client::startActor\n");
     timers.startTimer<EvtEndTimer>(std::chrono::seconds(10));
-    if (setup_sslctx() > 0)
-        connect_to_server();
+    if (setupSslctx() > 0)
+        connectToServer();
     else
         shutdown();
 }
@@ -52,21 +52,21 @@ void Client::shutdownActor(void)
     ssl = nullptr;
     bio = nullptr;
     ctx = nullptr;
-    stream.disconnect_and_reset();
+    stream.disconnectAndReset();
     printf("Client shutdown complete\n");
 }
 
-void Client::connect_to_server(void)
+void Client::connectToServer(void)
 {
     feal::handle_t fd;
     fd = socket(AF_INET, SOCK_STREAM, 0);
-    feal::sockaddr_all sall;
+    feal::sockaddr_all_t sall;
     memset(&sall, 0, sizeof(sall));
     sall.in.sin_family = AF_INET;
     sall.in.sin_port = htons(SERVERPORT);
     feal::inet_pton(AF_INET, "127.0.0.1", &(sall.in.sin_addr));
     printf("Trying to connect to 127.0.0.1:%d\n", SERVERPORT);
-    feal::errenum se = stream.connect(fd, &sall, sizeof(sall));
+    feal::errenum_t se = stream.connect(fd, &sall, sizeof(sall));
     if (se != feal::FEAL_OK)
     {
         printf("Error connecting to 127.0.0.1:%d  err %d\n", SERVERPORT, se);
@@ -74,9 +74,9 @@ void Client::connect_to_server(void)
     }
 }
 
-void Client::send_something(void)
+void Client::sendSomething(void)
 {
-    perform_write(1);
+    performWrite(1);
 }
 
 void Client::handleEvent(std::shared_ptr<EvtEndTimer> pevt)
@@ -84,7 +84,7 @@ void Client::handleEvent(std::shared_ptr<EvtEndTimer> pevt)
     if (!pevt)
         return;
     printf("Client::EvtEndTimer Elapsed\n");
-    perform_sslshutdown();
+    performSslshutdown();
 }
 
 void Client::handleEvent(std::shared_ptr<EvtDelayTimer> pevt)
@@ -92,7 +92,7 @@ void Client::handleEvent(std::shared_ptr<EvtDelayTimer> pevt)
     if (!pevt)
         return;
     printf("Client::EvtDelayTimer\n");
-    send_something();
+    sendSomething();
 }
 
 void Client::handleEvent(std::shared_ptr<EvtRetryTimer> pevt)
@@ -100,7 +100,7 @@ void Client::handleEvent(std::shared_ptr<EvtRetryTimer> pevt)
     if (!pevt)
         return;
     printf("Client::EvtRetryTimer\n");
-    connect_to_server();
+    connectToServer();
 }
 
 void Client::handleEvent(std::shared_ptr<EvtConnectedToServer> pevt)
@@ -109,7 +109,8 @@ void Client::handleEvent(std::shared_ptr<EvtConnectedToServer> pevt)
         return;
     printf("Client::EvtConnectedToServer\n");
     bio = BIO_new_socket(pevt->fd, BIO_NOCLOSE);
-    if ((ssl = SSL_new(ctx)) == NULL)
+    ssl = SSL_new(ctx);
+    if (ssl == nullptr)
     {
         printf("Error creating SSL handle for new connection");
         BIO_free(bio);
@@ -119,7 +120,7 @@ void Client::handleEvent(std::shared_ptr<EvtConnectedToServer> pevt)
     SSL_set_connect_state(ssl);
     SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);
     SSL_set_read_ahead(ssl, 1);
-    perform_sslconnect();
+    performSslconnect();
 }
 
 void Client::handleEvent(std::shared_ptr<EvtDataReadAvail> pevt)
@@ -129,15 +130,15 @@ void Client::handleEvent(std::shared_ptr<EvtDataReadAvail> pevt)
     printf("Client::EvtDataReadAvail\n");
     if (sslconnect_pending)
     {
-        perform_sslconnect();
+        performSslconnect();
     }
     else if (sslwrite_want_read)
     {
-        perform_write(1);
+        performWrite(1);
     }
     else
     {
-        perform_read();
+        performRead();
     }
 }
 
@@ -148,20 +149,20 @@ void Client::handleEvent(std::shared_ptr<EvtDataWriteAvail> pevt)
     printf("Client::EvtDataWriteAvail\n");
     if (sslconnect_pending)
     {
-        perform_sslconnect();
+        performSslconnect();
         return;
     }
     if (sslread_want_write)
     {
-        perform_read();
+        performRead();
     }
     if (sslwrite_want_write)
     {
-        perform_write(1);
+        performWrite(1);
     }
     else
     {
-        perform_write(0);
+        performWrite(0);
     }
 }
 
@@ -171,7 +172,7 @@ void Client::handleEvent(std::shared_ptr<EvtConnectionShutdown> pevt)
         return;
     printf("Client::EvtConnectionShutdown\n");
     timers.stopTimer<EvtDelayTimer>();
-    stream.disconnect_and_reset();
+    stream.disconnectAndReset();
     if (ssl)
         SSL_free(ssl);
     ssl = nullptr;
@@ -185,10 +186,10 @@ void Client::handleEvent(std::shared_ptr<EvtSigInt> pevt)
         return;
     printf("Client::EvtSigInt (signum=%d, sicode=%d)\n", pevt.get()->signo, pevt.get()->sicode);
     timers.stopTimer<EvtEndTimer>();
-    perform_sslshutdown();
+    performSslshutdown();
 }
 
-int Client::perform_sslconnect(void)
+int Client::performSslconnect(void)
 {
     int ret;
     sslconnect_pending = false;
@@ -223,12 +224,12 @@ int Client::perform_sslconnect(void)
     else
     {
         printf("SSL handshake with server successfully completed!\n ");
-        send_something();
+        sendSomething();
     }
     return ret;
 }
 
-int Client::perform_read(void)
+int Client::performRead(void)
 {
     printf("perform_read\n");
     if (ssl == nullptr)
@@ -261,19 +262,19 @@ int Client::perform_read(void)
         else if (SSL_get_error(ssl, ret) == SSL_ERROR_ZERO_RETURN)
         {
             printf("SSL_read_ex error SSL_ERROR_ZERO_RETURN\n");
-            perform_sslshutdown();
+            performSslshutdown();
         }
         else
         {
             printf("Fatal error doing SSL_read_ex\n");
-            perform_sslshutdown();
+            performSslshutdown();
             shutdown();
         }
     }
     return ret;
 }
 
-int Client::perform_write(int num)
+int Client::performWrite(int num)
 {
     printf("perform_write(%d)\n", num);
     if (sslshutdown_pending || sslshutdown_complete)
@@ -319,14 +320,14 @@ int Client::perform_write(int num)
         else
         {
             printf("Fatal error doing SSL_write_ex\n");
-            perform_sslshutdown();
+            performSslshutdown();
             shutdown();
         }
     }
     return ret;
 }
 
-int Client::perform_sslshutdown(void)
+int Client::performSslshutdown(void)
 {
     int ret;
     if (ssl == nullptr)
@@ -356,7 +357,7 @@ int Client::perform_sslshutdown(void)
     return ret;
 }
 
-int Client::setup_sslctx(void)
+int Client::setupSslctx(void)
 {
     // Source code copied from:
     // https://github.com/openssl/openssl/blob/master/demos/guide/tls-client-block.c
@@ -374,7 +375,7 @@ int Client::setup_sslctx(void)
         printf("Failed to set the minimum TLS protocol version\n");
         return -1;
     }
-    SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, NULL);
+    SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, nullptr);
 
     if (SSL_CTX_load_verify_file(ctx, "server.crt") <= 0)
     {

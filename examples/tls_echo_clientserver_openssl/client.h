@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
 
-#ifndef _CLIENT_H
-#define _CLIENT_H
+#ifndef CLIENT_H
+#define CLIENT_H
 
 #include <openssl/bio.h>
 #include <openssl/ssl.h>
@@ -24,12 +24,12 @@ class Client : public feal::Actor
 {
    public:
     Client() = default;
-    ~Client() = default;
+    ~Client() override = default;
 
-    void initActor(void);
-    void startActor(void);
-    void pauseActor(void);
-    void shutdownActor(void);
+    void initActor(void) override;
+    void startActor(void) override;
+    void pauseActor(void) override;
+    void shutdownActor(void) override;
 
     void handleEvent(std::shared_ptr<EvtEndTimer> pevt);
     void handleEvent(std::shared_ptr<EvtDelayTimer> pevt);
@@ -44,7 +44,7 @@ class Client : public feal::Actor
     feal::Timers<Client> timers;
     feal::Stream<Client> stream;
     feal::Signal<Client> signal;
-    virtual void connect_to_server(void);
+    virtual void connectToServer(void);
 
    private:
     int n = 0;
@@ -59,12 +59,12 @@ class Client : public feal::Actor
     bool sslshutdown_pending = false;
     bool sslshutdown_complete = false;
 
-    int setup_sslctx(void);
-    void send_something(void);
-    int perform_sslconnect(void);
-    int perform_read(void);
-    int perform_write(int num);
-    int perform_sslshutdown(void);
+    int setupSslctx(void);
+    void sendSomething(void);
+    int performSslconnect(void);
+    int performRead(void);
+    int performWrite(int num);
+    int performSslshutdown(void);
 };
 
 #endif  // _CLIENT_H

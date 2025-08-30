@@ -4,7 +4,8 @@
 //
 
 #include <curl/curl.h>
-#include <stdio.h>
+
+#include <cstdio>
 
 #include "ActorA.h"
 
@@ -14,7 +15,7 @@ int main(void)
     std::shared_ptr<feal::Actor> curlmulti1 = std::make_shared<ActorA>();
     curlmulti1.get()->init();
     curlmulti1.get()->start();
-    curlmulti1.get()->wait_for_shutdown();
+    curlmulti1.get()->waitForShutdown();
     feal::EventBus::getInstance().destroyInstance();
     printf("curlmulti terminating program\n");
     return 0;

@@ -10,21 +10,21 @@
 
 #define SERVERPORT 56002
 
-void Server6::start_listening(void)
+void Server6::startListening(void)
 {
     feal::handle_t fd;
     fd = socket(AF_INET6, SOCK_DGRAM, 0);
-    feal::set_ipv6only(fd);
-    feal::sockaddr_all sall;
+    feal::setIpv6Only(fd);
+    feal::sockaddr_all_t sall;
     memset(&sall, 0, sizeof(sall));
     sall.in6.sin6_family = AF_INET6;
     sall.in6.sin6_port = htons(SERVERPORT);
     feal::inet_pton(AF_INET6, "::1", &(sall.in6.sin6_addr));
-    feal::errenum se;
-    se = dgram.monitor_sock(fd);
+    feal::errenum_t se;
+    se = dgram.monitorSock(fd);
     if (se != feal::FEAL_OK)
     {
-        se = static_cast<feal::errenum>(FEAL_GETHANDLEERRNO);
+        se = static_cast<feal::errenum_t>(FEAL_GETHANDLEERRNO);
         printf("Err create sock: %d\n", se);
         timers.startTimer<EvtRetryTimer>(std::chrono::seconds(5));
         return;
@@ -32,7 +32,7 @@ void Server6::start_listening(void)
     int ret = bind(fd, &(sall.sa), sizeof(sall));
     if (ret != feal::FEAL_OK)
     {
-        se = static_cast<feal::errenum>(FEAL_GETHANDLEERRNO);
+        se = static_cast<feal::errenum_t>(FEAL_GETHANDLEERRNO);
         printf("Err bind sock: %d\n", se);
         timers.startTimer<EvtRetryTimer>(std::chrono::seconds(5));
         return;

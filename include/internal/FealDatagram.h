@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
 
-#ifndef _FEAL_DATAGRAM_H
-#define _FEAL_DATAGRAM_H
+#ifndef FEAL_DATAGRAM_H
+#define FEAL_DATAGRAM_H
 
-#ifndef _FEAL_H
+#ifndef FEAL_H
 #error "Please include feal.h and not the other internal Feal header files, to avoid include errors."
 #endif
 
@@ -19,16 +19,16 @@ class DatagramGeneric : public Tool
     DatagramGeneric() = default;
     DatagramGeneric(const DatagramGeneric&) = default;
     DatagramGeneric& operator=(const DatagramGeneric&) = default;
-    ~DatagramGeneric() = default;
+    ~DatagramGeneric() override = default;
 
-    void shutdownTool(void);
+    void shutdownTool(void) override;
 
-    errenum monitor_sock(handle_t fd);
-    errenum recvfrom(void* buf, uint32_t len, int32_t* bytes, sockaddr_all* addr,
-                     socklen_t* addrlen);
-    errenum sendto(void* buf, uint32_t len, int32_t* bytes, const sockaddr_all* dest,
-                   socklen_t destlen, bool confirm = false);
-    errenum close_and_reset(void);
+    errenum_t monitorSock(handle_t fd);
+    errenum_t recvfrom(void* buf, uint32_t len, int32_t* bytes, sockaddr_all_t* addr,
+                       socklen_t* addrlen);
+    errenum_t sendto(void* buf, uint32_t len, int32_t* bytes, const sockaddr_all_t* dest,
+                     socklen_t destlen, bool confirm = false);
+    errenum_t closeAndReset(void);
 
    protected:
     std::thread datagramThread;
@@ -48,18 +48,18 @@ class DatagramGeneric : public Tool
     int kq = -1;
 #endif
 
-    virtual void receiveEventReadAvail(errenum errnum, handle_t fd, int datalen);
-    virtual void receiveEventWriteAvail(errenum errnum, handle_t fd, int datalen);
-    virtual void receiveEventSockErr(errenum errnum, handle_t fd, int datalen);
+    virtual void receiveEventReadAvail(errenum_t errnum, handle_t fd, int datalen);
+    virtual void receiveEventWriteAvail(errenum_t errnum, handle_t fd, int datalen);
+    virtual void receiveEventSockErr(errenum_t errnum, handle_t fd, int datalen);
 
    private:
     static void dgramLoopLauncher(DatagramGeneric* p);
     void dgramLoop(void);
-    void do_send_avail_notify(void);
-    void close_sock(void);
-    void sock_error(void);
-    void sock_read_avail(void);
-    void sock_write_avail(void);
+    void doSendAvailNotify(void);
+    void closeSock(void);
+    void sockError(void);
+    void sockReadAvail(void);
+    void sockWriteAvail(void);
 };
 
 template <typename Y>
@@ -69,7 +69,7 @@ class Datagram : public DatagramGeneric
     Datagram() = default;
     Datagram(const Datagram&) = default;
     Datagram& operator=(const Datagram&) = default;
-    ~Datagram() = default;
+    ~Datagram() override = default;
 
     void init(Y* p)
     {
@@ -105,7 +105,7 @@ class Datagram : public DatagramGeneric
     }
 
    protected:
-    void receiveEventReadAvail(errenum errnum, handle_t fd, int datalen)
+    void receiveEventReadAvail(errenum_t errnum, handle_t fd, int datalen) override
     {
         if (evtread.get())
         {
@@ -121,7 +121,7 @@ class Datagram : public DatagramGeneric
             printf("No subscription using Datagram::subscribeReadAvail\n");
     }
 
-    void receiveEventWriteAvail(errenum errnum, handle_t fd, int datalen)
+    void receiveEventWriteAvail(errenum_t errnum, handle_t fd, int datalen) override
     {
         if (evtwrite.get())
         {
@@ -137,7 +137,7 @@ class Datagram : public DatagramGeneric
             printf("No subscription using Datagram::subscribeWriteAvail\n");
     }
 
-    void receiveEventSockErr(errenum errnum, handle_t fd, int datalen)
+    void receiveEventSockErr(errenum_t errnum, handle_t fd, int datalen) override
     {
         if (evterrsock.get())
         {
@@ -162,4 +162,4 @@ class Datagram : public DatagramGeneric
 
 }  // namespace feal
 
-#endif  // _FEAL_DATAGRAM_H
+#endif  // FEAL_DATAGRAM_H

@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
 
-#ifndef _CLIENTUNS_H
-#define _CLIENTUNS_H
+#ifndef CLIENTUNS_H
+#define CLIENTUNS_H
 
 #include "client.h"
 #include "feal.h"
@@ -13,10 +13,10 @@ class Clientuns : public Client
 {
    public:
     Clientuns() = default;
-    ~Clientuns() = default;
+    ~Clientuns() override = default;
 
    protected:
-    void connect_to_server(void);
+    void connectToServer(void) override;
 };
 
 #endif  // _CLIENTUNS_H

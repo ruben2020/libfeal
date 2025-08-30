@@ -10,18 +10,18 @@
 
 #define SERVERPORT 58103
 
-void Client6::connect_to_server(void)
+void Client6::connectToServer(void)
 {
     feal::handle_t fd;
     fd = socket(AF_INET6, SOCK_STREAM, 0);
-    feal::set_ipv6only(fd);
-    feal::sockaddr_all sall;
+    feal::setIpv6Only(fd);
+    feal::sockaddr_all_t sall;
     memset(&sall, 0, sizeof(sall));
     sall.in6.sin6_family = AF_INET6;
     sall.in6.sin6_port = htons(SERVERPORT);
     feal::inet_pton(AF_INET6, "::1", &(sall.in6.sin6_addr));
     printf("Trying to connect to ::1:%d\n", SERVERPORT);
-    feal::errenum se = stream.connect(fd, &sall, sizeof(sall));
+    feal::errenum_t se = stream.connect(fd, &sall, sizeof(sall));
     if (se != feal::FEAL_OK)
     {
         printf("Error connecting to ::1:%d  err %d\n", SERVERPORT, se);

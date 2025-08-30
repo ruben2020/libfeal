@@ -25,7 +25,7 @@ void Fiforeader::startActor(void)
 {
     printf("Fiforeader::startActor\n");
     timers.startTimer<EvtEndTimer>(std::chrono::seconds(10));
-    open_for_reading();
+    openForReading();
 }
 
 void Fiforeader::pauseActor(void)
@@ -40,9 +40,9 @@ void Fiforeader::shutdownActor(void)
     printf("Client shutdown complete\n");
 }
 
-void Fiforeader::open_for_reading(void)
+void Fiforeader::openForReading(void)
 {
-    feal::errenum res = feal::FEAL_OK;
+    feal::errenum_t res = feal::FEAL_OK;
     res = reader.open(FIFOPATH);
     if (res != feal::FEAL_OK)
     {
@@ -57,7 +57,7 @@ void Fiforeader::handleEvent(std::shared_ptr<EvtEndTimer> pevt)
         return;
     printf("Fiforeader::EvtEndTimer Elapsed\n");
     timers.stopTimer<EvtRetryTimer>();
-    reader.close_and_reset();
+    reader.closeAndReset();
     shutdown();
 }
 
@@ -66,7 +66,7 @@ void Fiforeader::handleEvent(std::shared_ptr<EvtRetryTimer> pevt)
     if (!pevt)
         return;
     printf("Fiforeader::EvtRetryTimer\n");
-    open_for_reading();
+    openForReading();
 }
 
 void Fiforeader::handleEvent(std::shared_ptr<EvtFifoRead> pevt)
@@ -78,7 +78,7 @@ void Fiforeader::handleEvent(std::shared_ptr<EvtFifoRead> pevt)
            pevt.get()->datalen);
     if (pevt.get()->errnum != feal::FEAL_OK)
     {
-        open_for_reading();
+        openForReading();
         return;
     }
     printf("Data available for reading: %d\n", pevt.get()->datalen);

@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
 
-#ifndef _SERVER_H
-#define _SERVER_H
+#ifndef SERVER_H
+#define SERVER_H
 
 #include <openssl/bio.h>
 #include <openssl/ssl.h>
@@ -25,12 +25,12 @@ class Server : public feal::Actor
 {
    public:
     Server() = default;
-    ~Server() = default;
+    ~Server() override = default;
 
-    virtual void initActor(void);
-    virtual void startActor(void);
-    virtual void pauseActor(void);
-    virtual void shutdownActor(void);
+    void initActor(void) override;
+    void startActor(void) override;
+    void pauseActor(void) override;
+    void shutdownActor(void) override;
 
     void handleEvent(std::shared_ptr<EvtEndTimer> pevt);
     void handleEvent(std::shared_ptr<EvtRetryTimer> pevt);
@@ -43,15 +43,15 @@ class Server : public feal::Actor
     feal::Timers<Server> timers;
     feal::Stream<Server> stream;
     feal::Signal<Server> signal;
-    virtual void start_server(void);
-    virtual void print_client_address(feal::handle_t fd);
-    virtual void get_client_address(feal::handle_t fd, char* addr, int addrbuflen);
+    virtual void startServer(void);
+    virtual void printClientAddress(feal::handle_t fd);
+    virtual void getClientAddress(feal::handle_t fd, char* addr, int addrbuflen);
 
    private:
     std::map<feal::handle_t, std::shared_ptr<ClientHandler>> mapch;
     SSL_CTX* ctx = nullptr;
 
-    int setup_sslctx(void);
+    int setupSslctx(void);
 };
 
 #endif  // _SERVER_H

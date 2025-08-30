@@ -123,14 +123,14 @@ void ActorA::externalcommand(std::string cmdstr,
     char buf[100];
     FILE* fp;
     fp = popen(cmdstr.c_str(), "r");
-    if (fp == NULL)
+    if (fp == nullptr)
     {
         result = "popen error\n";
         sp.get()->str = result;
     }
     else
     {
-        while (fgets(buf, sizeof(buf), fp) != NULL)
+        while (fgets(buf, sizeof(buf), fp) != nullptr)
         {
             result += buf;
         }

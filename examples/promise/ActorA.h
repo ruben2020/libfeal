@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
 
-#ifndef _FEAL_ACTOR_A_H
-#define _FEAL_ACTOR_A_H
+#ifndef FEAL_ACTOR_A_H
+#define FEAL_ACTOR_A_H
 
 #include "feal.h"
 
@@ -14,7 +14,7 @@ class EvtAccPromiseComplete : public feal::Event
     EvtAccPromiseComplete() = default;
     EvtAccPromiseComplete(const EvtAccPromiseComplete&) = default;
     EvtAccPromiseComplete& operator=(const EvtAccPromiseComplete&) = default;
-    ~EvtAccPromiseComplete() = default;
+    ~EvtAccPromiseComplete() override = default;
     int total = 0;
 };
 
@@ -24,7 +24,7 @@ class EvtPopenPromiseComplete : public feal::Event
     EvtPopenPromiseComplete() = default;
     EvtPopenPromiseComplete(const EvtPopenPromiseComplete&) = default;
     EvtPopenPromiseComplete& operator=(const EvtPopenPromiseComplete&) = default;
-    ~EvtPopenPromiseComplete() = default;
+    ~EvtPopenPromiseComplete() override = default;
     std::string str;
 };
 
@@ -32,12 +32,12 @@ class ActorA : public feal::Actor
 {
    public:
     ActorA() = default;
-    ~ActorA() = default;
+    ~ActorA() override = default;
 
-    void initActor(void);
-    void startActor(void);
-    void pauseActor(void);
-    void shutdownActor(void);
+    void initActor(void) override;
+    void startActor(void) override;
+    void pauseActor(void) override;
+    void shutdownActor(void) override;
 
     void handleEvent(std::shared_ptr<EvtAccPromiseComplete> pevt);
     void handleEvent(std::shared_ptr<EvtPopenPromiseComplete> pevt);
@@ -61,4 +61,4 @@ class ActorA : public feal::Actor
                          std::promise<std::shared_ptr<EvtPopenPromiseComplete>> prom);
 };
 
-#endif  // _FEAL_ACTOR_A_H
+#endif  // FEAL_ACTOR_A_H

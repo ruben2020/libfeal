@@ -5,7 +5,7 @@
 
 #include "clienthandler.h"
 
-#include <stdio.h>
+#include <cstdio>
 
 #include "feal.h"
 #include "server.h"
@@ -27,7 +27,7 @@ void ClientHandler::initActor(void)
 void ClientHandler::startActor(void)
 {
     printf("ClientHandler(%lld)::startActor\n", (long long int)sockfd);
-    feal::errenum se = feal::FEAL_OK;
+    feal::errenum_t se = feal::FEAL_OK;
     if (stream)
         se = stream->registerClient<ClientHandler, EvtDataReadAvail, EvtDataWriteAvail,
                                     EvtClientShutdown>(this, sockfd);
@@ -45,7 +45,7 @@ void ClientHandler::pauseActor(void)
 void ClientHandler::shutdownActor(void)
 {
     printf("ClientHandler(%lld)::shutdownActor\n", (long long int)sockfd);
-    stream->disconnect_client(sockfd);
+    stream->disconnectClient(sockfd);
 }
 
 void ClientHandler::handleEvent(std::shared_ptr<EvtDataReadAvail> pevt)
@@ -56,7 +56,7 @@ void ClientHandler::handleEvent(std::shared_ptr<EvtDataReadAvail> pevt)
     char buf[30];
     memset(&buf, 0, sizeof(buf));
     int32_t bytes;
-    feal::errenum se = stream->recv((void*)buf, sizeof(buf), &bytes, sockfd);
+    feal::errenum_t se = stream->recv((void*)buf, sizeof(buf), &bytes, sockfd);
     if (se != feal::FEAL_OK)
         printf("Error receiving: %d\n", se);
     else

@@ -93,7 +93,7 @@ bool feal::Actor::isActive(void)
     return (threadValid && threadRunning);
 }
 
-void feal::Actor::wait_for_shutdown(void)
+void feal::Actor::waitForShutdown(void)
 {
     std::unique_lock<std::mutex> ulk(mtxWaitShutdown);
     cvWaitShutdown.wait(ulk);

@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
 
-#ifndef _FEAL_COMMON_H
-#define _FEAL_COMMON_H
+#ifndef FEAL_COMMON_H
+#define FEAL_COMMON_H
 
-#ifndef _FEAL_H
+#ifndef FEAL_H
 #error "Please include feal.h and not the other internal Feal header files, to avoid include errors."
 #endif
 
@@ -21,4 +21,4 @@
 #error "Unsupported operating system"
 #endif
 
-#endif  // _FEAL_COMMON_H
+#endif  // FEAL_COMMON_H

@@ -30,16 +30,16 @@ void feal::BaseSignal::win_sighandler(int sig)
 #elif defined(__APPLE__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || \
         defined(__DragonFly__) || defined(__linux__)
 
-int feal::BaseSignal::do_registersignal(int signum)
+int feal::BaseSignal::doRegistersignal(int signum)
 {
     struct sigaction sa;
-    sa.sa_sigaction = &posix_sighandler;
+    sa.sa_sigaction = &posixSighandler;
     sigemptyset(&(sa.sa_mask));
     sa.sa_flags = (SA_RESTART | SA_SIGINFO | (signum == SIGCHLD ? SA_NOCLDSTOP : 0));
     return sigaction(signum, &sa, nullptr);
 }
 
-int feal::BaseSignal::do_deregistersignal(int signum)
+int feal::BaseSignal::doDeregistersignal(int signum)
 {
     struct sigaction sa;
     sa.sa_handler = SIG_DFL;  // go back to default
@@ -48,7 +48,7 @@ int feal::BaseSignal::do_deregistersignal(int signum)
     return sigaction(signum, &sa, nullptr);
 }
 
-void feal::BaseSignal::posix_sighandler(int sig, siginfo_t *info, void *ucontext)
+void feal::BaseSignal::posixSighandler(int sig, siginfo_t *info, void *ucontext)
 {
     (void)ucontext;
     int sicode = -1;

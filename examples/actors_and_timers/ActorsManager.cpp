@@ -5,7 +5,7 @@
 
 #include "ActorsManager.h"
 
-#include <stdio.h>
+#include <cstdio>
 
 #include "ActorA.h"
 #include "ActorB.h"

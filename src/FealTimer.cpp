@@ -96,7 +96,7 @@ void feal::Timer::finalizeTimer(void)
     timerEvent.reset();
 }
 
-void feal::Timer::setTimerEvent(std::shared_ptr<Event> timEvt)
+void feal::Timer::setTimerEvent(std::shared_ptr<Event> tim_evt)
 {
-    timerEvent = timEvt;
+    timerEvent = tim_evt;
 }

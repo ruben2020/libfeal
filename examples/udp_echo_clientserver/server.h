@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
 
-#ifndef _SERVER_H
-#define _SERVER_H
+#ifndef SERVER_H
+#define SERVER_H
 
 #include "feal.h"
 
@@ -18,12 +18,12 @@ class Server : public feal::Actor
 {
    public:
     Server() = default;
-    ~Server() = default;
+    ~Server() override = default;
 
-    void initActor(void);
-    void startActor(void);
-    void pauseActor(void);
-    void shutdownActor(void);
+    void initActor(void) override;
+    void startActor(void) override;
+    void pauseActor(void) override;
+    void shutdownActor(void) override;
 
     void handleEvent(std::shared_ptr<EvtEndTimer> pevt);
     void handleEvent(std::shared_ptr<EvtRetryTimer> pevt);
@@ -34,7 +34,7 @@ class Server : public feal::Actor
    protected:
     feal::Timers<Server> timers;
     feal::Datagram<Server> dgram;
-    virtual void start_listening(void);
+    virtual void startListening(void);
 
    private:
 };

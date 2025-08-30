@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
 
-#ifndef _CLIENT_H
-#define _CLIENT_H
+#ifndef CLIENT_H
+#define CLIENT_H
 
 #include "feal.h"
 
@@ -21,12 +21,12 @@ class Client : public feal::Actor
 {
    public:
     Client() = default;
-    ~Client() = default;
+    ~Client() override = default;
 
-    void initActor(void);
-    void startActor(void);
-    void pauseActor(void);
-    void shutdownActor(void);
+    void initActor(void) override;
+    void startActor(void) override;
+    void pauseActor(void) override;
+    void shutdownActor(void) override;
 
     void handleEvent(std::shared_ptr<EvtEndTimer> pevt);
     void handleEvent(std::shared_ptr<EvtDelayTimer> pevt);
@@ -41,12 +41,12 @@ class Client : public feal::Actor
     feal::Timers<Client> timers;
     feal::Stream<Client> stream;
     feal::Signal<Client> signal;
-    virtual void connect_to_server(void);
+    virtual void connectToServer(void);
 
    private:
     int n = 0;
 
-    void send_something(void);
+    void sendSomething(void);
 };
 
 #endif  // _CLIENT_H

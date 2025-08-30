@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
 
-#ifndef _FEAL_ACTOR_VECTOR_H
-#define _FEAL_ACTOR_VECTOR_H
+#ifndef FEAL_ACTOR_VECTOR_H
+#define FEAL_ACTOR_VECTOR_H
 
-#ifndef _FEAL_H
+#ifndef FEAL_H
 #error "Please include feal.h and not the other internal Feal header files, to avoid include errors."
 #endif
 
@@ -30,4 +30,4 @@ void receiveEventAll(actor_vec_t& vec, std::shared_ptr<Event> pevt);
 
 }  // namespace feal
 
-#endif  // _FEAL_ACTOR_VECTOR_H
+#endif  // FEAL_ACTOR_VECTOR_H

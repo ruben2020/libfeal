@@ -24,7 +24,7 @@ void feal::EventBus::destroyInstance(void)
     inst = nullptr;
 }
 
-feal::EventBus::~EventBus() {}
+feal::EventBus::~EventBus() = default;
 
 void feal::EventBus::subscribeEvent(const std::type_index& evtid, feal::actorptr_t ptr)
 {

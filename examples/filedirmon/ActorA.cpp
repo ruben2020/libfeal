@@ -5,9 +5,8 @@
 
 #include "ActorA.h"
 
-#include <stdlib.h>
-
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 
 #if defined(_WIN32)
@@ -33,18 +32,18 @@ void ActorA::startActor(void)
     timers.startTimer<EvtEndTimer>(std::chrono::seconds(10));
     timers.startTimer<EvtDelayTimer>(std::chrono::seconds(2));
     FILE *fp = fopen(FILETOMONITOR1, "w");
-    if (fp != NULL)
+    if (fp != nullptr)
     {
         fprintf(fp, "%d\n", n++);
         fclose(fp);
     }
     fp = fopen(FILETOMONITOR2, "w");
-    if (fp != NULL)
+    if (fp != nullptr)
     {
         fprintf(fp, "%d\n", 99 + n);
         fclose(fp);
     }
-    fdmon.start_monitoring();
+    fdmon.startMonitoring();
     fdmon.add(FILETOMONITOR1, FEAL_FDM_CLOSE_WRITE, &wnum1);
     fdmon.add(FILETOMONITOR2, FEAL_FDM_CLOSE_WRITE, &wnum2);
 }
@@ -69,7 +68,7 @@ void ActorA::handleEvent(std::shared_ptr<EvtEndTimer> pevt)
     timers.stopTimer<EvtDelayTimer>();
     fdmon.remove(wnum1);
     fdmon.remove(wnum2);
-    fdmon.close_and_reset();
+    fdmon.closeAndReset();
     shutdown();
 }
 
@@ -79,13 +78,13 @@ void ActorA::handleEvent(std::shared_ptr<EvtDelayTimer> pevt)
         return;
     printf("ActorA::EvtDelayTimer\n");
     FILE *fp = fopen(FILETOMONITOR1, "w");
-    if (fp != NULL)
+    if (fp != nullptr)
     {
         fprintf(fp, "%d\n", n++);
         fclose(fp);
     }
     fp = fopen(FILETOMONITOR2, "w");
-    if (fp != NULL)
+    if (fp != nullptr)
     {
         fprintf(fp, "%d\n", 99 + n);
         fclose(fp);
@@ -99,13 +98,13 @@ void ActorA::handleEvent(std::shared_ptr<EvtFDMReadAvail> pevt)
         return;
     printf("ActorA::EvtFDMReadAvail\n");
     std::string fn;
-    fn = fdmon.get_filepath(pevt->fd);
+    fn = fdmon.getFilepath(pevt->fd);
     printf("filedirmon event for file %s for event %s\n", fn.c_str(),
            (pevt->flags && FEAL_FDM_CLOSE_WRITE == FEAL_FDM_CLOSE_WRITE ? "FEAL_FDM_CLOSE_WRITE"
                                                                         : "something else"));
     printf("File contents of %s: ", fn.c_str());
     FILE *fp = fopen(fn.c_str(), "r");
-    if (fp != NULL)
+    if (fp != nullptr)
     {
         int val = 0;
         fscanf(fp, "%d\n", &val);
@@ -120,5 +119,5 @@ void ActorA::handleEvent(std::shared_ptr<EvtFDMErr> pevt)
         return;
     printf("ActorA::EvtFDMErr\n");
     timers.stopTimer<EvtDelayTimer>();
-    fdmon.close_and_reset();
+    fdmon.closeAndReset();
 }

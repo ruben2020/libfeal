@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
 
-#ifndef _FEAL_TIMERS_H
-#define _FEAL_TIMERS_H
+#ifndef FEAL_TIMERS_H
+#define FEAL_TIMERS_H
 
-#ifndef _FEAL_H
+#ifndef FEAL_H
 #error "Please include feal.h and not the other internal Feal header files, to avoid include errors."
 #endif
 
@@ -24,7 +24,7 @@ class Timers : public Tool
 {
    public:
     Timers() = default;
-    virtual ~Timers() = default;
+    ~Timers() override = default;
 
     void init(Y* p)
     {
@@ -32,7 +32,7 @@ class Timers : public Tool
         p->addTool(this);
     }
 
-    void shutdownTool(void)
+    void shutdownTool(void) override
     {
         finalizeAllTimers();
     }
@@ -170,4 +170,4 @@ class Timers : public Tool
 
 }  // namespace feal
 
-#endif  // _FEAL_TIMERS_H
+#endif  // FEAL_TIMERS_H

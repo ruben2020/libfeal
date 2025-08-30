@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
 
-#ifndef _FEAL_STREAM_H
-#define _FEAL_STREAM_H
+#ifndef FEAL_STREAM_H
+#define FEAL_STREAM_H
 
-#ifndef _FEAL_H
+#ifndef FEAL_H
 #error "Please include feal.h and not the other internal Feal header files, to avoid include errors."
 #endif
 
@@ -25,7 +25,7 @@ typedef struct
     std::shared_ptr<EventComm> evtclientreadavail;
     std::shared_ptr<EventComm> evtclientwriteavail;
     std::shared_ptr<EventComm> evtclientshutdown;
-} clientst;
+} clientst_t;
 
 class StreamGeneric : public BaseStream
 {
@@ -33,42 +33,42 @@ class StreamGeneric : public BaseStream
     StreamGeneric() = default;
     StreamGeneric(const StreamGeneric&) = default;
     StreamGeneric& operator=(const StreamGeneric&) = default;
-    ~StreamGeneric() = default;
+    ~StreamGeneric() override = default;
 
-    void shutdownTool(void);
+    void shutdownTool(void) override;
 
-    errenum connect(handle_t fd, const sockaddr_all* addr, socklen_t addrlen);
-    errenum listen(handle_t fd, int backlog = 32);
-    errenum recv(void* buf, uint32_t len, int32_t* bytes, handle_t fd = FEAL_INVALID_HANDLE);
-    errenum send(void* buf, uint32_t len, int32_t* bytes, handle_t fd = FEAL_INVALID_HANDLE);
-    errenum disconnect_client(handle_t client_sockfd);
-    errenum disconnect_and_reset(void);
+    errenum_t connect(handle_t fd, const sockaddr_all_t* addr, socklen_t addrlen);
+    errenum_t listen(handle_t fd, int backlog = 32);
+    errenum_t recv(void* buf, uint32_t len, int32_t* bytes, handle_t fd = FEAL_INVALID_HANDLE);
+    errenum_t send(void* buf, uint32_t len, int32_t* bytes, handle_t fd = FEAL_INVALID_HANDLE);
+    errenum_t disconnectClient(handle_t client_sockfd);
+    errenum_t disconnectAndReset(void);
 
    protected:
     std::thread serverThread;
     std::thread connectThread;
-    std::map<handle_t, clientst> mapReaders;
+    std::map<handle_t, clientst_t> mapReaders;
 
     static void serverLoopLauncher(StreamGeneric* p);
     static void connectLoopLauncher(StreamGeneric* p);
 
-    int accept_new_conn(void);
-    void client_read_avail(handle_t client_sockfd);
-    void client_write_avail(handle_t client_sockfd);
-    void client_shutdown(handle_t client_sockfd);
-    void server_shutdown(void);
-    void connected_to_server(handle_t fd);
-    void connection_read_avail(void);
-    void connection_write_avail(void);
-    void connection_shutdown(void);
+    int acceptNewConn(void) override;
+    void clientReadAvail(handle_t client_sockfd) override;
+    void clientWriteAvail(handle_t client_sockfd) override;
+    void clientShutdown(handle_t client_sockfd) override;
+    void serverShutdown(void) override;
+    void connectedToServer(handle_t fd) override;
+    void connectionReadAvail(void) override;
+    void connectionWriteAvail(void) override;
+    void connectionShutdown(void) override;
 
-    virtual void receiveEventIncomingConn(errenum errnum, handle_t fd, int datalen);
-    virtual void receiveEventReadAvail(errenum errnum, handle_t fd, int datalen);
-    virtual void receiveEventWriteAvail(errenum errnum, handle_t fd, int datalen);
-    virtual void receiveEventClientShutdown(errenum errnum, handle_t fd, int datalen);
-    virtual void receiveEventServerShutdown(errenum errnum, handle_t fd, int datalen);
-    virtual void receiveEventConnectedToServer(errenum errnum, handle_t fd, int datalen);
-    virtual void receiveEventConnectionShutdown(errenum errnum, handle_t fd, int datalen);
+    virtual void receiveEventIncomingConn(errenum_t errnum, handle_t fd, int datalen);
+    virtual void receiveEventReadAvail(errenum_t errnum, handle_t fd, int datalen);
+    virtual void receiveEventWriteAvail(errenum_t errnum, handle_t fd, int datalen);
+    virtual void receiveEventClientShutdown(errenum_t errnum, handle_t fd, int datalen);
+    virtual void receiveEventServerShutdown(errenum_t errnum, handle_t fd, int datalen);
+    virtual void receiveEventConnectedToServer(errenum_t errnum, handle_t fd, int datalen);
+    virtual void receiveEventConnectionShutdown(errenum_t errnum, handle_t fd, int datalen);
 };
 
 template <typename Y>
@@ -78,7 +78,7 @@ class Stream : public StreamGeneric
     Stream() = default;
     Stream(const Stream&) = default;
     Stream& operator=(const Stream&) = default;
-    ~Stream() = default;
+    ~Stream() override = default;
 
     void init(Y* p)
     {
@@ -141,10 +141,10 @@ class Stream : public StreamGeneric
     }
 
     template <class T, typename CRead, typename CWrite, typename CShutdown>
-    errenum registerClient(T* p, handle_t client_sockfd)
+    errenum_t registerClient(T* p, handle_t client_sockfd)
     {
-        errenum res = FEAL_OK;
-        clientst cst;
+        errenum_t res = FEAL_OK;
+        clientst_t cst;
         CRead instcr;
         CWrite instcw;
         CShutdown instcs;
@@ -165,15 +165,15 @@ class Stream : public StreamGeneric
         if (it == mapReaders.end())
         {
             mapReaders[client_sockfd] = cst;
-            set_nonblocking(client_sockfd);
-            if (do_client_read_start(client_sockfd) == -1)
-                res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
+            setNonBlocking(client_sockfd);
+            if (doClientReadStart(client_sockfd) == -1)
+                res = static_cast<errenum_t>(FEAL_GETHANDLEERRNO);
         }
         return res;
     }
 
    protected:
-    void receiveEventIncomingConn(errenum errnum, handle_t fd, int datalen)
+    void receiveEventIncomingConn(errenum_t errnum, handle_t fd, int datalen) override
     {
         if (evtincomingconn.get())
         {
@@ -189,7 +189,7 @@ class Stream : public StreamGeneric
             printf("No subscription using Stream::subscribeIncomingConn\n");
     }
 
-    void receiveEventReadAvail(errenum errnum, handle_t fd, int datalen)
+    void receiveEventReadAvail(errenum_t errnum, handle_t fd, int datalen) override
     {
         if (evtreadavail.get())
         {
@@ -205,7 +205,7 @@ class Stream : public StreamGeneric
             printf("No subscription using Stream::subscribeReadAvail\n");
     }
 
-    void receiveEventWriteAvail(errenum errnum, handle_t fd, int datalen)
+    void receiveEventWriteAvail(errenum_t errnum, handle_t fd, int datalen) override
     {
         if (evtwriteavail.get())
         {
@@ -221,7 +221,7 @@ class Stream : public StreamGeneric
             printf("No subscription using Stream::subscribeWriteAvail\n");
     }
 
-    void receiveEventServerShutdown(errenum errnum, handle_t fd, int datalen)
+    void receiveEventServerShutdown(errenum_t errnum, handle_t fd, int datalen) override
     {
         if (evtservershutdown.get())
         {
@@ -237,7 +237,7 @@ class Stream : public StreamGeneric
             printf("No subscription using Stream::subscribeServerShutdown\n");
     }
 
-    void receiveEventConnectedToServer(errenum errnum, handle_t fd, int datalen)
+    void receiveEventConnectedToServer(errenum_t errnum, handle_t fd, int datalen) override
     {
         if (evtconnectedtoserver.get())
         {
@@ -253,7 +253,7 @@ class Stream : public StreamGeneric
             printf("No subscription using Stream::subscribeConnectedToServer\n");
     }
 
-    void receiveEventConnectionShutdown(errenum errnum, handle_t fd, int datalen)
+    void receiveEventConnectionShutdown(errenum_t errnum, handle_t fd, int datalen) override
     {
         if (evtconnshutdown.get())
         {
@@ -281,4 +281,4 @@ class Stream : public StreamGeneric
 
 }  // namespace feal
 
-#endif  // _FEAL_STREAM_H
+#endif  // FEAL_STREAM_H

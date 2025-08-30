@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
 
-#ifndef _FEAL_ACTOR_B_H
-#define _FEAL_ACTOR_B_H
+#ifndef FEAL_ACTOR_B_H
+#define FEAL_ACTOR_B_H
 
 #include "feal.h"
 
@@ -19,12 +19,12 @@ class EventCabbage : public feal::Event
     EventCabbage() = default;
     EventCabbage(const EventCabbage&) = default;
     EventCabbage& operator=(const EventCabbage&) = default;
-    ~EventCabbage() = default;
+    ~EventCabbage() override = default;
 
-    int get_cabbages(void);
+    int getCabbages(void);
 
    private:
-    void set_cabbages(const int& num);
+    void setCabbages(const int& num);
     int cabbages = 0;
 };
 
@@ -35,12 +35,12 @@ class ActorB : public feal::Actor
 {
    public:
     ActorB() = default;
-    ~ActorB() = default;
+    ~ActorB() override = default;
 
-    void initActor(void);
-    void startActor(void);
-    void pauseActor(void);
-    void shutdownActor(void);
+    void initActor(void) override;
+    void startActor(void) override;
+    void pauseActor(void) override;
+    void shutdownActor(void) override;
 
     void handleEvent(std::shared_ptr<EvtNotifyVege> pevt);
     void handleEvent(std::shared_ptr<EvtNotifyFruit> pevt);
@@ -51,4 +51,4 @@ class ActorB : public feal::Actor
     feal::Timers<ActorB> timers;
 };
 
-#endif  // _FEAL_ACTOR_B_H
+#endif  // FEAL_ACTOR_B_H

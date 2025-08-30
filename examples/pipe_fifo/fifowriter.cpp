@@ -6,10 +6,10 @@
 #include "fifowriter.h"
 
 #include <fcntl.h>
-#include <stdlib.h>
 #include <sys/stat.h>
 
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 
 #define FIFOPATH "/tmp/fealfifo"
@@ -27,8 +27,8 @@ void Fifowriter::startActor(void)
     timers.startTimer<EvtEndTimer>(std::chrono::seconds(12));
     if (access(FIFOPATH, F_OK | R_OK | W_OK) != 0)
         mkfifo(FIFOPATH, 0666);
-    open_for_writing();
-    send_something();
+    openForWriting();
+    sendSomething();
 }
 
 void Fifowriter::pauseActor(void)
@@ -43,7 +43,7 @@ void Fifowriter::shutdownActor(void)
     printf("Fifowriter shutdown complete\n");
 }
 
-void Fifowriter::open_for_writing(void)
+void Fifowriter::openForWriting(void)
 {
     printf("Opening pipe for writing\n");
     fifofd = open(FIFOPATH, O_RDWR);
@@ -53,10 +53,10 @@ void Fifowriter::open_for_writing(void)
         timers.startTimer<EvtDelayTimer>(std::chrono::seconds(2));
         return;
     }
-    feal::set_nonblocking(fifofd);
+    feal::setNonBlocking(fifofd);
 }
 
-void Fifowriter::send_something(void)
+void Fifowriter::sendSomething(void)
 {
     char buf[30];
     ssize_t bytes;
@@ -69,7 +69,7 @@ void Fifowriter::send_something(void)
     else
     {
         printf("Error writing with errno %d\n", errno);
-        open_for_writing();
+        openForWriting();
     }
     timers.startTimer<EvtDelayTimer>(std::chrono::seconds(2));
 }
@@ -89,6 +89,6 @@ void Fifowriter::handleEvent(std::shared_ptr<EvtDelayTimer> pevt)
     if (!pevt)
         return;
     printf("Fifowriter::EvtDelayTimer\n");
-    send_something();
+    sendSomething();
     timers.startTimer<EvtDelayTimer>(std::chrono::seconds(2));
 }

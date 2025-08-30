@@ -10,18 +10,18 @@
 
 #define SERVERPORT 56002
 
-void Client6::send_to_server(void)
+void Client6::sendToServer(void)
 {
     feal::handle_t fd;
     fd = socket(AF_INET6, SOCK_DGRAM, 0);
-    feal::set_ipv6only(fd);
-    feal::errenum se;
+    feal::setIpv6Only(fd);
+    feal::errenum_t se;
     memset(&serveraddr, 0, sizeof(serveraddr));
     serveraddr.in6.sin6_family = AF_INET6;
     serverport = htons(SERVERPORT);
     serveraddr.in6.sin6_port = serverport;
     feal::inet_pton(AF_INET6, "::1", &(serveraddr.in6.sin6_addr));
-    se = dgram.monitor_sock(fd);
+    se = dgram.monitorSock(fd);
     if (se != feal::FEAL_OK)
         printf("Error create sock: %d\n", se);
     timers.startTimer<EvtDelayTimer>(std::chrono::seconds(1));

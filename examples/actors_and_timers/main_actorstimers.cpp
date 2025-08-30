@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
 
-#include <stdio.h>
+#include <cstdio>
 
 #include "ActorA.h"
 #include "ActorB.h"
@@ -14,7 +14,7 @@ int main(void)
     std::shared_ptr<feal::Actor> actmgr = std::make_shared<ActorsManager>();
     actmgr.get()->init();
     actmgr.get()->start();
-    actmgr.get()->wait_for_shutdown();
+    actmgr.get()->waitForShutdown();
     feal::EventBus::getInstance().destroyInstance();
     printf("Actors&Timers terminating program\n");
     return 0;

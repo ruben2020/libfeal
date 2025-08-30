@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
 
-#ifndef _FEAL_TOOL_H
-#define _FEAL_TOOL_H
+#ifndef FEAL_TOOL_H
+#define FEAL_TOOL_H
 
-#ifndef _FEAL_H
+#ifndef FEAL_H
 #error "Please include feal.h and not the other internal Feal header files, to avoid include errors."
 #endif
 
@@ -26,4 +26,4 @@ class Tool
 
 }  // namespace feal
 
-#endif  // _FEAL_TOOL_H
+#endif  // FEAL_TOOL_H

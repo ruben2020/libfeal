@@ -28,7 +28,7 @@ void Client::startActor(void)
 {
     printf("Client::startActor\n");
     timers.startTimer<EvtEndTimer>(std::chrono::seconds(15));
-    connect_to_server();
+    connectToServer();
 }
 
 void Client::pauseActor(void)
@@ -43,17 +43,17 @@ void Client::shutdownActor(void)
     printf("Client shutdown complete\n");
 }
 
-void Client::connect_to_server(void)
+void Client::connectToServer(void)
 {
     feal::handle_t fd;
     fd = socket(AF_INET, SOCK_STREAM, 0);
-    feal::sockaddr_all sall;
+    feal::sockaddr_all_t sall;
     memset(&sall, 0, sizeof(sall));
     sall.in.sin_family = AF_INET;
     sall.in.sin_port = htons(SERVERPORT);
-    feal::inet_pton(AF_INET, "127.0.0.1", &(sall.in.sin_addr));
+    inet_pton(AF_INET, "127.0.0.1", &(sall.in.sin_addr));
     printf("Trying to connect to 127.0.0.1:%d\n", SERVERPORT);
-    feal::errenum se = stream.connect(fd, &sall, sizeof(sall));
+    feal::errenum_t se = stream.connect(fd, &sall, sizeof(sall));
     if (se != feal::FEAL_OK)
     {
         printf("Error connecting to 127.0.0.1:%d  err %d\n", SERVERPORT, se);
@@ -61,14 +61,14 @@ void Client::connect_to_server(void)
     }
 }
 
-void Client::send_something(void)
+void Client::sendSomething(void)
 {
     char buf[30];
     int32_t bytes;
     memset(&buf, 0, sizeof(buf));
     snprintf(buf, sizeof(buf), "Client %d", n++);
     printf("Trying to send \"%s\"\n", buf);
-    feal::errenum se = stream.send((void*)buf, MIN(strlen(buf) + 1, sizeof(buf)), &bytes);
+    feal::errenum_t se = stream.send((void*)buf, MIN(strlen(buf) + 1, sizeof(buf)), &bytes);
     if (se != feal::FEAL_OK)
         printf("Error sending \"Client n\": %d\n", se);
 }
@@ -78,7 +78,7 @@ void Client::handleEvent(std::shared_ptr<EvtEndTimer> pevt)
     if (!pevt)
         return;
     printf("Client::EvtEndTimer Elapsed\n");
-    stream.disconnect_and_reset();
+    stream.disconnectAndReset();
     shutdown();
 }
 
@@ -87,7 +87,7 @@ void Client::handleEvent(std::shared_ptr<EvtDelayTimer> pevt)
     if (!pevt)
         return;
     printf("Client::EvtDelayTimer\n");
-    send_something();
+    sendSomething();
 }
 
 void Client::handleEvent(std::shared_ptr<EvtRetryTimer> pevt)
@@ -95,7 +95,7 @@ void Client::handleEvent(std::shared_ptr<EvtRetryTimer> pevt)
     if (!pevt)
         return;
     printf("Client::EvtRetryTimer\n");
-    connect_to_server();
+    connectToServer();
 }
 
 void Client::handleEvent(std::shared_ptr<EvtConnectedToServer> pevt)
@@ -107,7 +107,7 @@ void Client::handleEvent(std::shared_ptr<EvtConnectedToServer> pevt)
     strcpy(buf, "Hello! Client here!");
     int32_t bytes;
     printf("Trying to send \"Hello! Client here!\"\n");
-    feal::errenum se = stream.send((void*)buf, sizeof(buf), &bytes);
+    feal::errenum_t se = stream.send((void*)buf, sizeof(buf), &bytes);
     if (se != feal::FEAL_OK)
         printf("Error sending \"Hello! Client here!\": %d\n", se);
 }
@@ -120,7 +120,7 @@ void Client::handleEvent(std::shared_ptr<EvtDataReadAvail> pevt)
     char buf[30];
     int32_t bytes;
     memset(&buf, 0, sizeof(buf));
-    feal::errenum se = stream.recv((void*)buf, sizeof(buf), &bytes);
+    feal::errenum_t se = stream.recv((void*)buf, sizeof(buf), &bytes);
     if (se != feal::FEAL_OK)
         printf("Error receiving: %d\n", se);
     else
@@ -142,7 +142,7 @@ void Client::handleEvent(std::shared_ptr<EvtConnectionShutdown> pevt)
         return;
     printf("Client::EvtConnectionShutdown\n");
     timers.stopTimer<EvtDelayTimer>();
-    stream.disconnect_and_reset();
+    stream.disconnectAndReset();
     timers.startTimer<EvtRetryTimer>(std::chrono::seconds(5));
 }
 
@@ -152,6 +152,6 @@ void Client::handleEvent(std::shared_ptr<EvtSigInt> pevt)
         return;
     printf("Client::EvtSigInt (signum=%d, sicode=%d)\n", pevt.get()->signo, pevt.get()->sicode);
     timers.stopTimer<EvtEndTimer>();
-    stream.disconnect_and_reset();
+    stream.disconnectAndReset();
     shutdown();
 }

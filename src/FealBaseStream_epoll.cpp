@@ -5,37 +5,37 @@
 
 #include "feal.h"
 
-int feal::BaseStream::accept_new_conn(void)
+int feal::BaseStream::acceptNewConn(void)
 {
     return FEAL_HANDLE_ERROR;
 }
-void feal::BaseStream::client_read_avail(handle_t client_sockfd)
+void feal::BaseStream::clientReadAvail(handle_t client_sockfd)
 {
     (void)(client_sockfd);
 }
-void feal::BaseStream::client_write_avail(handle_t client_sockfd)
+void feal::BaseStream::clientWriteAvail(handle_t client_sockfd)
 {
     (void)(client_sockfd);
 }
-void feal::BaseStream::client_shutdown(handle_t client_sockfd)
+void feal::BaseStream::clientShutdown(handle_t client_sockfd)
 {
     (void)(client_sockfd);
 }
-void feal::BaseStream::server_shutdown(void) {}
-void feal::BaseStream::connected_to_server(handle_t fd)
+void feal::BaseStream::serverShutdown(void) {}
+void feal::BaseStream::connectedToServer(handle_t fd)
 {
     (void)(fd);
 }
-void feal::BaseStream::connection_read_avail(void) {}
-void feal::BaseStream::connection_write_avail(void) {}
-void feal::BaseStream::connection_shutdown(void) {}
+void feal::BaseStream::connectionReadAvail(void) {}
+void feal::BaseStream::connectionWriteAvail(void) {}
+void feal::BaseStream::connectionShutdown(void) {}
 
 void feal::BaseStream::serverLoop(void)
 {
     int nfds = 0;
     struct epoll_event events[FEALBASESTREAM_MAXEVENTS];
     epfd = epoll_create(1);
-    if (epoll_ctl_add(epfd, sockfd, (EPOLLIN | EPOLLRDHUP | EPOLLHUP | EPOLLOUT)) == -1)
+    if (epollCtlAdd(epfd, sockfd, (EPOLLIN | EPOLLRDHUP | EPOLLHUP | EPOLLOUT)) == -1)
     {
         FEALDEBUGLOG("epoll_ctl_add error");
         return;
@@ -55,27 +55,27 @@ void feal::BaseStream::serverLoop(void)
             if (events[i].data.fd == sockfd)
             {
                 if (((events[i].events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR)) != 0) ||
-                    (accept_new_conn() == -1))
+                    (acceptNewConn() == -1))
                 {
-                    do_full_shutdown();
-                    server_shutdown();
+                    doFullShutdown();
+                    serverShutdown();
                     break;
                 }
                 continue;
             }
             else if ((events[i].events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR)) != 0)
             {
-                do_client_shutdown(events[i].data.fd);
-                client_shutdown(events[i].data.fd);
+                doClientShutdown(events[i].data.fd);
+                clientShutdown(events[i].data.fd);
                 continue;
             }
             if ((events[i].events & EPOLLIN) == EPOLLIN)
             {
-                client_read_avail(events[i].data.fd);
+                clientReadAvail(events[i].data.fd);
             }
             if ((events[i].events & EPOLLOUT) == EPOLLOUT)
             {
-                client_write_avail(events[i].data.fd);
+                clientWriteAvail(events[i].data.fd);
                 /*epoll_ctl_mod(epfd, events[i].data.fd,
                     (EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP));*/
             }
@@ -83,24 +83,23 @@ void feal::BaseStream::serverLoop(void)
     }
 }
 
-int feal::BaseStream::do_client_read_start(feal::handle_t client_sockfd)
+int feal::BaseStream::doClientReadStart(feal::handle_t client_sockfd)
 {
-    return epoll_ctl_add(epfd, client_sockfd,
-                         (EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP | EPOLLOUT));
+    return epollCtlAdd(epfd, client_sockfd, (EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP | EPOLLOUT));
 }
 
-int feal::BaseStream::do_client_shutdown(feal::handle_t client_sockfd)
+int feal::BaseStream::doClientShutdown(feal::handle_t client_sockfd)
 {
-    epoll_ctl(epfd, EPOLL_CTL_DEL, client_sockfd, NULL);
+    epoll_ctl(epfd, EPOLL_CTL_DEL, client_sockfd, nullptr);
     return shutdown(client_sockfd, SHUT_RDWR);
 }
 
-int feal::BaseStream::do_full_shutdown(void)
+int feal::BaseStream::doFullShutdown(void)
 {
     int res = 0;
     if (epfd != -1)
     {
-        epoll_ctl(epfd, EPOLL_CTL_DEL, sockfd, NULL);
+        epoll_ctl(epfd, EPOLL_CTL_DEL, sockfd, nullptr);
         close(epfd);
     }
     if (sockfd != -1)
@@ -111,32 +110,32 @@ int feal::BaseStream::do_full_shutdown(void)
     return res;
 }
 
-void feal::BaseStream::do_connect_in_progress(void)
+void feal::BaseStream::doConnectInProgress(void)
 {
     epfd = epoll_create(1);
     waitingforconn = true;
-    if (epoll_ctl_add(epfd, sockfd, (EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP | EPOLLOUT)) == -1)
+    if (epollCtlAdd(epfd, sockfd, (EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP | EPOLLOUT)) == -1)
     {
         FEALDEBUGLOG("epoll_ctl error");
         return;
     }
 }
 
-void feal::BaseStream::do_connect_ok(void)
+void feal::BaseStream::doConnectOk(void)
 {
     epfd = epoll_create(1);
     waitingforconn = false;
-    if (epoll_ctl_add(epfd, sockfd, (EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP | EPOLLOUT)) == -1)
+    if (epollCtlAdd(epfd, sockfd, (EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP | EPOLLOUT)) == -1)
     {
         FEALDEBUGLOG("epoll_ctl error");
         return;
     }
-    connected_to_server(sockfd);
+    connectedToServer(sockfd);
 }
 
-void feal::BaseStream::do_send_avail_notify(feal::handle_t fd)
+void feal::BaseStream::doSendAvailNotify(feal::handle_t fd)
 {
-    if (epoll_ctl_mod(epfd, fd, (EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP | EPOLLOUT)) == -1)
+    if (epollCtlMod(epfd, fd, (EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP | EPOLLOUT)) == -1)
     {
         FEALDEBUGLOG("epoll_ctl error");
         return;
@@ -161,24 +160,24 @@ void feal::BaseStream::connectLoop(void)
         {
             if ((events[i].events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR)) != 0)
             {
-                do_full_shutdown();
-                connection_shutdown();
+                doFullShutdown();
+                connectionShutdown();
                 break;
             }
             if ((events[i].events & EPOLLIN) == EPOLLIN)
             {
-                connection_read_avail();
+                connectionReadAvail();
             }
             if ((events[i].events & EPOLLOUT) == EPOLLOUT)
             {
                 if (waitingforconn)
                 {
                     waitingforconn = false;
-                    connected_to_server(events[i].data.fd);
+                    connectedToServer(events[i].data.fd);
                 }
                 else
                 {
-                    connection_write_avail();
+                    connectionWriteAvail();
                 }
                 /*epoll_ctl_mod(epfd, sockfd,
                     (EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP));*/

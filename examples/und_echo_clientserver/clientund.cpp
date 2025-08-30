@@ -5,9 +5,8 @@
 
 #include "clientund.h"
 
-#include <stdlib.h>
-
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 
 #define MIN(a, b) (a < b ? a : b)
@@ -62,7 +61,7 @@ void Clientund::startActor(void)
 {
     printf("Clientund::startActor\n");
     timers.startTimer<EvtEndTimer>(std::chrono::seconds(15));
-    send_to_server();
+    sendToServer();
 }
 
 void Clientund::pauseActor(void)
@@ -77,23 +76,23 @@ void Clientund::shutdownActor(void)
     printf("Client shutdown complete\n");
 }
 
-void Clientund::send_to_server(void)
+void Clientund::sendToServer(void)
 {
     feal::handle_t fd;
     fd = socket(AF_UNIX, SOCK_DGRAM, 0);
-    feal::errenum se;
-    feal::sockaddr_all clientaddr;
+    feal::errenum_t se;
+    feal::sockaddr_all_t clientaddr;
     memset(&clientaddr, 0, sizeof(clientaddr));
     serveraddr.un.sun_family = AF_UNIX;
     strcpy(serveraddr.un.sun_path, SERVERPATH);
     clientaddr.un.sun_family = AF_UNIX;
     strcpy(clientaddr.un.sun_path, CLIENTPATH);
     char buf[8];
-    srand(mix(clock(), time(NULL), getpid()));
+    srand(mix(clock(), time(nullptr), getpid()));
     snprintf(buf, sizeof(buf), "%d", rand() % 4096);
     strcat(clientaddr.un.sun_path, buf);
     unlink(clientaddr.un.sun_path);
-    se = dgram.monitor_sock(fd);
+    se = dgram.monitorSock(fd);
     if (se != feal::FEAL_OK)
     {
         printf("Err create sock: %d\n", se);
@@ -103,7 +102,7 @@ void Clientund::send_to_server(void)
     int ret = bind(fd, &(clientaddr.sa), length);
     if (ret != feal::FEAL_OK)
     {
-        se = static_cast<feal::errenum>(FEAL_GETHANDLEERRNO);
+        se = static_cast<feal::errenum_t>(FEAL_GETHANDLEERRNO);
         printf("Err bind sock: %d\n", se);
         return;
     }
@@ -111,7 +110,7 @@ void Clientund::send_to_server(void)
     timers.startTimer<EvtDelayTimer>(std::chrono::seconds(1));
 }
 
-void Clientund::send_something(void)
+void Clientund::sendSomething(void)
 {
     char buf[30];
     int32_t bytes;
@@ -119,8 +118,8 @@ void Clientund::send_something(void)
     snprintf(buf, sizeof(buf), "Client %d", n++);
     printf("Trying to send \"%s\" to %s\n", buf, SERVERPATH);
     feal::socklen_t length = sizeof(serveraddr.un.sun_family) + strlen(serveraddr.un.sun_path) + 1;
-    feal::errenum se = dgram.sendto((void*)buf, MIN(strlen(buf) + 1, sizeof(buf)), &bytes,
-                                    &serveraddr, length);
+    feal::errenum_t se = dgram.sendto((void*)buf, MIN(strlen(buf) + 1, sizeof(buf)), &bytes,
+                                      &serveraddr, length);
     if (se != feal::FEAL_OK)
         printf("Error sending \"Client n\": %d\n", se);
 }
@@ -131,7 +130,7 @@ void Clientund::handleEvent(std::shared_ptr<EvtEndTimer> pevt)
         return;
     printf("Clientund::EvtEndTimer Elapsed\n");
     timers.stopTimer<EvtDelayTimer>();
-    dgram.close_and_reset();
+    dgram.closeAndReset();
     shutdown();
 }
 
@@ -140,7 +139,7 @@ void Clientund::handleEvent(std::shared_ptr<EvtDelayTimer> pevt)
     if (!pevt)
         return;
     printf("Clientund::EvtDelayTimer\n");
-    send_something();
+    sendSomething();
     timers.startTimer<EvtDelayTimer>(std::chrono::seconds(2));
 }
 
@@ -152,9 +151,9 @@ void Clientund::handleEvent(std::shared_ptr<EvtDgramReadAvail> pevt)
     char buf[50];
     int32_t bytes;
     memset(&buf, 0, sizeof(buf));
-    feal::sockaddr_all recvaddr;
+    feal::sockaddr_all_t recvaddr;
     socklen_t recvaddr_len = sizeof(recvaddr);
-    feal::errenum se = dgram.recvfrom((void*)buf, sizeof(buf), &bytes, &recvaddr, &recvaddr_len);
+    feal::errenum_t se = dgram.recvfrom((void*)buf, sizeof(buf), &bytes, &recvaddr, &recvaddr_len);
     if (se != feal::FEAL_OK)
         printf("Error receiving: %d\n", se);
     else
@@ -176,6 +175,6 @@ void Clientund::handleEvent(std::shared_ptr<EvtSockErr> pevt)
         return;
     printf("Clientund::EvtSockErr\n");
     timers.stopTimer<EvtDelayTimer>();
-    dgram.close_and_reset();
-    send_to_server();
+    dgram.closeAndReset();
+    sendToServer();
 }

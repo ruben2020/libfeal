@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
 
-#ifndef _FEAL_ACTOR_A_H
-#define _FEAL_ACTOR_A_H
+#ifndef FEAL_ACTOR_A_H
+#define FEAL_ACTOR_A_H
 
 #include "feal.h"
 
@@ -18,14 +18,14 @@ class EvtNotifyVege : public feal::Event
     EvtNotifyVege() = default;
     EvtNotifyVege(const EvtNotifyVege&) = default;
     EvtNotifyVege& operator=(const EvtNotifyVege&) = default;
-    ~EvtNotifyVege() = default;
+    ~EvtNotifyVege() override = default;
 
-    int get_carrots(void);
-    int get_tomatoes(void);
+    int getCarrots(void);
+    int getTomatoes(void);
 
    private:
-    void set_carrots(const int& num);
-    void set_tomatoes(const int& num);
+    void setCarrots(const int& num);
+    void setTomatoes(const int& num);
     int carrots = 0;
     int tomatoes = 0;
 };
@@ -38,14 +38,14 @@ class EvtNotifyFruit : public feal::Event
     EvtNotifyFruit() = default;
     EvtNotifyFruit(const EvtNotifyFruit&) = default;
     EvtNotifyFruit& operator=(const EvtNotifyFruit&) = default;
-    ~EvtNotifyFruit() = default;
+    ~EvtNotifyFruit() override = default;
 
-    int get_apples(void);
-    int get_oranges(void);
+    int getApples(void);
+    int getOranges(void);
 
    private:
-    void set_apples(const int& num);
-    void set_oranges(const int& num);
+    void setApples(const int& num);
+    void setOranges(const int& num);
     int apples = 0;
     int oranges = 0;
 };
@@ -56,12 +56,12 @@ class ActorA : public feal::Actor
 {
    public:
     ActorA() = default;
-    ~ActorA() = default;
+    ~ActorA() override = default;
 
-    void initActor(void);
-    void startActor(void);
-    void pauseActor(void);
-    void shutdownActor(void);
+    void initActor(void) override;
+    void startActor(void) override;
+    void pauseActor(void) override;
+    void shutdownActor(void) override;
 
     void handleEvent(std::shared_ptr<EventCabbage> pevt);
     void handleEvent(std::shared_ptr<EventTimerA1> pevt);
@@ -70,4 +70,4 @@ class ActorA : public feal::Actor
     feal::Timers<ActorA> timers;
 };
 
-#endif  // _FEAL_ACTOR_A_H
+#endif  // FEAL_ACTOR_A_H

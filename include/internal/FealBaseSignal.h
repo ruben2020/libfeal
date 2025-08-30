@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
 
-#ifndef _FEAL_BASESIGNAL_H
-#define _FEAL_BASESIGNAL_H
+#ifndef FEAL_BASESIGNAL_H
+#define FEAL_BASESIGNAL_H
 
-#ifndef _FEAL_H
+#ifndef FEAL_H
 #error "Please include feal.h and not the other internal Feal header files, to avoid include errors."
 #endif
 
@@ -21,22 +21,22 @@ class BaseSignal : public Tool
     BaseSignal() = default;
     BaseSignal(const BaseSignal&) = default;
     BaseSignal& operator=(const BaseSignal&) = default;
-    ~BaseSignal() = default;
+    ~BaseSignal() override = default;
 
    protected:
     static void (*recvsig_fp)(int, int);
 
-    int do_registersignal(int signum);
-    int do_deregistersignal(int signum);
+    int doRegistersignal(int signum);
+    int doDeregistersignal(int signum);
 
    private:
 #if defined(_WIN32)
     static void win_sighandler(int sig);
 #else
-    static void posix_sighandler(int sig, siginfo_t *info, void *ucontext);
+    static void posixSighandler(int sig, siginfo_t *info, void *ucontext);
 #endif
 };
 
 }  // namespace feal
 
-#endif  // _FEAL_BASESIGNAL_H
+#endif  // FEAL_BASESIGNAL_H

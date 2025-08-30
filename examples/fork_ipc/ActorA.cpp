@@ -53,7 +53,7 @@ void ActorA::forkChild(int childnum, const char* medium)
     }
     if (ret == -1)
         printf("Error creating socket/ pipe\n");
-    feal::set_nonblocking(fd);
+    feal::setNonBlocking(fd);
     p = fork();
     if (p < 0)
     {
@@ -185,7 +185,7 @@ void ActorA::handleEvent(std::shared_ptr<EvtPipeRead> pevt)
            pevt.get()->datalen);
     if (pevt.get()->errnum != feal::FEAL_OK)
     {
-        readerPipe.close_and_reset();
+        readerPipe.closeAndReset();
         printf("Pipe error. Closed\n");
         return;
     }
@@ -204,7 +204,7 @@ void ActorA::handleEvent(std::shared_ptr<EvtSockStreamRead> pevt)
            pevt.get()->errnum, pevt.get()->datalen);
     if (pevt.get()->errnum != feal::FEAL_OK)
     {
-        readerSockStream.close_and_reset();
+        readerSockStream.closeAndReset();
         printf("Socket error. Closed\n");
         return;
     }
@@ -223,7 +223,7 @@ void ActorA::handleEvent(std::shared_ptr<EvtSockDatagramRead> pevt)
            pevt.get()->errnum, pevt.get()->datalen);
     if (pevt.get()->errnum != feal::FEAL_OK)
     {
-        readerSockDatagram.close_and_reset();
+        readerSockDatagram.closeAndReset();
         printf("Socket error. Closed\n");
         return;
     }

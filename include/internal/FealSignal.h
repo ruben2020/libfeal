@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
 
-#ifndef _FEAL_SIGNAL_H
-#define _FEAL_SIGNAL_H
+#ifndef FEAL_SIGNAL_H
+#define FEAL_SIGNAL_H
 
-#ifndef _FEAL_H
+#ifndef FEAL_H
 #error "Please include feal.h and not the other internal Feal header files, to avoid include errors."
 #endif
 
@@ -25,7 +25,7 @@ class EventSignal : public Event
     EventSignal() = default;
     EventSignal(const EventSignal&) = default;
     EventSignal& operator=(const EventSignal&) = default;
-    ~EventSignal() = default;
+    ~EventSignal() override = default;
     int signo = -1;
     int sicode = -1;
 };
@@ -39,26 +39,26 @@ class SignalGeneric : public BaseSignal
     SignalGeneric() = default;
     SignalGeneric(const SignalGeneric&) = default;
     SignalGeneric& operator=(const SignalGeneric&) = default;
-    ~SignalGeneric() = default;
+    ~SignalGeneric() override = default;
 
    protected:
     void init(void);
 
     template <class T>
-    errenum registersignal(int signum)
+    errenum_t registersignal(int signum)
     {
-        errenum ee = FEAL_OK;
+        errenum_t ee = FEAL_OK;
         std::shared_ptr<EventSignal> k = std::make_shared<T>();
         auto id = std::type_index(typeid(T));
-        const std::lock_guard<std::mutex> lock(mtxMapSig);
-        auto it = mapSignal.find(signum);
-        if (it == mapSignal.end())
+        const std::lock_guard<std::mutex> lock(mtx_map_sig);
+        auto it = map_signal.find(signum);
+        if (it == map_signal.end())
         {
             vec_evtsig_ptr_t ves;
             ves.push_back(k);
-            mapSignal[signum] = ves;
-            if (BaseSignal::do_registersignal(signum) == -1)
-                ee = static_cast<errenum>(errno);
+            map_signal[signum] = ves;
+            if (BaseSignal::doRegistersignal(signum) == -1)
+                ee = static_cast<errenum_t>(errno);
         }
         else
         {
@@ -75,23 +75,23 @@ class SignalGeneric : public BaseSignal
             if (notinvec)
             {
                 ves.push_back(k);
-                mapSignal[signum] = ves;
-                if (BaseSignal::do_registersignal(signum) == -1)
-                    ee = static_cast<errenum>(errno);
+                map_signal[signum] = ves;
+                if (BaseSignal::doRegistersignal(signum) == -1)
+                    ee = static_cast<errenum_t>(errno);
             }
         }
         return ee;
     }
 
     template <class T>
-    errenum deregistersignal(int signum)
+    errenum_t deregistersignal(int signum)
     {
-        errenum ee = FEAL_OK;
+        errenum_t ee = FEAL_OK;
         std::shared_ptr<EventSignal> k = std::make_shared<T>();
         auto id = std::type_index(typeid(T));
-        const std::lock_guard<std::mutex> lock(mtxMapSig);
-        auto it = mapSignal.find(signum);
-        if (it != mapSignal.end())
+        const std::lock_guard<std::mutex> lock(mtx_map_sig);
+        auto it = map_signal.find(signum);
+        if (it != map_signal.end())
         {
             vec_evtsig_ptr_t ves = it->second;
             for (auto itv = ves.begin(); itv != ves.end(); ++itv)
@@ -104,12 +104,12 @@ class SignalGeneric : public BaseSignal
             }
             if (ves.empty())
             {
-                mapSignal.erase(it);
-                if (BaseSignal::do_deregistersignal(signum) == -1)
-                    ee = static_cast<errenum>(errno);
+                map_signal.erase(it);
+                if (BaseSignal::doDeregistersignal(signum) == -1)
+                    ee = static_cast<errenum_t>(errno);
             }
             else
-                mapSignal[signum] = ves;
+                map_signal[signum] = ves;
         }
         return ee;
     }
@@ -117,8 +117,8 @@ class SignalGeneric : public BaseSignal
     static void sighandler(int signum, int sicode);
 
    private:
-    static map_evtsig_t mapSignal;
-    static std::mutex mtxMapSig;
+    static map_evtsig_t map_signal;
+    static std::mutex mtx_map_sig;
 };
 
 template <class Y>
@@ -128,7 +128,7 @@ class Signal : public SignalGeneric
     Signal() = default;
     Signal(const Signal&) = default;
     Signal& operator=(const Signal&) = default;
-    ~Signal() = default;
+    ~Signal() override = default;
 
     void init(Y* p)
     {
@@ -138,7 +138,7 @@ class Signal : public SignalGeneric
     }
 
     template <typename T>
-    errenum registerSignal(int signum)
+    errenum_t registerSignal(int signum)
     {
         T k;
         EventBus::getInstance().registerEventCloner<T>();
@@ -147,7 +147,7 @@ class Signal : public SignalGeneric
     }
 
     template <typename T>
-    errenum deregisterSignal(int signum)
+    errenum_t deregisterSignal(int signum)
     {
         T k;
         actorptr->unsubscribeEvent(k);
@@ -160,4 +160,4 @@ class Signal : public SignalGeneric
 
 }  // namespace feal
 
-#endif  // _FEAL_SIGNAL_H
+#endif  // FEAL_SIGNAL_H

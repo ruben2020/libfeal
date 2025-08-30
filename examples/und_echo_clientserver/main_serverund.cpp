@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
 
-#include <stdio.h>
+#include <cstdio>
 
 #include "serverund.h"
 
@@ -13,7 +13,7 @@ int main(void)
     std::shared_ptr<feal::Actor> undserver1 = std::make_shared<Serverund>();
     undserver1.get()->init();
     undserver1.get()->start();
-    undserver1.get()->wait_for_shutdown();
+    undserver1.get()->waitForShutdown();
     feal::EventBus::getInstance().destroyInstance();
     printf("Unix domain socket datagram server terminating program\n");
     return 0;

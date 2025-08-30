@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
 
-#include <stdio.h>
+#include <cstdio>
 
 #include "client6.h"
 
@@ -14,7 +14,7 @@ int main(void)
     std::shared_ptr<feal::Actor> tcpclient1 = std::make_shared<Client6>();
     tcpclient1.get()->init();
     tcpclient1.get()->start();
-    tcpclient1.get()->wait_for_shutdown();
+    tcpclient1.get()->waitForShutdown();
     feal::EventBus::getInstance().destroyInstance();
     SOCK_CLEANUP();
     printf("udpclient6 terminating program\n");

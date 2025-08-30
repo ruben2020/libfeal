@@ -25,7 +25,7 @@ void Client::startActor(void)
 {
     printf("Client::startActor\n");
     timers.startTimer<EvtEndTimer>(std::chrono::seconds(15));
-    send_to_server();
+    sendToServer();
 }
 
 void Client::pauseActor(void)
@@ -40,7 +40,7 @@ void Client::shutdownActor(void)
     printf("Client shutdown complete\n");
 }
 
-void Client::send_to_server(void)
+void Client::sendToServer(void)
 {
     feal::handle_t fd;
     fd = socket(AF_INET, SOCK_DGRAM, 0);
@@ -49,22 +49,22 @@ void Client::send_to_server(void)
     serverport = htons(SERVERPORT);
     serveraddr.in.sin_port = serverport;
     feal::inet_pton(AF_INET, "127.0.0.1", &(serveraddr.in.sin_addr));
-    feal::errenum se = dgram.monitor_sock(fd);
+    feal::errenum_t se = dgram.monitorSock(fd);
     if (se != feal::FEAL_OK)
         printf("Error create sock: %d\n", se);
     timers.startTimer<EvtDelayTimer>(std::chrono::seconds(1));
 }
 
-void Client::send_something(void)
+void Client::sendSomething(void)
 {
     char buf[50];
     int32_t bytes;
     memset(&buf, 0, sizeof(buf));
     snprintf(buf, sizeof(buf), "Client %d", n++);
-    printf("Trying to send \"%s\" to %s:%s\n", buf, feal::get_addr(&serveraddr).c_str(),
-           feal::get_port(&serveraddr).c_str());
-    feal::errenum se = dgram.sendto((void*)buf, MIN(strlen(buf) + 1, sizeof(buf)), &bytes,
-                                    &serveraddr, sizeof(serveraddr));
+    printf("Trying to send \"%s\" to %s:%s\n", buf, feal::getAddr(&serveraddr).c_str(),
+           feal::getPort(&serveraddr).c_str());
+    feal::errenum_t se = dgram.sendto((void*)buf, MIN(strlen(buf) + 1, sizeof(buf)), &bytes,
+                                      &serveraddr, sizeof(serveraddr));
     if (se != feal::FEAL_OK)
         printf("Error sending \"Client n\": %d\n", se);
 }
@@ -75,7 +75,7 @@ void Client::handleEvent(std::shared_ptr<EvtEndTimer> pevt)
         return;
     printf("Client::EvtEndTimer Elapsed\n");
     timers.stopTimer<EvtDelayTimer>();
-    dgram.close_and_reset();
+    dgram.closeAndReset();
     shutdown();
 }
 
@@ -84,7 +84,7 @@ void Client::handleEvent(std::shared_ptr<EvtDelayTimer> pevt)
     if (!pevt)
         return;
     printf("Client::EvtDelayTimer\n");
-    send_something();
+    sendSomething();
     timers.startTimer<EvtDelayTimer>(std::chrono::seconds(2));
 }
 
@@ -96,14 +96,14 @@ void Client::handleEvent(std::shared_ptr<EvtDgramReadAvail> pevt)
     char buf[50];
     int32_t bytes;
     memset(&buf, 0, sizeof(buf));
-    feal::sockaddr_all recvaddr;
+    feal::sockaddr_all_t recvaddr;
     feal::socklen_t addrsize = sizeof(recvaddr);
-    feal::errenum se = dgram.recvfrom((void*)buf, sizeof(buf), &bytes, &recvaddr, &addrsize);
+    feal::errenum_t se = dgram.recvfrom((void*)buf, sizeof(buf), &bytes, &recvaddr, &addrsize);
     if (se != feal::FEAL_OK)
         printf("Error receiving: %d\n", se);
     else
         printf("Received %lld bytes: \"%s\" from %s:%s\n", (long long int)bytes, buf,
-               feal::get_addr(&recvaddr).c_str(), feal::get_port(&recvaddr).c_str());
+               feal::getAddr(&recvaddr).c_str(), feal::getPort(&recvaddr).c_str());
 }
 
 void Client::handleEvent(std::shared_ptr<EvtDgramWriteAvail> pevt)
@@ -120,6 +120,6 @@ void Client::handleEvent(std::shared_ptr<EvtSockErr> pevt)
         return;
     printf("Client::EvtSockErr\n");
     timers.stopTimer<EvtDelayTimer>();
-    dgram.close_and_reset();
-    send_to_server();
+    dgram.closeAndReset();
+    sendToServer();
 }

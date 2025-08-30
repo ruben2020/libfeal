@@ -10,18 +10,18 @@
 
 #define SERVERPATH "fealunsserver"
 
-void Clientuns::connect_to_server(void)
+void Clientuns::connectToServer(void)
 {
     feal::handle_t fd;
     fd = socket(AF_UNIX, SOCK_STREAM, 0);
-    feal::sockaddr_all sall;
+    feal::sockaddr_all_t sall;
     memset(&sall, 0, sizeof(sall));
     sall.un.sun_family = AF_UNIX;
     sall.un.sun_path[0] = 0;
     strcpy(sall.un.sun_path + 1, SERVERPATH);
     printf("Trying to connect %s\n", SERVERPATH);
     feal::socklen_t length = sizeof(sall.un.sun_family) + strlen(SERVERPATH) + 2;
-    feal::errenum se = stream.connect(fd, &sall, length);
+    feal::errenum_t se = stream.connect(fd, &sall, length);
     if (se != feal::FEAL_OK)
     {
         printf("Error connecting to %s  err %d\n", SERVERPATH, se);

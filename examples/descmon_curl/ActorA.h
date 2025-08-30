@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
 
-#ifndef _ACTORA_H
-#define _ACTORA_H
+#ifndef ACTORA_H
+#define ACTORA_H
 
 #include <curl/curl.h>
 
@@ -12,7 +12,7 @@
 
 class ActorA;
 
-struct curl_context
+struct CurlContext
 {
     curl_socket_t sockfd;
     ActorA *act;
@@ -28,12 +28,12 @@ class ActorA : public feal::Actor
 {
    public:
     ActorA() = default;
-    ~ActorA() = default;
+    ~ActorA() override = default;
 
-    void initActor(void);
-    void startActor(void);
-    void pauseActor(void);
-    void shutdownActor(void);
+    void initActor(void) override;
+    void startActor(void) override;
+    void pauseActor(void) override;
+    void shutdownActor(void) override;
 
     void handleEvent(std::shared_ptr<EvtCurlTimer> pevt);
     void handleEvent(std::shared_ptr<EvtEndTimer> pevt);
@@ -41,8 +41,8 @@ class ActorA : public feal::Actor
     void handleEvent(std::shared_ptr<EvtCurlMWriteAvail> pevt);
     void handleEvent(std::shared_ptr<EvtCurlMErr> pevt);
 
-    static int cb_socket(CURL *easy, curl_socket_t s, int action, ActorA *act, void *socketp);
-    static int cb_timeout(CURLM *multi, long timeout_ms, ActorA *act);
+    static int cbSocket(CURL *easy, curl_socket_t s, int action, ActorA *act, void *socketp);
+    static int cbTimeout(CURLM *multi, long timeout_ms, ActorA *act);
 
    protected:
     feal::Timers<ActorA> timers;
@@ -51,9 +51,9 @@ class ActorA : public feal::Actor
    private:
     CURLM *multi = nullptr;
     std::atomic_int remaining = 0;
-    void add_download(const char *url, int num);
-    void check_multi_info(void);
-    struct curl_context *create_curl_context(curl_socket_t sockfd, ActorA *act);
+    void addDownload(const char *url, int num);
+    void checkMultiInfo(void);
+    struct CurlContext *createCurlContext(curl_socket_t sockfd, ActorA *act);
 };
 
 #endif  // _ACTORA_H

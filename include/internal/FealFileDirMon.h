@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
 
-#ifndef _FEAL_FILEDIRMON_H
-#define _FEAL_FILEDIRMON_H
+#ifndef FEAL_FILEDIRMON_H
+#define FEAL_FILEDIRMON_H
 
-#ifndef _FEAL_H
+#ifndef FEAL_H
 #error "Please include feal.h and not the other internal Feal header files, to avoid include errors."
 #endif
 
@@ -19,15 +19,15 @@ class FileDirMonGeneric : public Tool
     FileDirMonGeneric() = default;
     FileDirMonGeneric(const FileDirMonGeneric&) = default;
     FileDirMonGeneric& operator=(const FileDirMonGeneric&) = default;
-    ~FileDirMonGeneric() = default;
+    ~FileDirMonGeneric() override = default;
 
-    void shutdownTool(void);
+    void shutdownTool(void) override;
 
-    errenum start_monitoring(void);
-    errenum add(const char* s, flags_t mask, handle_t* wnum);
-    errenum remove(handle_t wnum);
-    std::string get_filepath(handle_t wnum);
-    errenum close_and_reset(void);
+    errenum_t startMonitoring(void);
+    errenum_t add(const char* s, flags_t mask, handle_t* wnum);
+    errenum_t remove(handle_t wnum);
+    std::string getFilepath(handle_t wnum);
+    errenum_t closeAndReset(void);
 
    protected:
     std::thread FileDirMonThread;
@@ -44,14 +44,14 @@ class FileDirMonGeneric : public Tool
 
     void init(void);
 
-    virtual void receiveEventReadAvail(errenum errnum, handle_t fd, int datalen, flags_t flags1);
-    virtual void receiveEventDescErr(errenum errnum, handle_t fd, int datalen, flags_t flags1);
+    virtual void receiveEventReadAvail(errenum_t errnum, handle_t fd, int datalen, flags_t flags1);
+    virtual void receiveEventDescErr(errenum_t errnum, handle_t fd, int datalen, flags_t flags1);
 
    private:
     static void fdmonLoopLauncher(FileDirMonGeneric* p);
     void fdmonLoop(void);
-    void fd_error(void);
-    void fd_read_avail(handle_t fd1, flags_t flags1);
+    void fdError(void);
+    void fdReadAvail(handle_t fd1, flags_t flags1);
 
     std::map<handle_t, std::string> fnmap;
 };
@@ -63,7 +63,7 @@ class FileDirMon : public FileDirMonGeneric
     FileDirMon() = default;
     FileDirMon(const FileDirMon&) = default;
     FileDirMon& operator=(const FileDirMon&) = default;
-    ~FileDirMon() = default;
+    ~FileDirMon() override = default;
 
     void init(Y* p)
     {
@@ -91,7 +91,7 @@ class FileDirMon : public FileDirMonGeneric
     }
 
    protected:
-    void receiveEventReadAvail(errenum errnum, handle_t fd, int datalen, flags_t flags1)
+    void receiveEventReadAvail(errenum_t errnum, handle_t fd, int datalen, flags_t flags1) override
     {
         if (evtread.get())
         {
@@ -108,7 +108,7 @@ class FileDirMon : public FileDirMonGeneric
             printf("No subscription using FileDirMon::subscribeReadAvail\n");
     }
 
-    void receiveEventDescErr(errenum errnum, handle_t fd, int datalen, flags_t flags1)
+    void receiveEventDescErr(errenum_t errnum, handle_t fd, int datalen, flags_t flags1) override
     {
         if (evterrfd.get())
         {
@@ -133,4 +133,4 @@ class FileDirMon : public FileDirMonGeneric
 
 }  // namespace feal
 
-#endif  // _FEAL_FILEDESCMON_H
+#endif  // FEAL_FILEDESCMON_H

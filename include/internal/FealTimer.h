@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
 
-#ifndef _FEAL_TIMER_H
-#define _FEAL_TIMER_H
+#ifndef FEAL_TIMER_H
+#define FEAL_TIMER_H
 
-#ifndef _FEAL_H
+#ifndef FEAL_H
 #error "Please include feal.h and not the other internal Feal header files, to avoid include errors."
 #endif
 
@@ -66,7 +66,7 @@ class Timer
     }
 
     std::chrono::seconds getTimerRepeat(void);
-    void setTimerEvent(std::shared_ptr<Event> timEvt);
+    void setTimerEvent(std::shared_ptr<Event> tim_evt);
 
    private:
     std::atomic_bool timerValid{true};
@@ -86,4 +86,4 @@ class Timer
 
 }  // namespace feal
 
-#endif  // _FEAL_TIMER_H
+#endif  // FEAL_TIMER_H

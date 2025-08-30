@@ -18,7 +18,7 @@
 #define FILEDEST "/tmp/NOTICE.txt"
 #endif
 
-static size_t write_data(void *ptr, size_t size, size_t nmemb, void *stream)
+static size_t writeData(void *ptr, size_t size, size_t nmemb, void *stream)
 {
     size_t written = fwrite(ptr, size, nmemb, (FILE *)stream);
     return written;
@@ -68,11 +68,11 @@ void ActorA::curlThreadLauncher(ActorA *ptr, std::string url, std::string filepa
                                 std::promise<std::shared_ptr<EvtCurlPromiseComplete>> prom)
 {
     if (ptr)
-        ptr->curl_loop(std::move(url), std::move(filepath), std::move(prom));
+        ptr->curlLoop(std::move(url), std::move(filepath), std::move(prom));
 }
 
-void ActorA::curl_loop(std::string url, std::string filepath,
-                       std::promise<std::shared_ptr<EvtCurlPromiseComplete>> prom)
+void ActorA::curlLoop(std::string url, std::string filepath,
+                      std::promise<std::shared_ptr<EvtCurlPromiseComplete>> prom)
 {
     // Based on https://curl.se/libcurl/c/url2file.html and
     // https://curl.se/libcurl/c/chkspeed.html
@@ -85,7 +85,7 @@ void ActorA::curl_loop(std::string url, std::string filepath,
     curl_easy_setopt(curl_handle, CURLOPT_VERBOSE, 0L);
     curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, 0L);
     curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION, 1L);
-    curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, write_data);
+    curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, writeData);
     pagefile = fopen(filepath.c_str(), "wb");
     CURLcode res = CURLE_WRITE_ERROR;
     if (pagefile)

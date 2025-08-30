@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
 
-#ifndef _FEAL_H
-#define _FEAL_H
+#ifndef FEAL_H
+#define FEAL_H
 
-#include <stdio.h>
+#include <cstdio>
 #include <cstdint>
 
 #define FEALDEBUG (1)
@@ -37,4 +37,4 @@
 #include "internal/FealFileDirMon.h"
 #endif
 
-#endif  // _FEAL_H
+#endif  // FEAL_H

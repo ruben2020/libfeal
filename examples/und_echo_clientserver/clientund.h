@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
 
-#ifndef _CLIENTUND_H
-#define _CLIENTUND_H
+#ifndef CLIENTUND_H
+#define CLIENTUND_H
 
 #include "feal.h"
 
@@ -18,12 +18,12 @@ class Clientund : public feal::Actor
 {
    public:
     Clientund() = default;
-    ~Clientund() = default;
+    ~Clientund() override = default;
 
-    void initActor(void);
-    void startActor(void);
-    void pauseActor(void);
-    void shutdownActor(void);
+    void initActor(void) override;
+    void startActor(void) override;
+    void pauseActor(void) override;
+    void shutdownActor(void) override;
 
     void handleEvent(std::shared_ptr<EvtEndTimer> pevt);
     void handleEvent(std::shared_ptr<EvtDelayTimer> pevt);
@@ -34,13 +34,13 @@ class Clientund : public feal::Actor
    protected:
     feal::Timers<Clientund> timers;
     feal::Datagram<Clientund> dgram;
-    feal::sockaddr_all serveraddr;
-    virtual void send_to_server(void);
+    feal::sockaddr_all_t serveraddr;
+    virtual void sendToServer(void);
 
    private:
     int n = 0;
 
-    void send_something(void);
+    void sendSomething(void);
 };
 
 #endif  // _CLIENTUND_H

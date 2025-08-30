@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
 
-#ifndef _FEAL_BASESTREAM_H
-#define _FEAL_BASESTREAM_H
+#ifndef FEAL_BASESTREAM_H
+#define FEAL_BASESTREAM_H
 
-#ifndef _FEAL_H
+#ifndef FEAL_H
 #error "Please include feal.h and not the other internal Feal header files, to avoid include errors."
 #endif
 
@@ -29,30 +29,30 @@ class BaseStream : public Tool
     BaseStream() = default;
     BaseStream(const BaseStream&) = default;
     BaseStream& operator=(const BaseStream&) = default;
-    ~BaseStream() = default;
+    ~BaseStream() override = default;
 
    protected:
     handle_t sockfd = FEAL_INVALID_HANDLE;
     bool waitingforconn = false;
 
-    virtual int accept_new_conn(void);
-    virtual void client_read_avail(handle_t client_sockfd);
-    virtual void client_write_avail(handle_t client_sockfd);
-    virtual void client_shutdown(handle_t client_sockfd);
-    virtual void server_shutdown(void);
-    virtual void connected_to_server(handle_t fd);
-    virtual void connection_read_avail(void);
-    virtual void connection_write_avail(void);
-    virtual void connection_shutdown(void);
+    virtual int acceptNewConn(void);
+    virtual void clientReadAvail(handle_t client_sockfd);
+    virtual void clientWriteAvail(handle_t client_sockfd);
+    virtual void clientShutdown(handle_t client_sockfd);
+    virtual void serverShutdown(void);
+    virtual void connectedToServer(handle_t fd);
+    virtual void connectionReadAvail(void);
+    virtual void connectionWriteAvail(void);
+    virtual void connectionShutdown(void);
 
     void serverLoop(void);
 
-    int do_client_read_start(handle_t client_sockfd);
-    int do_client_shutdown(handle_t client_sockfd);
-    int do_full_shutdown(void);
-    void do_connect_in_progress(void);
-    void do_connect_ok(void);
-    void do_send_avail_notify(handle_t fd);
+    int doClientReadStart(handle_t client_sockfd);
+    int doClientShutdown(handle_t client_sockfd);
+    int doFullShutdown(void);
+    void doConnectInProgress(void);
+    void doConnectOk(void);
+    void doSendAvailNotify(handle_t fd);
 
     void connectLoop(void);
 
@@ -75,4 +75,4 @@ class BaseStream : public Tool
 
 }  // namespace feal
 
-#endif  // _FEAL_BASESTREAM_H
+#endif  // FEAL_BASESTREAM_H

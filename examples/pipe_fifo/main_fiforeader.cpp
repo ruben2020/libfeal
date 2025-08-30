@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
 
-#include <stdio.h>
+#include <cstdio>
 
 #include "fiforeader.h"
 
@@ -13,7 +13,7 @@ int main(void)
     std::shared_ptr<feal::Actor> actor = std::make_shared<Fiforeader>();
     actor.get()->init();
     actor.get()->start();
-    actor.get()->wait_for_shutdown();
+    actor.get()->waitForShutdown();
     feal::EventBus::getInstance().destroyInstance();
     printf("Pipe fifo reader terminating program\n");
     return 0;

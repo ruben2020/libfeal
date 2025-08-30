@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
 
-#ifndef _FEAL_ACTORSMANAGER_H
-#define _FEAL_ACTORSMANAGER_H
+#ifndef FEAL_ACTORSMANAGER_H
+#define FEAL_ACTORSMANAGER_H
 
 #include "feal.h"
 
@@ -15,12 +15,12 @@ class ActorsManager : public feal::Actor
 {
    public:
     ActorsManager() = default;
-    ~ActorsManager() = default;
+    ~ActorsManager() override = default;
 
-    virtual void initActor(void);
-    virtual void startActor(void);
-    virtual void pauseActor(void);
-    virtual void shutdownActor(void);
+    void initActor(void) override;
+    void startActor(void) override;
+    void pauseActor(void) override;
+    void shutdownActor(void) override;
 
     void handleEvent(std::shared_ptr<EventTimerShutdown> pevt);
     void handleEvent(std::shared_ptr<EvtSigInt> pevt);
@@ -31,4 +31,4 @@ class ActorsManager : public feal::Actor
     feal::Signal<ActorsManager> signal;
 };
 
-#endif  // _FEAL_ACTORSMANAGER_H
+#endif  // FEAL_ACTORSMANAGER_H

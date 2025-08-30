@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
 
-#ifndef _FEAL_COMMON_WIN_H
-#define _FEAL_COMMON_WIN_H
+#ifndef FEAL_COMMON_WIN_H
+#define FEAL_COMMON_WIN_H
 
-#ifndef _FEAL_H
+#ifndef FEAL_H
 #error "Please include feal.h and not the other internal Feal header files, to avoid include errors."
 #endif
 
@@ -116,7 +116,7 @@ typedef enum
     FEAL_EUSERS = WSAEUSERS,
     FEAL_EWOULDBLOCK = WSAEWOULDBLOCK,
     FEAL_EXDEV = EXDEV
-} errenum;
+} errenum_t;
 
 typedef SOCKET handle_t;
 typedef int socklen_t;
@@ -156,4 +156,4 @@ std::string get_port(sockaddr_all *sa);
 
 }  // namespace feal
 
-#endif  // _FEAL_COMMON_WIN_H
+#endif  // FEAL_COMMON_WIN_H

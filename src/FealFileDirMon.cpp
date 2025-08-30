@@ -7,7 +7,7 @@
 
 void feal::FileDirMonGeneric::shutdownTool(void)
 {
-    close_and_reset();
+    closeAndReset();
 }
 
 void feal::FileDirMonGeneric::init(void)
@@ -20,8 +20,8 @@ void feal::FileDirMonGeneric::init(void)
         FEALDEBUGLOG("FileDirMonGeneric::init inotify_init");
         return;
     }
-    set_nonblocking(genfd);
-    if (epoll_ctl_add(epfd, genfd, (EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP)) == -1)
+    setNonBlocking(genfd);
+    if (epollCtlAdd(epfd, genfd, (EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP)) == -1)
     {
         FEALDEBUGLOG("FileDirMonGeneric::init epoll_ctl error");
         return;
@@ -31,18 +31,18 @@ void feal::FileDirMonGeneric::init(void)
 #endif
 }
 
-feal::errenum feal::FileDirMonGeneric::start_monitoring(void)
+feal::errenum_t feal::FileDirMonGeneric::startMonitoring(void)
 {
-    errenum res = FEAL_OK;
+    errenum_t res = FEAL_OK;
     if (FileDirMonThread.joinable())
         return res;
     FileDirMonThread = std::thread(&fdmonLoopLauncher, this);
     return res;
 }
 
-feal::errenum feal::FileDirMonGeneric::add(const char *s, flags_t mask, handle_t *wnum)
+feal::errenum_t feal::FileDirMonGeneric::add(const char *s, flags_t mask, handle_t *wnum)
 {
-    errenum res = FEAL_OK;
+    errenum_t res = FEAL_OK;
     handle_t wn = FEAL_INVALID_HANDLE;
 #if defined(__linux__)
     wn = inotify_add_watch(genfd, s, mask);
@@ -50,7 +50,7 @@ feal::errenum feal::FileDirMonGeneric::add(const char *s, flags_t mask, handle_t
         *wnum = wn;
     if (wn == FEAL_INVALID_HANDLE)
     {
-        res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
+        res = static_cast<errenum_t>(FEAL_GETHANDLEERRNO);
         return res;
     }
 #else
@@ -59,7 +59,7 @@ feal::errenum feal::FileDirMonGeneric::add(const char *s, flags_t mask, handle_t
         *wnum = wn;
     if (wn == FEAL_INVALID_HANDLE)
     {
-        res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
+        res = static_cast<errenum_t>(FEAL_GETHANDLEERRNO);
         return res;
     }
     set_nonblocking(wn);
@@ -68,7 +68,7 @@ feal::errenum feal::FileDirMonGeneric::add(const char *s, flags_t mask, handle_t
     EV_SET(change_event, wn, EVFILT_VNODE, EV_ADD | EV_ENABLE | EV_CLEAR, mask, 0, 0);
     if (kevent(kq, (const struct kevent *)change_event, 1, nullptr, 0, nullptr) == -1)
     {
-        res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
+        res = static_cast<errenum_t>(FEAL_GETHANDLEERRNO);
         return res;
     }
 #endif
@@ -79,14 +79,14 @@ feal::errenum feal::FileDirMonGeneric::add(const char *s, flags_t mask, handle_t
     return res;
 }
 
-feal::errenum feal::FileDirMonGeneric::remove(handle_t wnum)
+feal::errenum_t feal::FileDirMonGeneric::remove(handle_t wnum)
 {
-    errenum res = FEAL_OK;
+    errenum_t res = FEAL_OK;
 #if defined(__linux__)
     int ret = inotify_rm_watch(genfd, wnum);
     if (ret == FEAL_INVALID_HANDLE)
     {
-        res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
+        res = static_cast<errenum_t>(FEAL_GETHANDLEERRNO);
         return res;
     }
 #else
@@ -95,7 +95,7 @@ feal::errenum feal::FileDirMonGeneric::remove(handle_t wnum)
     EV_SET(change_event, wnum, EVFILT_VNODE, EV_DELETE | EV_DISABLE, 0, 0, 0);
     if (kevent(kq, (const struct kevent *)change_event, 1, nullptr, 0, nullptr) == -1)
     {
-        res = static_cast<errenum>(FEAL_GETHANDLEERRNO);
+        res = static_cast<errenum_t>(FEAL_GETHANDLEERRNO);
         close(wnum);
         return res;
     }
@@ -108,7 +108,7 @@ feal::errenum feal::FileDirMonGeneric::remove(handle_t wnum)
     return res;
 }
 
-std::string feal::FileDirMonGeneric::get_filepath(handle_t wnum)
+std::string feal::FileDirMonGeneric::getFilepath(handle_t wnum)
 {
     std::string fn;
     if (fnmap.find(wnum) != fnmap.end())
@@ -122,9 +122,9 @@ std::string feal::FileDirMonGeneric::get_filepath(handle_t wnum)
     return fn;
 }
 
-feal::errenum feal::FileDirMonGeneric::close_and_reset(void)
+feal::errenum_t feal::FileDirMonGeneric::closeAndReset(void)
 {
-    errenum res = FEAL_OK;
+    errenum_t res = FEAL_OK;
 #if defined(__linux__)
     close(genfd);
     genfd = FEAL_INVALID_HANDLE;
@@ -154,7 +154,7 @@ void feal::FileDirMonGeneric::fdmonLoop(void)
     size_t bufsize = sizeof(struct inotify_event) + NAME_MAX + 1;
     struct inotify_event *event = new struct inotify_event[bufsize / sizeof(struct inotify_event)];
     ssize_t bytesread;
-    int numofrecs;
+    ssize_t numofrecs;
     for (;;)
     {
         if (epfd == -1)
@@ -171,7 +171,7 @@ void feal::FileDirMonGeneric::fdmonLoop(void)
         {
             if ((events[i].events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR)) != 0)
             {
-                fd_error();
+                fdError();
                 break;
             }
             else if ((events[i].events & EPOLLIN) == EPOLLIN)
@@ -181,7 +181,7 @@ void feal::FileDirMonGeneric::fdmonLoop(void)
                 if (bytesread > 0)
                     for (int j = 0; j < numofrecs; j++)
                     {
-                        fd_read_avail(event[j].wd, event[j].mask);
+                        fdReadAvail(event[j].wd, event[j].mask);
                     }
                 continue;
             }
@@ -223,17 +223,17 @@ void feal::FileDirMonGeneric::fdmonLoop(void)
 #endif
 }
 
-void feal::FileDirMonGeneric::fd_error(void)
+void feal::FileDirMonGeneric::fdError(void)
 {
     receiveEventDescErr(FEAL_OK, FEAL_INVALID_HANDLE, -1, 0);
 }
 
-void feal::FileDirMonGeneric::fd_read_avail(handle_t fd1, flags_t flags1)
+void feal::FileDirMonGeneric::fdReadAvail(handle_t fd1, flags_t flags1)
 {
     receiveEventReadAvail(FEAL_OK, fd1, -1, flags1);
 }
 
-void feal::FileDirMonGeneric::receiveEventReadAvail(errenum errnum, handle_t fd, int datalen,
+void feal::FileDirMonGeneric::receiveEventReadAvail(errenum_t errnum, handle_t fd, int datalen,
                                                     flags_t flags1)
 {
     (void)errnum;
@@ -242,7 +242,7 @@ void feal::FileDirMonGeneric::receiveEventReadAvail(errenum errnum, handle_t fd,
     (void)flags1;
 }
 
-void feal::FileDirMonGeneric::receiveEventDescErr(errenum errnum, handle_t fd, int datalen,
+void feal::FileDirMonGeneric::receiveEventDescErr(errenum_t errnum, handle_t fd, int datalen,
                                                   flags_t flags1)
 {
     (void)errnum;

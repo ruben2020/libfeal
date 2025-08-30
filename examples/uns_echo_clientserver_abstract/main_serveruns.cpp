@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
 
-#include <stdio.h>
+#include <cstdio>
 
 #include "serveruns.h"
 
@@ -13,7 +13,7 @@ int main(void)
     std::shared_ptr<feal::Actor> unsserver1 = std::make_shared<Serveruns>();
     unsserver1.get()->init();
     unsserver1.get()->start();
-    unsserver1.get()->wait_for_shutdown();
+    unsserver1.get()->waitForShutdown();
     feal::EventBus::getInstance().destroyInstance();
     printf("unix domain socket stream server terminating program\n");
     return 0;

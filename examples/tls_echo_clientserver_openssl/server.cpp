@@ -30,8 +30,8 @@ void Server::startActor(void)
 {
     printf("Server::startActor\n");
     timers.startTimer<EvtEndTimer>(std::chrono::seconds(15));
-    if (setup_sslctx() > 0)
-        start_server();
+    if (setupSslctx() > 0)
+        startServer();
     else
         shutdown();
 }
@@ -52,29 +52,29 @@ void Server::shutdownActor(void)
     if (ctx)
         SSL_CTX_free(ctx);
     mapch.clear();
-    stream.disconnect_and_reset();
+    stream.disconnectAndReset();
 }
 
-void Server::start_server(void)
+void Server::startServer(void)
 {
     feal::handle_t fd;
     fd = socket(AF_INET, SOCK_STREAM, 0);
-    feal::sockaddr_all sall;
+    feal::sockaddr_all_t sall;
     memset(&sall, 0, sizeof(sall));
     sall.in.sin_family = AF_INET;
     sall.in.sin_port = htons(SERVERPORT);
     feal::inet_pton(AF_INET, "127.0.0.1", &(sall.in.sin_addr));
-    feal::set_reuseaddr(fd, true);
+    feal::setReuseAddr(fd, true);
     printf("Starting Server on 127.0.0.1:%d\n", SERVERPORT);
     int ret = bind(fd, (sockaddr*)&(sall.in), sizeof(sall.in));
     if (ret != feal::FEAL_OK)
     {
         printf("Error binding to 127.0.0.1:%d  err %d\n", SERVERPORT,
-               static_cast<feal::errenum>(FEAL_GETHANDLEERRNO));
+               static_cast<feal::errenum_t>(FEAL_GETHANDLEERRNO));
         timers.startTimer<EvtRetryTimer>(std::chrono::seconds(5));
         return;
     }
-    feal::errenum se = stream.listen(fd);
+    feal::errenum_t se = stream.listen(fd);
     if (se != feal::FEAL_OK)
     {
         printf("Error listening to 127.0.0.1:%d  err %d\n", SERVERPORT, se);
@@ -98,7 +98,7 @@ void Server::handleEvent(std::shared_ptr<EvtRetryTimer> pevt)
     if (!pevt)
         return;
     printf("Server::EvtRetryTimer Elapsed\n");
-    start_server();
+    startServer();
 }
 
 void Server::handleEvent(std::shared_ptr<EvtIncomingConn> pevt)
@@ -116,29 +116,29 @@ void Server::handleEvent(std::shared_ptr<EvtIncomingConn> pevt)
     if (it == mapch.end())
     {
         char buf[100];
-        get_client_address(pevt.get()->fd, buf, sizeof(buf));
+        getClientAddress(pevt.get()->fd, buf, sizeof(buf));
         std::shared_ptr<ClientHandler> ch1 = std::make_shared<ClientHandler>();
         ch1.get()->setParam(&stream, pevt.get()->fd, buf, ctx);
         ch1.get()->init();
         ch1.get()->start();
         mapch[pevt.get()->fd] = ch1;
-        print_client_address(pevt.get()->fd);
+        printClientAddress(pevt.get()->fd);
     }
 }
 
-void Server::print_client_address(feal::handle_t fd)
+void Server::printClientAddress(feal::handle_t fd)
 {
-    feal::sockaddr_all sall;
+    feal::sockaddr_all_t sall;
     feal::socklen_t length = sizeof(sall);
     int ret = ::getpeername(fd, &(sall.sa), &length);
-    feal::errenum se;
+    feal::errenum_t se;
     if (ret != feal::FEAL_OK)
-        se = static_cast<feal::errenum>(FEAL_GETHANDLEERRNO);
+        se = static_cast<feal::errenum_t>(FEAL_GETHANDLEERRNO);
     if (ret == feal::FEAL_OK)
     {
         printf("ClientHandler(%lld): %s addr %s port %s\n", (long long int)fd,
-               (sall.sa.sa_family == AF_INET ? "IPv4" : "IPv6"), feal::get_addr(&sall).c_str(),
-               feal::get_port(&sall).c_str());
+               (sall.sa.sa_family == AF_INET ? "IPv4" : "IPv6"), feal::getAddr(&sall).c_str(),
+               feal::getPort(&sall).c_str());
     }
     else if ((se != feal::FEAL_ENOTCONN) && (se != feal::FEAL_ENOTSOCK))
     {
@@ -146,16 +146,16 @@ void Server::print_client_address(feal::handle_t fd)
     }
 }
 
-void Server::get_client_address(feal::handle_t fd, char* addr, int addrbuflen)
+void Server::getClientAddress(feal::handle_t fd, char* addr, int addrbuflen)
 {
-    feal::sockaddr_all sall;
+    feal::sockaddr_all_t sall;
     feal::socklen_t length = sizeof(sall);
     int ret = ::getpeername(fd, &(sall.sa), &length);
     if ((ret == feal::FEAL_OK) && (addr))
     {
         snprintf(addr, addrbuflen, "%s %s port %s",
-                 (sall.sa.sa_family == AF_INET ? "IPv4" : "IPv6"), feal::get_addr(&sall).c_str(),
-                 feal::get_port(&sall).c_str());
+                 (sall.sa.sa_family == AF_INET ? "IPv4" : "IPv6"), feal::getAddr(&sall).c_str(),
+                 feal::getPort(&sall).c_str());
     }
 }
 
@@ -171,7 +171,7 @@ void Server::handleEvent(std::shared_ptr<EvtClientDisconnected> pevt)
     if (!pevt)
         return;
     printf("Server::EvtClientDisconnected\n");
-    print_client_address(pevt.get()->fd);
+    printClientAddress(pevt.get()->fd);
     auto it = mapch.find(pevt.get()->fd);
     if (it != mapch.end())
     {
@@ -192,7 +192,7 @@ void Server::handleEvent(std::shared_ptr<EvtSigInt> pevt)
     publishEvent(pevt2);
 }
 
-int Server::setup_sslctx(void)
+int Server::setupSslctx(void)
 {
     // Source code copied from:
     // https://github.com/openssl/openssl/blob/master/demos/guide/tls-server-block.c
@@ -234,6 +234,6 @@ int Server::setup_sslctx(void)
     SSL_CTX_set_session_cache_mode(ctx, SSL_SESS_CACHE_SERVER);
     SSL_CTX_sess_set_cache_size(ctx, 1024);
     SSL_CTX_set_timeout(ctx, 3600);
-    SSL_CTX_set_verify(ctx, SSL_VERIFY_NONE, NULL);
+    SSL_CTX_set_verify(ctx, SSL_VERIFY_NONE, nullptr);
     return 1;
 }

@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
 
-#ifndef _FEAL_READER_H
-#define _FEAL_READER_H
+#ifndef FEAL_READER_H
+#define FEAL_READER_H
 
-#ifndef _FEAL_H
+#ifndef FEAL_H
 #error "Please include feal.h and not the other internal Feal header files, to avoid include errors."
 #endif
 
@@ -19,17 +19,17 @@ class ReaderGeneric : public Tool
     ReaderGeneric() = default;
     ReaderGeneric(const ReaderGeneric&) = default;
     ReaderGeneric& operator=(const ReaderGeneric&) = default;
-    ~ReaderGeneric() = default;
+    ~ReaderGeneric() override = default;
 
-    void shutdownTool(void);
+    void shutdownTool(void) override;
 
-    errenum close_and_reset(void);
+    errenum_t closeAndReset(void);
 
    protected:
     std::thread readerThread;
     handle_t readerfd = FEAL_INVALID_HANDLE;
-    errenum open_pipe_for_reading(const char* pathname);
-    errenum registerhandle(handle_t fd);
+    errenum_t openPipeForReading(const char* pathname);
+    errenum_t registerhandle(handle_t fd);
 
 #if defined(__linux__)
 #define FEALREADER_MAXEVENTS 64
@@ -40,15 +40,15 @@ class ReaderGeneric : public Tool
     int kq = -1;
 #endif
 
-    virtual void receiveEventReadAvail(errenum errnum, handle_t fd, int datalen);
-    virtual void receiveEventSockErr(errenum errnum, handle_t fd, int datalen);
+    virtual void receiveEventReadAvail(errenum_t errnum, handle_t fd, int datalen);
+    virtual void receiveEventSockErr(errenum_t errnum, handle_t fd, int datalen);
 
    private:
     static void readerLoopLauncher(ReaderGeneric* p);
     void readerLoop(void);
-    void close_handle(void);
-    void handle_error(void);
-    void handle_read_avail(void);
+    void closeHandle(void);
+    void handleError(void);
+    void handleReadAvail(void);
 };
 
 template <typename Y>
@@ -58,7 +58,7 @@ class Reader : public ReaderGeneric
     Reader() = default;
     Reader(const Reader&) = default;
     Reader& operator=(const Reader&) = default;
-    ~Reader() = default;
+    ~Reader() override = default;
 
     void init(Y* p)
     {
@@ -67,7 +67,7 @@ class Reader : public ReaderGeneric
     }
 
     template <typename T>
-    errenum subscribeReadAvail(handle_t fd)
+    errenum_t subscribeReadAvail(handle_t fd)
     {
         T inst;
         actorptr->addEvent(actorptr, inst);
@@ -86,7 +86,7 @@ class Reader : public ReaderGeneric
     }
 
    protected:
-    void receiveEventReadAvail(errenum errnum, handle_t fd, int datalen)
+    void receiveEventReadAvail(errenum_t errnum, handle_t fd, int datalen) override
     {
         if (evtread.get())
         {
@@ -102,7 +102,7 @@ class Reader : public ReaderGeneric
             printf("No subscription using Reader::subscribeReadAvail\n");
     }
 
-    void receiveEventSockErr(errenum errnum, handle_t fd, int datalen)
+    void receiveEventSockErr(errenum_t errnum, handle_t fd, int datalen) override
     {
         if (evterrsock.get())
         {
@@ -126,4 +126,4 @@ class Reader : public ReaderGeneric
 
 }  // namespace feal
 
-#endif  // _FEAL_READER_H
+#endif  // FEAL_READER_H

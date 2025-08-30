@@ -5,43 +5,43 @@
 
 #include "ActorA.h"
 
-#include <stdio.h>
+#include <cstdio>
 
 #include "ActorB.h"
 #include "feal.h"
 
-int EvtNotifyVege::get_carrots(void)
+int EvtNotifyVege::getCarrots(void)
 {
     return carrots;
 }
 
-int EvtNotifyVege::get_tomatoes(void)
+int EvtNotifyVege::getTomatoes(void)
 {
     return tomatoes;
 }
-void EvtNotifyVege::set_carrots(const int& num)
+void EvtNotifyVege::setCarrots(const int& num)
 {
     carrots = num;
 }
-void EvtNotifyVege::set_tomatoes(const int& num)
+void EvtNotifyVege::setTomatoes(const int& num)
 {
     tomatoes = num;
 }
 
-int EvtNotifyFruit::get_apples(void)
+int EvtNotifyFruit::getApples(void)
 {
     return apples;
 }
 
-int EvtNotifyFruit::get_oranges(void)
+int EvtNotifyFruit::getOranges(void)
 {
     return oranges;
 }
-void EvtNotifyFruit::set_apples(const int& num)
+void EvtNotifyFruit::setApples(const int& num)
 {
     apples = num;
 }
-void EvtNotifyFruit::set_oranges(const int& num)
+void EvtNotifyFruit::setOranges(const int& num)
 {
     oranges = num;
 }
@@ -60,13 +60,13 @@ void ActorA::startActor(void)
     timers.startTimer<EventTimerA1>(std::chrono::seconds(3), std::chrono::seconds(3));
 
     std::shared_ptr<feal::Event> pevt = std::make_shared<EvtNotifyVege>();
-    ((EvtNotifyVege*)pevt.get())->set_carrots(10);
-    ((EvtNotifyVege*)pevt.get())->set_tomatoes(20);
+    ((EvtNotifyVege*)pevt.get())->setCarrots(10);
+    ((EvtNotifyVege*)pevt.get())->setTomatoes(20);
     publishEvent(pevt);
 
     std::shared_ptr<feal::Event> pevt2 = std::make_shared<EvtNotifyFruit>();
-    ((EvtNotifyFruit*)pevt2.get())->set_apples(30);
-    ((EvtNotifyFruit*)pevt2.get())->set_oranges(40);
+    ((EvtNotifyFruit*)pevt2.get())->setApples(30);
+    ((EvtNotifyFruit*)pevt2.get())->setOranges(40);
     publishEvent(pevt2);
 }
 
@@ -84,16 +84,16 @@ void ActorA::handleEvent(std::shared_ptr<EventCabbage> pevt)
 {
     if (!pevt)
         return;
-    printf("ActorA received cabbages = %d\n", pevt.get()->get_cabbages());
+    printf("ActorA received cabbages = %d\n", pevt.get()->getCabbages());
 
     std::shared_ptr<feal::Event> pevt1 = std::make_shared<EvtNotifyVege>();
-    ((EvtNotifyVege*)pevt1.get())->set_carrots(100);
-    ((EvtNotifyVege*)pevt1.get())->set_tomatoes(200);
+    ((EvtNotifyVege*)pevt1.get())->setCarrots(100);
+    ((EvtNotifyVege*)pevt1.get())->setTomatoes(200);
     publishEvent(pevt1);
 
     std::shared_ptr<feal::Event> pevt2 = std::make_shared<EvtNotifyFruit>();
-    ((EvtNotifyFruit*)pevt2.get())->set_apples(300);
-    ((EvtNotifyFruit*)pevt2.get())->set_oranges(400);
+    ((EvtNotifyFruit*)pevt2.get())->setApples(300);
+    ((EvtNotifyFruit*)pevt2.get())->setOranges(400);
     publishEvent(pevt2);
 
     timers.setTimerRepeat<EventTimerA1>(std::chrono::seconds(1));

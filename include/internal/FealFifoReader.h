@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
 
-#ifndef _FEAL_FIFOREADER_H
-#define _FEAL_FIFOREADER_H
+#ifndef FEALFIFOREADER_H
+#define FEALFIFOREADER_H
 
-#ifndef _FEAL_H
+#ifndef FEAL_H
 #error "Please include feal.h and not the other internal Feal header files, to avoid include errors."
 #endif
 
@@ -20,7 +20,7 @@ class FifoReader : public ReaderGeneric
     FifoReader() = default;
     FifoReader(const FifoReader&) = default;
     FifoReader& operator=(const FifoReader&) = default;
-    ~FifoReader() = default;
+    ~FifoReader() override = default;
 
     void init(Y* p)
     {
@@ -46,18 +46,18 @@ class FifoReader : public ReaderGeneric
         EventBus::getInstance().registerEventCloner<T>();
     }
 
-    errenum open(const char* pathname)
+    errenum_t open(const char* pathname)
     {
         handle_t fd;
-        close_and_reset();
+        closeAndReset();
         fd = ::open(pathname, O_RDONLY | O_NONBLOCK);
         if (fd == -1)
-            return static_cast<errenum>(errno);
+            return static_cast<errenum_t>(errno);
         return ReaderGeneric::registerhandle(fd);
     }
 
    protected:
-    void receiveEventReadAvail(errenum errnum, handle_t fd, int datalen)
+    void receiveEventReadAvail(errenum_t errnum, handle_t fd, int datalen) override
     {
         if (evtread.get())
         {
@@ -73,7 +73,7 @@ class FifoReader : public ReaderGeneric
             printf("No subscription using FifoReader::subscribeReadAvail\n");
     }
 
-    void receiveEventSockErr(errenum errnum, handle_t fd, int datalen)
+    void receiveEventSockErr(errenum_t errnum, handle_t fd, int datalen) override
     {
         if (evterrsock.get())
         {
@@ -97,4 +97,4 @@ class FifoReader : public ReaderGeneric
 
 }  // namespace feal
 
-#endif  // _FEAL_FIFOREADER_H
+#endif  // FEALFIFOREADER_H

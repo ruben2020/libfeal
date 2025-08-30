@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
 
-#ifndef _FEAL_ACTOR_H
-#define _FEAL_ACTOR_H
+#ifndef FEAL_ACTOR_H
+#define FEAL_ACTOR_H
 
-#ifndef _FEAL_H
+#ifndef FEAL_H
 #error "Please include feal.h and not the other internal Feal header files, to avoid include errors."
 #endif
 
@@ -35,7 +35,7 @@ class EventStartActor : public Event
     EventStartActor() = default;
     EventStartActor(const EventStartActor&) = default;
     EventStartActor& operator=(const EventStartActor&) = default;
-    ~EventStartActor() = default;
+    ~EventStartActor() override = default;
 };
 
 class EventPauseActor : public Event
@@ -44,7 +44,7 @@ class EventPauseActor : public Event
     EventPauseActor() = default;
     EventPauseActor(const EventPauseActor&) = default;
     EventPauseActor& operator=(const EventPauseActor&) = default;
-    ~EventPauseActor() = default;
+    ~EventPauseActor() override = default;
 };
 
 class Actor : public std::enable_shared_from_this<Actor>
@@ -59,7 +59,7 @@ class Actor : public std::enable_shared_from_this<Actor>
     void shutdown(void);
     void receiveEvent(std::shared_ptr<Event> pevt);
     bool isActive(void);
-    void wait_for_shutdown(void);
+    void waitForShutdown(void);
     void addTool(Tool* p);
 
     template <typename T, typename Y>
@@ -176,4 +176,4 @@ class Actor : public std::enable_shared_from_this<Actor>
 
 }  // namespace feal
 
-#endif  // _FEAL_ACTOR_H
+#endif  // FEAL_ACTOR_H

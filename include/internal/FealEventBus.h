@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
 
-#ifndef _FEAL_EVENT_BUS_H
-#define _FEAL_EVENT_BUS_H
+#ifndef FEAL_EVENT_BUS_H
+#define FEAL_EVENT_BUS_H
 
-#ifndef _FEAL_H
+#ifndef FEAL_H
 #error "Please include feal.h and not the other internal Feal header files, to avoid include errors."
 #endif
 
@@ -70,4 +70,4 @@ class EventBus
 
 }  // namespace feal
 
-#endif  // _FEAL_EVENT_BUS_H
+#endif  // FEAL_EVENT_BUS_H

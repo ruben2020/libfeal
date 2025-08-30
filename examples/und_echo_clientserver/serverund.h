@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 //
 
-#ifndef _SERVERUND_H
-#define _SERVERUND_H
+#ifndef SERVERUND_H
+#define SERVERUND_H
 
 #include "feal.h"
 
@@ -18,12 +18,12 @@ class Serverund : public feal::Actor
 {
    public:
     Serverund() = default;
-    ~Serverund() = default;
+    ~Serverund() override = default;
 
-    void initActor(void);
-    void startActor(void);
-    void pauseActor(void);
-    void shutdownActor(void);
+    void initActor(void) override;
+    void startActor(void) override;
+    void pauseActor(void) override;
+    void shutdownActor(void) override;
 
     void handleEvent(std::shared_ptr<EvtEndTimer> pevt);
     void handleEvent(std::shared_ptr<EvtRetryTimer> pevt);
@@ -34,7 +34,7 @@ class Serverund : public feal::Actor
    protected:
     feal::Timers<Serverund> timers;
     feal::Datagram<Serverund> dgram;
-    virtual void start_listening(void);
+    virtual void startListening(void);
 
    private:
 };

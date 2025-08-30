@@ -5,17 +5,17 @@
 
 #include "ActorB.h"
 
-#include <stdio.h>
+#include <cstdio>
 
 #include "ActorA.h"
 #include "feal.h"
 
-void EventCabbage::set_cabbages(const int& num)
+void EventCabbage::setCabbages(const int& num)
 {
     cabbages = num;
 }
 
-int EventCabbage::get_cabbages(void)
+int EventCabbage::getCabbages(void)
 {
     return cabbages;
 }
@@ -48,15 +48,15 @@ void ActorB::shutdownActor(void)
 void ActorB::handleEvent(std::shared_ptr<EvtNotifyVege> pevt)
 {
     if (pevt)
-        printf("ActorB received carrots = %d, tomatoes = %d\n", pevt.get()->get_carrots(),
-               pevt.get()->get_tomatoes());
+        printf("ActorB received carrots = %d, tomatoes = %d\n", pevt.get()->getCarrots(),
+               pevt.get()->getTomatoes());
 }
 
 void ActorB::handleEvent(std::shared_ptr<EvtNotifyFruit> pevt)
 {
     if (pevt)
-        printf("ActorB received apples = %d, oranges = %d\n", pevt.get()->get_apples(),
-               pevt.get()->get_oranges());
+        printf("ActorB received apples = %d, oranges = %d\n", pevt.get()->getApples(),
+               pevt.get()->getOranges());
 }
 
 void ActorB::handleEvent(std::shared_ptr<EventTimerB1> pevt)
@@ -66,9 +66,9 @@ void ActorB::handleEvent(std::shared_ptr<EventTimerB1> pevt)
         return;
     printf("ActorB::TimerB1 Elapsed - repeats every %lld s\n",
            (long long int)timers.getTimerRepeat<EventTimerB1>().count());
-    std::shared_ptr<feal::Event> evtCabbage = std::make_shared<EventCabbage>();
-    ((EventCabbage*)evtCabbage.get())->set_cabbages(s_cabbages++);
-    publishEvent(evtCabbage);
+    std::shared_ptr<feal::Event> evt_cabbage = std::make_shared<EventCabbage>();
+    ((EventCabbage*)evt_cabbage.get())->setCabbages(s_cabbages++);
+    publishEvent(evt_cabbage);
 }
 
 void ActorB::handleEvent(std::shared_ptr<EventTimerB2> pevt)
