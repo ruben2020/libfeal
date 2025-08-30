@@ -10,7 +10,7 @@ void feal::ReaderGeneric::shutdownTool(void)
     closeAndReset();
 }
 
-feal::errenum_t feal::ReaderGeneric::registerhandle(handle_t fd)
+feal::errenum_t feal::ReaderGeneric::registerHandle(handle_t fd)
 {
     errenum_t res = FEAL_OK;
     if (fd == FEAL_INVALID_HANDLE)

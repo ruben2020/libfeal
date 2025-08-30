@@ -57,7 +57,7 @@ class SignalGeneric : public BaseSignal
             vec_evtsig_ptr_t ves;
             ves.push_back(k);
             map_signal[signum] = ves;
-            if (BaseSignal::doRegistersignal(signum) == -1)
+            if (BaseSignal::doRegisterSignal(signum) == -1)
                 ee = static_cast<errenum_t>(errno);
         }
         else
@@ -76,7 +76,7 @@ class SignalGeneric : public BaseSignal
             {
                 ves.push_back(k);
                 map_signal[signum] = ves;
-                if (BaseSignal::doRegistersignal(signum) == -1)
+                if (BaseSignal::doRegisterSignal(signum) == -1)
                     ee = static_cast<errenum_t>(errno);
             }
         }
@@ -105,7 +105,7 @@ class SignalGeneric : public BaseSignal
             if (ves.empty())
             {
                 map_signal.erase(it);
-                if (BaseSignal::doDeregistersignal(signum) == -1)
+                if (BaseSignal::doDeregisterSignal(signum) == -1)
                     ee = static_cast<errenum_t>(errno);
             }
             else

@@ -26,14 +26,14 @@ class BaseSignal : public Tool
    protected:
     static void (*recvsig_fp)(int, int);
 
-    int doRegistersignal(int signum);
-    int doDeregistersignal(int signum);
+    int doRegisterSignal(int signum);
+    int doDeregisterSignal(int signum);
 
    private:
 #if defined(_WIN32)
-    static void win_sighandler(int sig);
+    static void winSigHandler(int sig);
 #else
-    static void posixSighandler(int sig, siginfo_t *info, void *ucontext);
+    static void posixSigHandler(int sig, siginfo_t *info, void *ucontext);
 #endif
 };
 

@@ -29,7 +29,7 @@ class ReaderGeneric : public Tool
     std::thread readerThread;
     handle_t readerfd = FEAL_INVALID_HANDLE;
     errenum_t openPipeForReading(const char* pathname);
-    errenum_t registerhandle(handle_t fd);
+    errenum_t registerHandle(handle_t fd);
 
 #if defined(__linux__)
 #define FEALREADER_MAXEVENTS 64
@@ -73,7 +73,7 @@ class Reader : public ReaderGeneric
         actorptr->addEvent(actorptr, inst);
         evtread = std::make_shared<T>();
         EventBus::getInstance().registerEventCloner<T>();
-        return ReaderGeneric::registerhandle(fd);
+        return ReaderGeneric::registerHandle(fd);
     }
 
     template <typename T>

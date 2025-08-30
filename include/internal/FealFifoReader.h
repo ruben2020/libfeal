@@ -53,7 +53,7 @@ class FifoReader : public ReaderGeneric
         fd = ::open(pathname, O_RDONLY | O_NONBLOCK);
         if (fd == -1)
             return static_cast<errenum_t>(errno);
-        return ReaderGeneric::registerhandle(fd);
+        return ReaderGeneric::registerHandle(fd);
     }
 
    protected:
