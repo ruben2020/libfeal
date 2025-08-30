@@ -36,12 +36,12 @@ feal::errenum_t feal::StreamGeneric::connect(handle_t fd, const sockaddr_all_t *
     }
     else if ((ret == FEAL_HANDLE_ERROR) && (FEAL_GETHANDLEERRNO == FEAL_STREAM_EINPROGRESS))
     {
-        FEALDEBUGLOG("do_connect_in_progress");
+        FEALDEBUGLOG("doConnectInProgress");
         doConnectInProgress();
     }
     else if (ret == 0)
     {
-        FEALDEBUGLOG("do_connect_ok");
+        FEALDEBUGLOG("doConnectOk");
         doConnectOk();
     }
     connectThread = std::thread(&connectLoopLauncher, this);
@@ -72,7 +72,7 @@ feal::errenum_t feal::StreamGeneric::recv(void *buf, uint32_t len, int32_t *byte
         fd = sockfd;
     ssize_t numbytes = ::recv(fd, BUFCAST(buf), (size_t)len, MSG_DONTWAIT);
 #if defined(_WIN32)
-    do_client_read_start(fd);
+    doClientReadStart(fd);
 #endif
     if (numbytes == FEAL_HANDLE_ERROR)
     {

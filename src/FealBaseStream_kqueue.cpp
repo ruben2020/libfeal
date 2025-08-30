@@ -5,30 +5,30 @@
 
 #include "feal.h"
 
-int feal::BaseStream::accept_new_conn(void)
+int feal::BaseStream::acceptNewConn(void)
 {
     return FEAL_HANDLE_ERROR;
 }
-void feal::BaseStream::client_read_avail(handle_t client_sockfd)
+void feal::BaseStream::clientReadAvail(handle_t client_sockfd)
 {
     (void)(client_sockfd);
 }
-void feal::BaseStream::client_write_avail(handle_t client_sockfd)
+void feal::BaseStream::clientWriteAvail(handle_t client_sockfd)
 {
     (void)(client_sockfd);
 }
-void feal::BaseStream::client_shutdown(handle_t client_sockfd)
+void feal::BaseStream::clientShutdown(handle_t client_sockfd)
 {
     (void)(client_sockfd);
 }
-void feal::BaseStream::server_shutdown(void) {}
-void feal::BaseStream::connected_to_server(handle_t fd)
+void feal::BaseStream::serverShutdown(void) {}
+void feal::BaseStream::connectedToServer(handle_t fd)
 {
     (void)(fd);
 }
-void feal::BaseStream::connection_read_avail(void) {}
-void feal::BaseStream::connection_write_avail(void) {}
-void feal::BaseStream::connection_shutdown(void) {}
+void feal::BaseStream::connectionReadAvail(void) {}
+void feal::BaseStream::connectionWriteAvail(void) {}
+void feal::BaseStream::connectionShutdown(void) {}
 
 void feal::BaseStream::serverLoop(void)
 {
@@ -64,27 +64,27 @@ void feal::BaseStream::serverLoop(void)
         {
             if (sockfd == (int)event[i].ident)
             {
-                if (((event[i].flags & (EV_EOF | EV_ERROR)) != 0) || (accept_new_conn() == -1))
+                if (((event[i].flags & (EV_EOF | EV_ERROR)) != 0) || (acceptNewConn() == -1))
                 {
-                    do_full_shutdown();
-                    server_shutdown();
+                    doFullShutdown();
+                    serverShutdown();
                     break;
                 }
                 continue;
             }
             else if ((event[i].flags & (EV_EOF | EV_ERROR)) != 0)
             {
-                do_client_shutdown((int)event[i].ident);
-                client_shutdown((int)event[i].ident);
+                doClientShutdown((int)event[i].ident);
+                clientShutdown((int)event[i].ident);
                 continue;
             }
             if ((event[i].filter & EVFILT_READ) == EVFILT_READ)
             {
-                client_read_avail((int)event[i].ident);
+                clientReadAvail((int)event[i].ident);
             }
             if ((event[i].filter & EVFILT_WRITE) == EVFILT_WRITE)
             {
-                client_write_avail((int)event[i].ident);
+                clientWriteAvail((int)event[i].ident);
                 /*EV_SET(change_event, event[i].ident, EVFILT_WRITE, EV_DELETE, 0, 0, 0);
                 kevent(kq, (const struct kevent	*) change_event, 1, nullptr, 0, nullptr);*/
             }
@@ -92,7 +92,7 @@ void feal::BaseStream::serverLoop(void)
     }
 }
 
-int feal::BaseStream::do_client_read_start(feal::handle_t client_sockfd)
+int feal::BaseStream::doClientReadStart(feal::handle_t client_sockfd)
 {
     struct kevent change_event[2];
     memset(&change_event, 0, sizeof(change_event));
@@ -102,14 +102,14 @@ int feal::BaseStream::do_client_read_start(feal::handle_t client_sockfd)
     return kevent(kq, (const struct kevent *)change_event, 1, nullptr, 0, nullptr);
 }
 
-int feal::BaseStream::do_client_shutdown(feal::handle_t client_sockfd)
+int feal::BaseStream::doClientShutdown(feal::handle_t client_sockfd)
 {
     int rc = shutdown(client_sockfd, SHUT_RDWR);
     close(client_sockfd);
     return rc;
 }
 
-int feal::BaseStream::do_full_shutdown(void)
+int feal::BaseStream::doFullShutdown(void)
 {
     int res = 0;
     if (sockfd != -1)
@@ -122,7 +122,7 @@ int feal::BaseStream::do_full_shutdown(void)
     return res;
 }
 
-void feal::BaseStream::do_connect_in_progress(void)
+void feal::BaseStream::doConnectInProgress(void)
 {
     struct kevent change_event[2];
     memset(&change_event, 0, sizeof(change_event));
@@ -134,7 +134,7 @@ void feal::BaseStream::do_connect_in_progress(void)
     kevent(kq, (const struct kevent *)change_event, 1, nullptr, 0, nullptr);
 }
 
-void feal::BaseStream::do_connect_ok(void)
+void feal::BaseStream::doConnectOk(void)
 {
     struct kevent change_event[2];
     memset(&change_event, 0, sizeof(change_event));
@@ -145,13 +145,13 @@ void feal::BaseStream::do_connect_ok(void)
     EV_SET(change_event, sockfd, EVFILT_READ, EV_ADD | EV_ENABLE | EV_CLEAR, 0, 0, 0);
     if (kevent(kq, (const struct kevent *)change_event, 1, nullptr, 0, nullptr) == -1)
     {
-        FEALDEBUGLOG("do_connect_ok err");
+        FEALDEBUGLOG("doConnectOk err");
     }
     else
-        connected_to_server(sockfd);
+        connectedToServer(sockfd);
 }
 
-void feal::BaseStream::do_send_avail_notify(feal::handle_t fd)
+void feal::BaseStream::doSendAvailNotify(feal::handle_t fd)
 {
     struct kevent change_event[2];
     memset(&change_event, 0, sizeof(change_event));
@@ -180,24 +180,24 @@ void feal::BaseStream::connectLoop(void)
         {
             if ((event[i].flags & (EV_EOF | EV_ERROR)) != 0)
             {
-                do_full_shutdown();
-                connection_shutdown();
+                doFullShutdown();
+                connectionShutdown();
                 break;
             }
             if ((event[i].filter & EVFILT_READ) == EVFILT_READ)
             {
-                connection_read_avail();
+                connectionReadAvail();
             }
             if ((event[i].filter & EVFILT_WRITE) == EVFILT_WRITE)
             {
                 if (waitingforconn)
                 {
                     waitingforconn = false;
-                    connected_to_server((int)event[i].ident);
+                    connectedToServer((int)event[i].ident);
                 }
                 else
                 {
-                    connection_write_avail();
+                    connectionWriteAvail();
                 }
                 /*EV_SET(change_event, sockfd, EVFILT_WRITE, EV_DELETE, 0, 0, 0);
                 kevent(kq, (const struct kevent	*) change_event, 1, nullptr, 0, nullptr);*/

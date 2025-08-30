@@ -130,7 +130,7 @@ typedef union
     struct sockaddr sa;
     struct sockaddr_in in;
     struct sockaddr_in6 in6;
-} sockaddr_all;
+} sockaddr_all_t;
 
 #ifndef MSG_DONTWAIT
 #define MSG_DONTWAIT (0)
@@ -147,12 +147,12 @@ typedef unsigned int flags_t;
 
 int inet_pton(int af, const char *src, void *dst);
 const char *inet_ntop(int af, const void *src, char *dst, socklen_t size);
-int set_nonblocking(handle_t fd);
-int set_ipv6only(handle_t fd);
-int set_reuseaddr(handle_t fd, bool enable);
+int setNonBlocking(handle_t fd);
+int setIpv6Only(handle_t fd);
+int setReuseAddr(handle_t fd, bool enable);
 int datareadavaillen(handle_t fd);
-std::string get_addr(sockaddr_all *sa);
-std::string get_port(sockaddr_all *sa);
+std::string getAddr(sockaddr_all_t *sa);
+std::string getPort(sockaddr_all_t *sa);
 
 }  // namespace feal
 

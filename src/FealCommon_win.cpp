@@ -56,7 +56,7 @@ const char *feal::inet_ntop(int af, const void *src, char *dst, socklen_t size)
                    : nullptr;
 }
 
-int feal::set_nonblocking(handle_t fd)
+int feal::setNonBlocking(handle_t fd)
 {
     ULONG NonBlock = 1;
     if (ioctlsocket(fd, FIONBIO, &NonBlock) == SOCKET_ERROR)
@@ -66,7 +66,7 @@ int feal::set_nonblocking(handle_t fd)
     return 0;
 }
 
-int feal::set_ipv6only(handle_t fd)
+int feal::setIpv6Only(handle_t fd)
 {
     int on = 1;
     if (setsockopt(fd, IPPROTO_IPV6, IPV6_V6ONLY, (char *)&on, sizeof(on)) == -1)
@@ -76,7 +76,7 @@ int feal::set_ipv6only(handle_t fd)
     return 0;
 }
 
-int feal::set_reuseaddr(handle_t fd, bool enable)
+int feal::setReuseAddr(handle_t fd, bool enable)
 {
     char opt = enable ? 1 : 0;
     return setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const char *)&opt, (int)sizeof(opt));
@@ -93,7 +93,7 @@ int feal::datareadavaillen(handle_t fd)
     return ret;
 }
 
-std::string feal::get_addr(sockaddr_all *sa)
+std::string feal::getAddr(sockaddr_all_t *sa)
 {
     char arr[200];
     if (sa == nullptr)
@@ -113,7 +113,7 @@ std::string feal::get_addr(sockaddr_all *sa)
     return std::string(arr);
 }
 
-std::string feal::get_port(sockaddr_all *sa)
+std::string feal::getPort(sockaddr_all_t *sa)
 {
     char arr[10];
     if (sa == nullptr)

@@ -5,30 +5,30 @@
 
 #include "feal.h"
 
-int feal::BaseStream::accept_new_conn(void)
+int feal::BaseStream::acceptNewConn(void)
 {
     return FEAL_HANDLE_ERROR;
 }
-void feal::BaseStream::client_read_avail(handle_t client_sockfd)
+void feal::BaseStream::clientReadAvail(handle_t client_sockfd)
 {
     (void)(client_sockfd);
 }
-void feal::BaseStream::client_write_avail(handle_t client_sockfd)
+void feal::BaseStream::clientWriteAvail(handle_t client_sockfd)
 {
     (void)(client_sockfd);
 }
-void feal::BaseStream::client_shutdown(handle_t client_sockfd)
+void feal::BaseStream::clientShutdown(handle_t client_sockfd)
 {
     (void)(client_sockfd);
 }
-void feal::BaseStream::server_shutdown(void) {}
-void feal::BaseStream::connected_to_server(handle_t fd)
+void feal::BaseStream::serverShutdown(void) {}
+void feal::BaseStream::connectedToServer(handle_t fd)
 {
     (void)(fd);
 }
-void feal::BaseStream::connection_read_avail(void) {}
-void feal::BaseStream::connection_write_avail(void) {}
-void feal::BaseStream::connection_shutdown(void) {}
+void feal::BaseStream::connectionReadAvail(void) {}
+void feal::BaseStream::connectionWriteAvail(void) {}
+void feal::BaseStream::connectionShutdown(void) {}
 
 void feal::BaseStream::serverLoop(void)
 {
@@ -76,10 +76,10 @@ void feal::BaseStream::serverLoop(void)
             if ((i == 0) && (FD_ISSET(sockfd, &ReadSet)))
             {
                 nfds--;
-                if (accept_new_conn() == SOCKET_ERROR)
+                if (acceptNewConn() == SOCKET_ERROR)
                 {
-                    do_full_shutdown();
-                    server_shutdown();
+                    doFullShutdown();
+                    serverShutdown();
                     break;
                 }
                 continue;
@@ -91,8 +91,8 @@ void feal::BaseStream::serverLoop(void)
                 if ((ret == 0) || (ret == SOCKET_ERROR))
                 {
                     tempsockfd = sockread[i];
-                    do_client_shutdown(tempsockfd);
-                    client_shutdown(tempsockfd);
+                    doClientShutdown(tempsockfd);
+                    clientShutdown(tempsockfd);
                     continue;
                 }
                 else
@@ -100,22 +100,22 @@ void feal::BaseStream::serverLoop(void)
                     // printf("client read avail %lld\n", (long long int) sockread[i]);
                     tempsockfd = sockread[i];
                     sockread[i] = INVALID_SOCKET;
-                    client_read_avail(tempsockfd);
+                    clientReadAvail(tempsockfd);
                 }
             }
             if (FD_ISSET(sockwrite[i], &WriteSet))
             {
                 nfds--;
-                client_write_avail(sockwrite[i]);
+                clientWriteAvail(sockwrite[i]);
                 sockwrite[i] = INVALID_SOCKET;
             }
         }
     }
 }
 
-int feal::BaseStream::do_client_read_start(feal::handle_t client_sockfd)
+int feal::BaseStream::doClientReadStart(feal::handle_t client_sockfd)
 {
-    // printf("do_client_read_start %lld\n", (long long int) client_sockfd);
+    // printf("doClientReadStart %lld\n", (long long int) client_sockfd);
     for (int i = 1; i < FEALBASESTREAM_MAXEVENTS; i++)
     {
         if (sockread[i] == client_sockfd)
@@ -139,9 +139,9 @@ int feal::BaseStream::do_client_read_start(feal::handle_t client_sockfd)
     return 0;
 }
 
-int feal::BaseStream::do_client_shutdown(feal::handle_t client_sockfd)
+int feal::BaseStream::doClientShutdown(feal::handle_t client_sockfd)
 {
-    // printf("do_client_shutdown %lld\n", (long long int) client_sockfd);
+    // printf("doClientShutdown %lld\n", (long long int) client_sockfd);
     for (int i = 1; i < FEALBASESTREAM_MAXEVENTS; i++)
     {
         if (sockread[i] == client_sockfd)
@@ -163,7 +163,7 @@ int feal::BaseStream::do_client_shutdown(feal::handle_t client_sockfd)
     return ret;
 }
 
-int feal::BaseStream::do_full_shutdown(void)
+int feal::BaseStream::doFullShutdown(void)
 {
     int ret = 0;
     for (int j = 1; j < FEALBASESTREAM_MAXEVENTS; j++)
@@ -187,7 +187,7 @@ int feal::BaseStream::do_full_shutdown(void)
     return ret;
 }
 
-void feal::BaseStream::do_connect_in_progress(void)
+void feal::BaseStream::doConnectInProgress(void)
 {
     for (int j = 0; j < FEALBASESTREAM_MAXEVENTS; j++)
     {
@@ -201,7 +201,7 @@ void feal::BaseStream::do_connect_in_progress(void)
     sockexcpt[0] = sockfd;
 }
 
-void feal::BaseStream::do_connect_ok(void)
+void feal::BaseStream::doConnectOk(void)
 {
     for (int j = 0; j < FEALBASESTREAM_MAXEVENTS; j++)
     {
@@ -213,12 +213,12 @@ void feal::BaseStream::do_connect_ok(void)
     sockread[0] = sockfd;
     sockwrite[0] = sockfd;
     sockexcpt[0] = sockfd;
-    connected_to_server(sockfd);
+    connectedToServer(sockfd);
 }
 
-void feal::BaseStream::do_send_avail_notify(feal::handle_t fd)
+void feal::BaseStream::doSendAvailNotify(feal::handle_t fd)
 {
-    printf("do_send_avail_notify %lld\n", (long long int)fd);
+    printf("doSendAvailNotify %lld\n", (long long int)fd);
 }
 
 void feal::BaseStream::connectLoop(void)
@@ -275,15 +275,15 @@ void feal::BaseStream::connectLoop(void)
                 ret = recv(sockread[i], buf, sizeof(buf), MSG_PEEK);
                 if ((ret == 0) || (ret == SOCKET_ERROR))
                 {
-                    do_full_shutdown();
-                    connection_shutdown();
+                    doFullShutdown();
+                    connectionShutdown();
                     continue;
                 }
                 else
                 {
                     // printf("connection read avail %lld\n", (long long int) sockread[i]);
                     sockread[i] = INVALID_SOCKET;
-                    connection_read_avail();
+                    connectionReadAvail();
                     // std::this_thread::sleep_for(std::chrono::milliseconds(1));
                 }
             }
@@ -293,18 +293,18 @@ void feal::BaseStream::connectLoop(void)
                 if (waitingforconn)
                 {
                     waitingforconn = false;
-                    connected_to_server(sockwrite[i]);
+                    connectedToServer(sockwrite[i]);
                 }
                 else
                 {
-                    connection_write_avail();
+                    connectionWriteAvail();
                 }
                 sockwrite[i] = INVALID_SOCKET;
             }
             if (FD_ISSET(sockexcpt[i], &ExceptSet))
             {
-                do_full_shutdown();
-                connection_shutdown();
+                doFullShutdown();
+                connectionShutdown();
             }
         }
     }
