@@ -167,14 +167,14 @@ void feal::DatagramGeneric::dgramLoop(void)
                 numbytes = ::recvfrom(sockfd, buf, sizeof(buf), MSG_PEEK, nullptr, nullptr);
                 if ((numbytes == SOCKET_ERROR) && (WSAGetLastError() != WSAEWOULDBLOCK))
                 {
-                    close_sock();
-                    sock_error();
+                    closeSock();
+                    sockError();
                     break;
                 }
                 else
                 {
                     sockread[0] = INVALID_SOCKET;
-                    sock_read_avail();
+                    sockReadAvail();
                     std::this_thread::sleep_for(std::chrono::milliseconds(1));
                 }
             }
@@ -182,7 +182,7 @@ void feal::DatagramGeneric::dgramLoop(void)
             {
                 nfds--;
                 sockwrite[0] = INVALID_SOCKET;
-                sock_write_avail();
+                sockWriteAvail();
             }
         }
     }
@@ -254,17 +254,17 @@ void feal::DatagramGeneric::dgramLoop(void)
         {
             if ((event[i].flags & (EV_EOF | EV_ERROR)) != 0)
             {
-                close_sock();
-                sock_error();
+                closeSock();
+                sockError();
                 break;
             }
             if ((event[i].filter & EVFILT_READ) == EVFILT_READ)
             {
-                sock_read_avail();
+                sockReadAvail();
             }
             if ((event[i].filter & EVFILT_WRITE) == EVFILT_WRITE)
             {
-                sock_write_avail();
+                sockWriteAvail();
                 EV_SET(change_event, sockfd, EVFILT_WRITE, EV_DELETE, 0, 0, 0);
                 kevent(kq, (const struct kevent*)change_event, 1, nullptr, 0, nullptr);
             }

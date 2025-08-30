@@ -115,13 +115,13 @@ void feal::ReaderGeneric::readerLoop(void)
         {
             if ((event[i].flags & (EV_EOF | EV_ERROR)) != 0)
             {
-                close_handle();
-                handle_error();
+                closeHandle();
+                handleError();
                 break;
             }
             else if ((event[i].filter & EVFILT_READ) == EVFILT_READ)
             {
-                handle_read_avail();
+                handleReadAvail();
                 continue;
             }
         }

@@ -210,12 +210,12 @@ void feal::FileDirMonGeneric::fdmonLoop(void)
         {
             if ((event[i].flags & (EV_EOF | EV_ERROR)) != 0)
             {
-                fd_error();
+                fdError();
                 break;
             }
             else if ((event[i].filter & EVFILT_VNODE) == EVFILT_VNODE)
             {
-                fd_read_avail(event[i].ident, event[i].fflags);
+                fdReadAvail(event[i].ident, event[i].fflags);
                 continue;
             }
         }

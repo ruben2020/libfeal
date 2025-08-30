@@ -178,19 +178,19 @@ void feal::DescMonGeneric::fdmonLoop(void)
                 numbytes = recvfrom(sockread[i], buf, sizeof(buf), MSG_PEEK, nullptr, nullptr);
                 if ((numbytes == SOCKET_ERROR) && (WSAGetLastError() != WSAEWOULDBLOCK))
                 {
-                    fd_error(sockread[i]);
+                    fdError(sockread[i]);
                     break;
                 }
                 else
                 {
-                    fd_read_avail(sockread[i]);
+                    fdReadAvail(sockread[i]);
                     std::this_thread::sleep_for(std::chrono::milliseconds(1));
                 }
             }
             if (FD_ISSET(sockwrite[i], &WriteSet))
             {
                 nfds--;
-                fd_write_avail(sockwrite[i]);
+                fdWriteAvail(sockwrite[i]);
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }
         }
@@ -249,16 +249,16 @@ void feal::DescMonGeneric::fdmonLoop(void)
         {
             if ((event[i].flags & (EV_EOF | EV_ERROR)) != 0)
             {
-                fd_error(event[i].ident);
+                fdError(event[i].ident);
                 break;
             }
             if ((event[i].filter & EVFILT_READ) == EVFILT_READ)
             {
-                fd_read_avail(event[i].ident);
+                fdReadAvail(event[i].ident);
             }
             if ((event[i].filter & EVFILT_WRITE) == EVFILT_WRITE)
             {
-                fd_write_avail(event[i].ident);
+                fdWriteAvail(event[i].ident);
             }
         }
     }
